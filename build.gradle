@@ -1,0 +1,91 @@
+plugins {
+    id "java-library"
+    id "maven-publish"
+    id "signing"
+}
+
+base {
+    java.toolchain.languageVersion = JavaLanguageVersion.of(17)
+    compileJava.options.encoding = compileTestJava.options.encoding = "UTF-8"
+
+    group = project.maven_group ?: rootProject.maven_group
+    archivesName = project.maven_name ?: rootProject.maven_name
+    version = project.maven_version ?: rootProject.maven_version
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compileOnly "org.jetbrains:annotations:26.0.0"
+}
+
+java {
+    withSourcesJar()
+}
+
+jar {
+    from("LICENSE") {
+        rename { "${it}_${project.name ?: rootProject.name}" }
+    }
+}
+
+artifacts {
+    archives sourcesJar
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "reposilite"
+            url = "https://maven.lenni0451.net/" + (project.maven_version.endsWith("SNAPSHOT") ? "snapshots" : "releases")
+
+            credentials(PasswordCredentials)
+            authentication {
+                basic(BasicAuthentication)
+            }
+        }
+    }
+    publications {
+        maven(MavenPublication) {
+            groupId = project.maven_group
+            artifactId = project.maven_name
+            version = project.maven_version
+
+            from components.java
+
+            pom {
+                name = "AudioMixer"
+                description = "High performance Java audio mixing library"
+                url = "https://github.com/RaphiMC/AudioMixer"
+                licenses {
+                    license {
+                        name = "LGPL-3.0 License"
+                        url = "https://github.com/RaphiMC/AudioMixer/blob/main/LICENSE"
+                    }
+                }
+                developers {
+                    developer {
+                        id = "RK_01"
+                    }
+                }
+                scm {
+                    connection = "scm:git:git://github.com/RaphiMC/AudioMixer.git"
+                    developerConnection = "scm:git:ssh://github.com/RaphiMC/AudioMixer.git"
+                    url = "https://github.com/RaphiMC/AudioMixer.git"
+                }
+            }
+        }
+    }
+}
+
+signing {
+    setRequired(false)
+    sign configurations.archives
+    sign publishing.publications.maven
+}
+
+project.tasks.withType(PublishToMavenRepository).forEach {
+    it.dependsOn(project.tasks.withType(Sign))
+}
