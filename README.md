@@ -8,7 +8,9 @@ High performance Java audio mixing library.
   - Pitch control
   - Volume control
   - Stereo panning control
-- Spatial 3D audio
+- Basic 3D spatial audio
+  - Position and orientation control
+  - Distance attenuation
 - High performance (Mix thousands of simultaneously playing sounds in realtime)
 
 ## Releases
