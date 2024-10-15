@@ -21,12 +21,12 @@ import net.raphimc.audiomixer.sound.Sound;
 
 import javax.sound.sampled.AudioFormat;
 
-public class StaticMonoSound implements Sound {
+public class StaticStereoSound implements Sound {
 
     private final int[] samples;
     private int sampleIndex;
 
-    public StaticMonoSound(final int[] samples) {
+    public StaticStereoSound(final int[] samples) {
         if (samples == null || samples.length == 0) {
             throw new IllegalArgumentException("Samples must not be null or empty");
         }
@@ -40,19 +40,21 @@ public class StaticMonoSound implements Sound {
         final int numSamples = renderedSamplesLength / numChannels;
 
         int renderedIndex = 0;
-        if (numChannels == 1) {
+        if (numChannels == 2) {
             final int length = Math.min(renderedSamplesLength, this.samples.length - this.sampleIndex);
             System.arraycopy(this.samples, this.sampleIndex, renderedSamples, 0, length);
             this.sampleIndex += length;
             renderedIndex += length;
         } else {
             for (int i = 0; i < numSamples; i++) {
-                final int sample = this.samples[this.sampleIndex];
+                final int sample1 = this.samples[this.sampleIndex];
+                final int sample2 = this.samples[this.sampleIndex + 1];
+                final int monoSample = (sample1 + sample2) / 2;
                 for (int j = 0; j < numChannels; j++) {
-                    renderedSamples[renderedIndex++] = sample;
+                    renderedSamples[renderedIndex++] = monoSample;
                 }
 
-                this.sampleIndex++;
+                this.sampleIndex += 2;
                 if (this.isFinished()) {
                     break;
                 }
