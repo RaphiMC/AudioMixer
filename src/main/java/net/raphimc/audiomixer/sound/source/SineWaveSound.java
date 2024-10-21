@@ -33,12 +33,12 @@ public class SineWaveSound implements Sound {
     }
 
     @Override
-    public void render(final AudioFormat audioFormat, final int[] renderedSamples, final int renderedSamplesLength) {
+    public void render(final AudioFormat audioFormat, final int[] renderedSamples) {
         final int maxValue = (int) Math.pow(2, audioFormat.getSampleSizeInBits() - 1) - 1;
         final int numChannels = audioFormat.getChannels();
         final double angularVelocity = 2 * Math.PI * this.frequency / audioFormat.getSampleRate();
 
-        for (int i = 0; i < renderedSamplesLength; i += numChannels) {
+        for (int i = 0; i < renderedSamples.length; i += numChannels) {
             final int sample = (int) (Math.sin(this.angle) * this.volume * maxValue);
             for (int channel = 0; channel < numChannels; channel++) {
                 renderedSamples[i + channel] = sample;

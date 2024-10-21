@@ -35,18 +35,18 @@ public class StaticStereoSound implements Sound {
     }
 
     @Override
-    public void render(final AudioFormat audioFormat, final int[] renderedSamples, final int renderedSamplesLength) {
-        final int numChannels = audioFormat.getChannels();
-        final int numSamples = renderedSamplesLength / numChannels;
-
+    public void render(final AudioFormat audioFormat, final int[] renderedSamples) {
         int renderedIndex = 0;
-        if (numChannels == 2) {
-            final int length = Math.min(renderedSamplesLength, this.samples.length - this.sampleIndex);
-            System.arraycopy(this.samples, this.sampleIndex, renderedSamples, 0, length);
-            this.sampleIndex += length;
-            renderedIndex += length;
+        if (audioFormat.getChannels() == 2) {
+            final int numSamples = Math.min(renderedSamples.length, this.samples.length - this.sampleIndex);
+            System.arraycopy(this.samples, this.sampleIndex, renderedSamples, 0, numSamples);
+            this.sampleIndex += numSamples;
+            renderedIndex += numSamples;
         } else {
-            for (int i = 0; i < numSamples; i++) {
+            final int numChannels = audioFormat.getChannels();
+            final int numSamples = renderedSamples.length / numChannels;
+
+            for (int i = 0; i < numSamples && !this.isFinished(); i++) {
                 final int sample1 = this.samples[this.sampleIndex];
                 final int sample2 = this.samples[this.sampleIndex + 1];
                 final int monoSample = (sample1 + sample2) / 2;
@@ -55,13 +55,10 @@ public class StaticStereoSound implements Sound {
                 }
 
                 this.sampleIndex += 2;
-                if (this.isFinished()) {
-                    break;
-                }
             }
         }
 
-        while (renderedIndex < renderedSamplesLength) {
+        while (renderedIndex < renderedSamples.length) {
             renderedSamples[renderedIndex++] = 0;
         }
     }

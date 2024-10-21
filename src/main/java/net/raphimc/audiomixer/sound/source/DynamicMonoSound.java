@@ -18,42 +18,38 @@
 package net.raphimc.audiomixer.sound.source;
 
 import net.raphimc.audiomixer.sound.Sound;
+import net.raphimc.audiomixer.util.InterpolationUtil;
 
 import javax.sound.sampled.AudioFormat;
 
-public class StaticMonoSound implements Sound {
+public class DynamicMonoSound implements Sound {
 
     private final int[] samples;
-    private int sampleIndex;
+    private float pitch;
+    private double sampleIndex;
 
-    public StaticMonoSound(final int[] samples) {
+    public DynamicMonoSound(final int[] samples, final float pitch) {
         if (samples == null || samples.length == 0) {
             throw new IllegalArgumentException("Samples must not be null or empty");
         }
 
         this.samples = samples;
+        this.setPitch(pitch);
     }
 
     @Override
     public void render(final AudioFormat audioFormat, final int[] renderedSamples) {
+        final int numChannels = audioFormat.getChannels();
+        final int numSamples = renderedSamples.length / numChannels;
+
         int renderedIndex = 0;
-        if (audioFormat.getChannels() == 1) {
-            final int numSamples = Math.min(renderedSamples.length, this.samples.length - this.sampleIndex);
-            System.arraycopy(this.samples, this.sampleIndex, renderedSamples, 0, numSamples);
-            this.sampleIndex += numSamples;
-            renderedIndex += numSamples;
-        } else {
-            final int numChannels = audioFormat.getChannels();
-            final int numSamples = renderedSamples.length / numChannels;
-
-            for (int i = 0; i < numSamples && !this.isFinished(); i++) {
-                final int sample = this.samples[this.sampleIndex];
-                for (int j = 0; j < numChannels; j++) {
-                    renderedSamples[renderedIndex++] = sample;
-                }
-
-                this.sampleIndex++;
+        for (int i = 0; i < numSamples && !this.isFinished(); i++) {
+            final int sample = InterpolationUtil.interpolateLinear(this.samples, this.sampleIndex);
+            for (int j = 0; j < numChannels; j++) {
+                renderedSamples[renderedIndex++] = sample;
             }
+
+            this.sampleIndex += this.pitch;
         }
 
         while (renderedIndex < renderedSamples.length) {
@@ -63,11 +59,23 @@ public class StaticMonoSound implements Sound {
 
     @Override
     public boolean isFinished() {
-        return this.sampleIndex >= this.samples.length;
+        return (int) this.sampleIndex >= this.samples.length;
     }
 
     public int[] getSamples() {
         return this.samples;
+    }
+
+    public float getPitch() {
+        return this.pitch;
+    }
+
+    public void setPitch(final float pitch) {
+        if (pitch <= 0) {
+            throw new IllegalArgumentException("Pitch must be greater than 0");
+        }
+
+        this.pitch = pitch;
     }
 
 }

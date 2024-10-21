@@ -17,14 +17,12 @@
  */
 package net.raphimc.audiomixer.sound.modifier;
 
-import net.raphimc.audiomixer.sound.Sound;
-import net.raphimc.audiomixer.util.AudioFormats;
+import net.raphimc.audiomixer.sound.SoundModifier;
 
 import javax.sound.sampled.AudioFormat;
 
-public class SpatialSound implements Sound {
+public class SpatialModifier implements SoundModifier {
 
-    private final Sound sound;
     private float maxDistance;
     private float soundX;
     private float soundY;
@@ -34,40 +32,29 @@ public class SpatialSound implements Sound {
     private float listenerZ;
     private float listenerYaw;
 
+    private boolean recalculate = true;
     private float panning;
     private float attenuation;
 
-    public SpatialSound(final Sound sound, final float maxDistance) {
-        if (maxDistance <= 0) {
-            throw new IllegalArgumentException("Max distance must be greater than zero");
-        }
-
-        this.sound = sound;
+    public SpatialModifier(final float maxDistance) {
         this.setMaxDistance(maxDistance);
     }
 
     @Override
-    public void render(final AudioFormat audioFormat, final int[] renderedSamples, final int renderedSamplesLength) {
+    public void modify(final AudioFormat audioFormat, final int[] renderedSamples) {
         if (audioFormat.getChannels() != 2) {
             throw new UnsupportedOperationException("Target audio format must have 2 channels");
         }
-        this.sound.render(AudioFormats.withChannels(audioFormat, 1), renderedSamples, renderedSamplesLength / 2);
-        this.calculatePanningAndAttenuation();
 
-        for (int i = renderedSamplesLength / 2 - 1; i >= 0; i--) {
-            final int sample = renderedSamples[i];
-            renderedSamples[i * 2] = (int) (sample * (1F - this.panning) * this.attenuation);
-            renderedSamples[i * 2 + 1] = (int) (sample * this.panning * this.attenuation);
+        if (this.recalculate) {
+            this.recalculate = false;
+            this.calculatePanningAndAttenuation();
         }
-    }
 
-    @Override
-    public boolean isFinished() {
-        return this.sound.isFinished();
-    }
-
-    public Sound getSound() {
-        return this.sound;
+        for (int i = 0; i < renderedSamples.length; i += 2) {
+            renderedSamples[i] = (int) (renderedSamples[i] * (1F - this.panning) * this.attenuation);
+            renderedSamples[i + 1] = (int) (renderedSamples[i + 1] * this.panning * this.attenuation);
+        }
     }
 
     public float getMaxDistance() {
@@ -80,6 +67,7 @@ public class SpatialSound implements Sound {
         }
 
         this.maxDistance = maxDistance;
+        this.recalculate = true;
     }
 
     public float getSoundX() {
@@ -88,6 +76,7 @@ public class SpatialSound implements Sound {
 
     public void setSoundX(final float soundX) {
         this.soundX = soundX;
+        this.recalculate = true;
     }
 
     public float getSoundY() {
@@ -96,6 +85,7 @@ public class SpatialSound implements Sound {
 
     public void setSoundY(final float soundY) {
         this.soundY = soundY;
+        this.recalculate = true;
     }
 
     public float getSoundZ() {
@@ -104,6 +94,7 @@ public class SpatialSound implements Sound {
 
     public void setSoundZ(final float soundZ) {
         this.soundZ = soundZ;
+        this.recalculate = true;
     }
 
     public float getListenerX() {
@@ -112,6 +103,7 @@ public class SpatialSound implements Sound {
 
     public void setListenerX(final float listenerX) {
         this.listenerX = listenerX;
+        this.recalculate = true;
     }
 
     public float getListenerY() {
@@ -120,6 +112,7 @@ public class SpatialSound implements Sound {
 
     public void setListenerY(final float listenerY) {
         this.listenerY = listenerY;
+        this.recalculate = true;
     }
 
     public float getListenerZ() {
@@ -128,6 +121,7 @@ public class SpatialSound implements Sound {
 
     public void setListenerZ(final float listenerZ) {
         this.listenerZ = listenerZ;
+        this.recalculate = true;
     }
 
     public float getListenerYaw() {
@@ -136,6 +130,7 @@ public class SpatialSound implements Sound {
 
     public void setListenerYaw(final float listenerYaw) {
         this.listenerYaw = listenerYaw;
+        this.recalculate = true;
     }
 
     public float getListenerYawDegrees() {

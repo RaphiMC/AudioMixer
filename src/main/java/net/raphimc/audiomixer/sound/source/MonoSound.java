@@ -46,14 +46,13 @@ public class MonoSound implements Sound {
     }
 
     @Override
-    public void render(final AudioFormat audioFormat, final int[] renderedSamples, final int renderedSamplesLength) {
+    public void render(final AudioFormat audioFormat, final int[] renderedSamples) {
         final int numChannels = audioFormat.getChannels();
-        final int numSamples = renderedSamplesLength / numChannels;
+        final int numSamples = renderedSamples.length / numChannels;
 
         int renderedIndex = 0;
-        for (int i = 0; i < numSamples; i++) {
+        for (int i = 0; i < numSamples && !this.isFinished(); i++) {
             final int sample = InterpolationUtil.interpolateLinear(this.samples, this.sampleIndex);
-
             if (numChannels == 2) {
                 renderedSamples[renderedIndex++] = (int) (sample * (1F - this.panning) * this.volume);
                 renderedSamples[renderedIndex++] = (int) (sample * this.panning * this.volume);
@@ -64,12 +63,9 @@ public class MonoSound implements Sound {
             }
 
             this.sampleIndex += this.pitch;
-            if (this.isFinished()) {
-                break;
-            }
         }
 
-        while (renderedIndex < renderedSamplesLength) {
+        while (renderedIndex < renderedSamples.length) {
             renderedSamples[renderedIndex++] = 0;
         }
     }

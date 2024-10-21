@@ -17,8 +17,9 @@
  */
 
 import net.raphimc.audiomixer.BackgroundSourceDataLineAudioMixer;
-import net.raphimc.audiomixer.sound.modifier.SpatialSound;
+import net.raphimc.audiomixer.sound.modifier.SpatialModifier;
 import net.raphimc.audiomixer.sound.source.SineWaveSound;
+import net.raphimc.audiomixer.sound.special.ModifiableSound;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
@@ -33,8 +34,8 @@ public class SpatialAudioTest {
         AudioFormat format = new AudioFormat(48000, 16, 2, true, false);
         BackgroundSourceDataLineAudioMixer audioMixer = new BackgroundSourceDataLineAudioMixer(AudioSystem.getSourceDataLine(format));
 
-        SpatialSound spatialSound = new SpatialSound(new SineWaveSound(400, 1F), 250);
-        audioMixer.playSound(spatialSound);
+        final SpatialModifier spatialModifier = new SpatialModifier(250);
+        audioMixer.playSound(new ModifiableSound(new SineWaveSound(400, 1F), spatialModifier));
 
         JFrame frame = new JFrame("AudioMixer Test");
         frame.setLayout(new BoxLayout(frame.getContentPane(), BoxLayout.Y_AXIS));
@@ -42,27 +43,27 @@ public class SpatialAudioTest {
         frame.setSize(480, 360);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
-        spatialSound.setListenerX(frame.getWidth() / 2F);
-        spatialSound.setListenerZ(frame.getHeight() / 2F);
-        spatialSound.setSoundX(frame.getWidth() / 2F);
-        spatialSound.setSoundZ(frame.getHeight() / 2F);
+        spatialModifier.setListenerX(frame.getWidth() / 2F);
+        spatialModifier.setListenerZ(frame.getHeight() / 2F);
+        spatialModifier.setSoundX(frame.getWidth() / 2F);
+        spatialModifier.setSoundZ(frame.getHeight() / 2F);
 
         JPanel panel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
                 g.setColor(Color.RED);
-                g.fillOval((int) spatialSound.getSoundX() - 5, (int) spatialSound.getSoundZ() - 5, 10, 10);
+                g.fillOval((int) spatialModifier.getSoundX() - 5, (int) spatialModifier.getSoundZ() - 5, 10, 10);
                 g.setColor(Color.BLUE);
-                g.fillOval((int) spatialSound.getListenerX() - 5, (int) spatialSound.getListenerZ() - 5, 10, 10);
+                g.fillOval((int) spatialModifier.getListenerX() - 5, (int) spatialModifier.getListenerZ() - 5, 10, 10);
             }
         };
 
         panel.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseDragged(MouseEvent e) {
-                spatialSound.setSoundX(e.getX());
-                spatialSound.setSoundZ(e.getY());
+                spatialModifier.setSoundX(e.getX());
+                spatialModifier.setSoundZ(e.getY());
                 e.getComponent().repaint();
             }
         });

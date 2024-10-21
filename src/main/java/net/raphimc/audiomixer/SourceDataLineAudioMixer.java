@@ -17,6 +17,8 @@
  */
 package net.raphimc.audiomixer;
 
+import net.raphimc.audiomixer.sound.modifier.NormalizationModifier;
+import net.raphimc.audiomixer.sound.modifier.VolumeModifier;
 import net.raphimc.audiomixer.util.io.SampleOutputStream;
 
 import javax.sound.sampled.LineUnavailableException;
@@ -24,11 +26,13 @@ import javax.sound.sampled.SourceDataLine;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-public class SourceDataLineAudioMixer extends NormalizingAudioMixer {
+public class SourceDataLineAudioMixer extends AudioMixer {
 
     private final SourceDataLine sourceDataLine;
     private final int mixSliceSampleCount;
     private final int sampleByteSize;
+    private final NormalizationModifier normalizationModifier;
+    private final VolumeModifier volumeModifier;
 
     public SourceDataLineAudioMixer(final SourceDataLine sourceDataLine, final int mixSampleCount) throws LineUnavailableException {
         this(sourceDataLine, 512, mixSampleCount);
@@ -39,7 +43,7 @@ public class SourceDataLineAudioMixer extends NormalizingAudioMixer {
     }
 
     public SourceDataLineAudioMixer(final SourceDataLine sourceDataLine, final int maxSounds, final int decayPeriodMillis, final int mixSliceSampleCount) throws LineUnavailableException {
-        super(sourceDataLine.getFormat(), maxSounds, decayPeriodMillis);
+        super(sourceDataLine.getFormat(), maxSounds);
         this.sourceDataLine = sourceDataLine;
         if (!sourceDataLine.isOpen()) {
             sourceDataLine.open(sourceDataLine.getFormat(), (int) sourceDataLine.getFormat().getSampleRate());
@@ -48,6 +52,17 @@ public class SourceDataLineAudioMixer extends NormalizingAudioMixer {
 
         this.mixSliceSampleCount = mixSliceSampleCount;
         this.sampleByteSize = sourceDataLine.getFormat().getSampleSizeInBits() / 8;
+
+        this.normalizationModifier = new NormalizationModifier(decayPeriodMillis);
+        this.volumeModifier = new VolumeModifier(1F);
+        this.addSoundModifier(this.normalizationModifier);
+        this.addSoundModifier(this.volumeModifier);
+    }
+
+    @Override
+    public void stopAllSounds() {
+        super.stopAllSounds();
+        this.normalizationModifier.reset();
     }
 
     public void close() {
@@ -76,6 +91,18 @@ public class SourceDataLineAudioMixer extends NormalizingAudioMixer {
 
     public SourceDataLine getSourceDataLine() {
         return this.sourceDataLine;
+    }
+
+    public void setMasterVolume(final int masterVolume) {
+        this.setMasterVolume(masterVolume / 100F);
+    }
+
+    public void setMasterVolume(final float masterVolume) {
+        this.volumeModifier.setVolume(masterVolume);
+    }
+
+    public float getMasterVolume() {
+        return this.volumeModifier.getVolume();
     }
 
 }

@@ -18,6 +18,7 @@
 package net.raphimc.audiomixer;
 
 import net.raphimc.audiomixer.sound.Sound;
+import net.raphimc.audiomixer.sound.SoundModifier;
 
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
@@ -65,6 +66,16 @@ public class BackgroundSourceDataLineAudioMixer extends SourceDataLineAudioMixer
     @Override
     public synchronized void stopAllSounds() {
         super.stopAllSounds();
+    }
+
+    @Override
+    public synchronized void addSoundModifier(final SoundModifier soundModifier) {
+        super.addSoundModifier(soundModifier);
+    }
+
+    @Override
+    public synchronized void removeSoundModifier(final SoundModifier soundModifier) {
+        super.removeSoundModifier(soundModifier);
     }
 
     @Override

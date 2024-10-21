@@ -19,10 +19,8 @@ package net.raphimc.audiomixer.sound;
 
 import javax.sound.sampled.AudioFormat;
 
-public interface Sound {
+public interface SoundModifier {
 
-    void render(final AudioFormat audioFormat, final int[] renderedSamples);
-
-    boolean isFinished();
+    void modify(final AudioFormat audioFormat, final int[] renderedSamples);
 
 }
