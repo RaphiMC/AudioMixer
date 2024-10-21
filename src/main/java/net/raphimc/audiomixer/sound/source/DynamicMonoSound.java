@@ -78,4 +78,12 @@ public class DynamicMonoSound implements Sound {
         this.pitch = pitch;
     }
 
+    public float getProgress() {
+        return (float) this.sampleIndex / this.samples.length;
+    }
+
+    public void setProgress(final float progress) {
+        this.sampleIndex = (int) (progress * this.samples.length);
+    }
+
 }

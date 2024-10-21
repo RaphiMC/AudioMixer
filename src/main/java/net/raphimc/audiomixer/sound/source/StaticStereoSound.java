@@ -72,4 +72,12 @@ public class StaticStereoSound implements Sound {
         return this.samples;
     }
 
+    public float getProgress() {
+        return (float) this.sampleIndex / this.samples.length;
+    }
+
+    public void setProgress(final float progress) {
+        this.sampleIndex = (int) (progress * this.samples.length);
+    }
+
 }

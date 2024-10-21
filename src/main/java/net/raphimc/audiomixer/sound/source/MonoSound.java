@@ -107,4 +107,12 @@ public class MonoSound implements Sound {
         this.panning = (Math.max(-1F, Math.min(1F, panning)) + 1) / 2F;
     }
 
+    public float getProgress() {
+        return (float) this.sampleIndex / this.samples.length;
+    }
+
+    public void setProgress(final float progress) {
+        this.sampleIndex = (int) (progress * this.samples.length);
+    }
+
 }
