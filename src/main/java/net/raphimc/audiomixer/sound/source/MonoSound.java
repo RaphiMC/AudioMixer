@@ -50,12 +50,15 @@ public class MonoSound implements Sound {
         final int numChannels = audioFormat.getChannels();
         final int numSamples = renderedSamples.length / numChannels;
 
+        final float leftVolume = numChannels == 2 ? (1F - this.panning) * this.volume : 0;
+        final float rightVolume = numChannels == 2 ? this.panning * this.volume : 0;
+
         int renderedIndex = 0;
         for (int i = 0; i < numSamples && !this.isFinished(); i++) {
             final int sample = InterpolationUtil.interpolateLinear(this.samples, this.sampleIndex);
             if (numChannels == 2) {
-                renderedSamples[renderedIndex++] = (int) (sample * (1F - this.panning) * this.volume);
-                renderedSamples[renderedIndex++] = (int) (sample * this.panning * this.volume);
+                renderedSamples[renderedIndex++] = (int) (sample * leftVolume);
+                renderedSamples[renderedIndex++] = (int) (sample * rightVolume);
             } else {
                 for (int j = 0; j < numChannels; j++) {
                     renderedSamples[renderedIndex++] = (int) (sample * this.volume);

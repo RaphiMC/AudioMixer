@@ -22,15 +22,15 @@ public class InterpolationUtil {
     public static int interpolateLinear(final int[] arr, final double index) {
         final int floorIndex = (int) index;
         final int ceilIndex = floorIndex + 1;
-        final double fraction = index - floorIndex;
 
         if (ceilIndex >= arr.length) {
             return arr[floorIndex];
         }
 
+        final double fraction = index - floorIndex;
         final int floorValue = arr[floorIndex];
         final int ceilValue = arr[ceilIndex];
-        return (int) (floorValue + (ceilValue - floorValue) * fraction);
+        return floorValue + (int) ((ceilValue - floorValue) * fraction);
     }
 
 }
