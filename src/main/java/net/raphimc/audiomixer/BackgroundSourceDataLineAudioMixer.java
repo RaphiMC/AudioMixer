@@ -22,6 +22,7 @@ import net.raphimc.audiomixer.sound.SoundModifier;
 
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
+import java.util.List;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -70,6 +71,11 @@ public class BackgroundSourceDataLineAudioMixer extends SourceDataLineAudioMixer
     }
 
     @Override
+    public synchronized List<SoundModifier> getSoundModifiers(final Predicate<SoundModifier> predicate) {
+        return super.getSoundModifiers(predicate);
+    }
+
+    @Override
     public synchronized void appendSoundModifier(final SoundModifier soundModifier) {
         super.appendSoundModifier(soundModifier);
     }
@@ -80,13 +86,13 @@ public class BackgroundSourceDataLineAudioMixer extends SourceDataLineAudioMixer
     }
 
     @Override
-    public synchronized boolean insertSoundModifierBefore(final SoundModifier soundModifier, final Predicate<SoundModifier> predicate) {
-        return super.insertSoundModifierBefore(soundModifier, predicate);
+    public synchronized boolean insertSoundModifierBefore(final SoundModifier soundModifier, final SoundModifier other) {
+        return super.insertSoundModifierBefore(soundModifier, other);
     }
 
     @Override
-    public synchronized boolean insertSoundModifierAfter(final SoundModifier soundModifier, final Predicate<SoundModifier> predicate) {
-        return super.insertSoundModifierAfter(soundModifier, predicate);
+    public synchronized boolean insertSoundModifierAfter(final SoundModifier soundModifier, final SoundModifier other) {
+        return super.insertSoundModifierAfter(soundModifier, other);
     }
 
     @Override

@@ -24,6 +24,7 @@ import javax.sound.sampled.AudioFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Predicate;
 
 public class ModifiableSound implements Sound {
 
@@ -52,8 +53,36 @@ public class ModifiableSound implements Sound {
         return this.sound;
     }
 
-    public void addSoundModifier(final SoundModifier soundModifier) {
+    public List<SoundModifier> getSoundModifiers(final Predicate<SoundModifier> predicate) {
+        return this.soundModifiers.stream().filter(predicate).toList();
+    }
+
+    public void appendSoundModifier(final SoundModifier soundModifier) {
         this.soundModifiers.add(soundModifier);
+    }
+
+    public void prependSoundModifier(final SoundModifier soundModifier) {
+        this.soundModifiers.add(0, soundModifier);
+    }
+
+    public boolean insertSoundModifierBefore(final SoundModifier soundModifier, final SoundModifier other) {
+        final int index = this.soundModifiers.indexOf(other);
+        if (index != -1) {
+            this.soundModifiers.add(index, soundModifier);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public boolean insertSoundModifierAfter(final SoundModifier soundModifier, final SoundModifier other) {
+        final int index = this.soundModifiers.indexOf(other);
+        if (index != -1) {
+            this.soundModifiers.add(index + 1, soundModifier);
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public void removeSoundModifier(final SoundModifier soundModifier) {
@@ -62,6 +91,11 @@ public class ModifiableSound implements Sound {
 
     protected List<SoundModifier> getSoundModifiers() {
         return this.soundModifiers;
+    }
+
+    @Deprecated
+    public void addSoundModifier(final SoundModifier soundModifier) {
+        this.soundModifiers.add(soundModifier);
     }
 
 }

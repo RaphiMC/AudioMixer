@@ -85,6 +85,10 @@ public class SubMixSound implements Sound {
         this.sounds.clear();
     }
 
+    public List<SoundModifier> getSoundModifiers(final Predicate<SoundModifier> predicate) {
+        return this.soundModifiers.stream().filter(predicate).toList();
+    }
+
     public void appendSoundModifier(final SoundModifier soundModifier) {
         this.soundModifiers.add(soundModifier);
     }
@@ -93,24 +97,24 @@ public class SubMixSound implements Sound {
         this.soundModifiers.add(0, soundModifier);
     }
 
-    public boolean insertSoundModifierBefore(final SoundModifier soundModifier, final Predicate<SoundModifier> predicate) {
-        final int index = this.soundModifiers.indexOf(this.soundModifiers.stream().filter(predicate).findFirst().orElse(null));
-        if (index == -1) {
+    public boolean insertSoundModifierBefore(final SoundModifier soundModifier, final SoundModifier other) {
+        final int index = this.soundModifiers.indexOf(other);
+        if (index != -1) {
+            this.soundModifiers.add(index, soundModifier);
+            return true;
+        } else {
             return false;
         }
-
-        this.soundModifiers.add(index, soundModifier);
-        return true;
     }
 
-    public boolean insertSoundModifierAfter(final SoundModifier soundModifier, final Predicate<SoundModifier> predicate) {
-        final int index = this.soundModifiers.indexOf(this.soundModifiers.stream().filter(predicate).findFirst().orElse(null));
-        if (index == -1) {
+    public boolean insertSoundModifierAfter(final SoundModifier soundModifier, final SoundModifier other) {
+        final int index = this.soundModifiers.indexOf(other);
+        if (index != -1) {
+            this.soundModifiers.add(index + 1, soundModifier);
+            return true;
+        } else {
             return false;
         }
-
-        this.soundModifiers.add(index + 1, soundModifier);
-        return true;
     }
 
     public void removeSoundModifier(final SoundModifier soundModifier) {
