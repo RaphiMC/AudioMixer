@@ -25,6 +25,7 @@ import javax.sound.sampled.SourceDataLine;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Predicate;
 
 public class BackgroundSourceDataLineAudioMixer extends SourceDataLineAudioMixer {
 
@@ -69,8 +70,23 @@ public class BackgroundSourceDataLineAudioMixer extends SourceDataLineAudioMixer
     }
 
     @Override
-    public synchronized void addSoundModifier(final SoundModifier soundModifier) {
-        super.addSoundModifier(soundModifier);
+    public synchronized void appendSoundModifier(final SoundModifier soundModifier) {
+        super.appendSoundModifier(soundModifier);
+    }
+
+    @Override
+    public synchronized void prependSoundModifier(final SoundModifier soundModifier) {
+        super.prependSoundModifier(soundModifier);
+    }
+
+    @Override
+    public synchronized boolean insertSoundModifierBefore(final SoundModifier soundModifier, final Predicate<SoundModifier> predicate) {
+        return super.insertSoundModifierBefore(soundModifier, predicate);
+    }
+
+    @Override
+    public synchronized boolean insertSoundModifierAfter(final SoundModifier soundModifier, final Predicate<SoundModifier> predicate) {
+        return super.insertSoundModifierAfter(soundModifier, predicate);
     }
 
     @Override
@@ -99,6 +115,13 @@ public class BackgroundSourceDataLineAudioMixer extends SourceDataLineAudioMixer
         } catch (InterruptedException ignored) {
         }
         super.close();
+    }
+
+    @Override
+    @Deprecated(forRemoval = true)
+    @SuppressWarnings("removal")
+    public synchronized void addSoundModifier(final SoundModifier soundModifier) {
+        super.addSoundModifier(soundModifier);
     }
 
 }

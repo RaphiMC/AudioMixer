@@ -38,7 +38,7 @@ public class ModifiableSound implements Sound {
     @Override
     public void render(final AudioFormat audioFormat, final int[] renderedSamples) {
         this.sound.render(audioFormat, renderedSamples);
-        for (final SoundModifier modifier : this.soundModifiers) {
+        for (SoundModifier modifier : this.soundModifiers) {
             modifier.modify(audioFormat, renderedSamples);
         }
     }

@@ -23,6 +23,7 @@ import net.raphimc.audiomixer.sound.SoundModifier;
 import javax.sound.sampled.AudioFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 public class SubMixSound implements Sound {
 
@@ -57,7 +58,7 @@ public class SubMixSound implements Sound {
                 finalMixBuffer[i] += renderedSamples[i];
             }
         }
-        for (final SoundModifier modifier : this.soundModifiers) {
+        for (SoundModifier modifier : this.soundModifiers) {
             modifier.modify(audioFormat, finalMixBuffer);
         }
 
@@ -84,8 +85,32 @@ public class SubMixSound implements Sound {
         this.sounds.clear();
     }
 
-    public void addSoundModifier(final SoundModifier soundModifier) {
+    public void appendSoundModifier(final SoundModifier soundModifier) {
         this.soundModifiers.add(soundModifier);
+    }
+
+    public void prependSoundModifier(final SoundModifier soundModifier) {
+        this.soundModifiers.add(0, soundModifier);
+    }
+
+    public boolean insertSoundModifierBefore(final SoundModifier soundModifier, final Predicate<SoundModifier> predicate) {
+        final int index = this.soundModifiers.indexOf(this.soundModifiers.stream().filter(predicate).findFirst().orElse(null));
+        if (index == -1) {
+            return false;
+        }
+
+        this.soundModifiers.add(index, soundModifier);
+        return true;
+    }
+
+    public boolean insertSoundModifierAfter(final SoundModifier soundModifier, final Predicate<SoundModifier> predicate) {
+        final int index = this.soundModifiers.indexOf(this.soundModifiers.stream().filter(predicate).findFirst().orElse(null));
+        if (index == -1) {
+            return false;
+        }
+
+        this.soundModifiers.add(index + 1, soundModifier);
+        return true;
     }
 
     public void removeSoundModifier(final SoundModifier soundModifier) {
@@ -110,6 +135,11 @@ public class SubMixSound implements Sound {
 
     protected List<SoundModifier> getSoundModifiers() {
         return this.soundModifiers;
+    }
+
+    @Deprecated(forRemoval = true)
+    public void addSoundModifier(final SoundModifier soundModifier) {
+        this.appendSoundModifier(soundModifier);
     }
 
 }

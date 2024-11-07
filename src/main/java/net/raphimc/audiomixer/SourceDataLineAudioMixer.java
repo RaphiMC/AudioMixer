@@ -55,8 +55,8 @@ public class SourceDataLineAudioMixer extends AudioMixer {
 
         this.normalizationModifier = new NormalizationModifier(decayPeriodMillis);
         this.volumeModifier = new VolumeModifier(1F);
-        this.addSoundModifier(this.normalizationModifier);
-        this.addSoundModifier(this.volumeModifier);
+        this.appendSoundModifier(this.normalizationModifier);
+        this.appendSoundModifier(this.volumeModifier);
     }
 
     @Override

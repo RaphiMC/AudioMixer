@@ -22,6 +22,7 @@ import net.raphimc.audiomixer.sound.SoundModifier;
 import net.raphimc.audiomixer.sound.special.SubMixSound;
 
 import javax.sound.sampled.AudioFormat;
+import java.util.function.Predicate;
 
 public class AudioMixer {
 
@@ -53,8 +54,20 @@ public class AudioMixer {
         this.masterMixSound.stopAllSounds();
     }
 
-    public void addSoundModifier(final SoundModifier soundModifier) {
-        this.masterMixSound.addSoundModifier(soundModifier);
+    public void appendSoundModifier(final SoundModifier soundModifier) {
+        this.masterMixSound.appendSoundModifier(soundModifier);
+    }
+
+    public void prependSoundModifier(final SoundModifier soundModifier) {
+        this.masterMixSound.prependSoundModifier(soundModifier);
+    }
+
+    public boolean insertSoundModifierBefore(final SoundModifier soundModifier, final Predicate<SoundModifier> predicate) {
+        return this.masterMixSound.insertSoundModifierBefore(soundModifier, predicate);
+    }
+
+    public boolean insertSoundModifierAfter(final SoundModifier soundModifier, final Predicate<SoundModifier> predicate) {
+        return this.masterMixSound.insertSoundModifierAfter(soundModifier, predicate);
     }
 
     public void removeSoundModifier(final SoundModifier soundModifier) {
@@ -88,6 +101,11 @@ public class AudioMixer {
 
     public int getActiveSounds() {
         return this.masterMixSound.getActiveSounds();
+    }
+
+    @Deprecated(forRemoval = true)
+    public void addSoundModifier(final SoundModifier soundModifier) {
+        this.masterMixSound.appendSoundModifier(soundModifier);
     }
 
 }
