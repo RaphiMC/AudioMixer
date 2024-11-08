@@ -24,7 +24,7 @@ import javax.sound.sampled.AudioFormat;
 
 public class NormalizationModifier implements SoundModifier {
 
-    private final int decayPeriodMillis;
+    private int decayPeriodMillis;
     private int runningMaxSampleValue = 1;
 
     public NormalizationModifier() {
@@ -32,7 +32,7 @@ public class NormalizationModifier implements SoundModifier {
     }
 
     public NormalizationModifier(final int decayPeriodMillis) {
-        this.decayPeriodMillis = decayPeriodMillis;
+        this.setDecayPeriodMillis(decayPeriodMillis);
     }
 
     @Override
@@ -46,6 +46,14 @@ public class NormalizationModifier implements SoundModifier {
 
     public void reset() {
         this.runningMaxSampleValue = 1;
+    }
+
+    public int getDecayPeriodMillis() {
+        return decayPeriodMillis;
+    }
+
+    public void setDecayPeriodMillis(final int decayPeriodMillis) {
+        this.decayPeriodMillis = decayPeriodMillis;
     }
 
 }

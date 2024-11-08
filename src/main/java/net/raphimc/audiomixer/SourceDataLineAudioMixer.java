@@ -29,8 +29,8 @@ import java.io.IOException;
 public class SourceDataLineAudioMixer extends AudioMixer {
 
     private final SourceDataLine sourceDataLine;
-    private final int mixSliceSampleCount;
     private final int sampleByteSize;
+    private int mixSliceSampleCount;
     private final NormalizationModifier normalizationModifier;
     private final VolumeModifier volumeModifier;
 
@@ -50,8 +50,8 @@ public class SourceDataLineAudioMixer extends AudioMixer {
         }
         sourceDataLine.start();
 
-        this.mixSliceSampleCount = mixSliceSampleCount;
         this.sampleByteSize = sourceDataLine.getFormat().getSampleSizeInBits() / 8;
+        this.setMixSliceSampleCount(mixSliceSampleCount);
 
         this.normalizationModifier = new NormalizationModifier(decayPeriodMillis);
         this.volumeModifier = new VolumeModifier(1F);
@@ -91,6 +91,14 @@ public class SourceDataLineAudioMixer extends AudioMixer {
 
     public SourceDataLine getSourceDataLine() {
         return this.sourceDataLine;
+    }
+
+    public int getMixSliceSampleCount() {
+        return this.mixSliceSampleCount;
+    }
+
+    public void setMixSliceSampleCount(final int mixSliceSampleCount) {
+        this.mixSliceSampleCount = mixSliceSampleCount;
     }
 
     public void setMasterVolume(final int masterVolume) {

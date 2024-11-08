@@ -17,23 +17,24 @@
  */
 package net.raphimc.audiomixer.sound.source;
 
+import net.raphimc.audiomixer.sound.PcmSource;
 import net.raphimc.audiomixer.sound.Sound;
-import net.raphimc.audiomixer.util.InterpolationUtil;
+import net.raphimc.audiomixer.sound.pcmsource.IntPcmSource;
 
 import javax.sound.sampled.AudioFormat;
 
 public class DynamicMonoSound implements Sound {
 
-    private final int[] samples;
+    private final PcmSource pcmSource;
     private float pitch;
-    private double sampleIndex;
 
+    @Deprecated(forRemoval = true)
     public DynamicMonoSound(final int[] samples, final float pitch) {
-        if (samples == null || samples.length == 0) {
-            throw new IllegalArgumentException("Samples must not be null or empty");
-        }
+        this(new IntPcmSource(samples), pitch);
+    }
 
-        this.samples = samples;
+    public DynamicMonoSound(final PcmSource pcmSource, final float pitch) {
+        this.pcmSource = pcmSource;
         this.setPitch(pitch);
     }
 
@@ -44,12 +45,12 @@ public class DynamicMonoSound implements Sound {
 
         int renderedIndex = 0;
         for (int i = 0; i < numSamples && !this.isFinished(); i++) {
-            final int sample = InterpolationUtil.interpolateLinear(this.samples, this.sampleIndex);
+            final int sample = this.pcmSource.getCurrentSample();
             for (int j = 0; j < numChannels; j++) {
                 renderedSamples[renderedIndex++] = sample;
             }
 
-            this.sampleIndex += this.pitch;
+            this.pcmSource.incrementPosition(this.pitch);
         }
 
         while (renderedIndex < renderedSamples.length) {
@@ -59,11 +60,11 @@ public class DynamicMonoSound implements Sound {
 
     @Override
     public boolean isFinished() {
-        return (int) this.sampleIndex >= this.samples.length;
+        return this.pcmSource.hasReachedEnd();
     }
 
-    public int[] getSamples() {
-        return this.samples;
+    public PcmSource getPcmSource() {
+        return this.pcmSource;
     }
 
     public float getPitch() {
@@ -78,12 +79,14 @@ public class DynamicMonoSound implements Sound {
         this.pitch = pitch;
     }
 
+    @Deprecated(forRemoval = true)
     public float getProgress() {
-        return (float) this.sampleIndex / this.samples.length;
+        return this.pcmSource.getProgress();
     }
 
+    @Deprecated(forRemoval = true)
     public void setProgress(final float progress) {
-        this.sampleIndex = (int) (progress * this.samples.length);
+        this.pcmSource.setProgress(progress);
     }
 
 }

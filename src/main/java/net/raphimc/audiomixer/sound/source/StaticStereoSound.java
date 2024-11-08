@@ -17,44 +17,43 @@
  */
 package net.raphimc.audiomixer.sound.source;
 
+import net.raphimc.audiomixer.sound.PcmSource;
 import net.raphimc.audiomixer.sound.Sound;
+import net.raphimc.audiomixer.sound.pcmsource.IntPcmSource;
 
 import javax.sound.sampled.AudioFormat;
 
 public class StaticStereoSound implements Sound {
 
-    private final int[] samples;
-    private int sampleIndex;
+    private final PcmSource pcmSource;
 
+    @Deprecated(forRemoval = true)
     public StaticStereoSound(final int[] samples) {
-        if (samples == null || samples.length == 0) {
-            throw new IllegalArgumentException("Samples must not be null or empty");
-        }
+        this(new IntPcmSource(samples));
+    }
 
-        this.samples = samples;
+    public StaticStereoSound(final PcmSource pcmSource) {
+        this.pcmSource = pcmSource;
     }
 
     @Override
     public void render(final AudioFormat audioFormat, final int[] renderedSamples) {
         int renderedIndex = 0;
         if (audioFormat.getChannels() == 2) {
-            final int numSamples = Math.min(renderedSamples.length, this.samples.length - this.sampleIndex);
-            System.arraycopy(this.samples, this.sampleIndex, renderedSamples, 0, numSamples);
-            this.sampleIndex += numSamples;
-            renderedIndex += numSamples;
+            renderedIndex += this.pcmSource.consumeSamples(renderedSamples);
         } else {
             final int numChannels = audioFormat.getChannels();
             final int numSamples = renderedSamples.length / numChannels;
 
             for (int i = 0; i < numSamples && !this.isFinished(); i++) {
-                final int sample1 = this.samples[this.sampleIndex];
-                final int sample2 = this.samples[this.sampleIndex + 1];
+                final int sample1 = this.pcmSource.getCurrentSample();
+                this.pcmSource.incrementPosition(1);
+                final int sample2 = this.pcmSource.getCurrentSample();
+                this.pcmSource.incrementPosition(1);
                 final int monoSample = (sample1 + sample2) / 2;
                 for (int j = 0; j < numChannels; j++) {
                     renderedSamples[renderedIndex++] = monoSample;
                 }
-
-                this.sampleIndex += 2;
             }
         }
 
@@ -65,19 +64,21 @@ public class StaticStereoSound implements Sound {
 
     @Override
     public boolean isFinished() {
-        return this.sampleIndex >= this.samples.length;
+        return this.pcmSource.hasReachedEnd();
     }
 
-    public int[] getSamples() {
-        return this.samples;
+    public PcmSource getPcmSource() {
+        return this.pcmSource;
     }
 
+    @Deprecated(forRemoval = true)
     public float getProgress() {
-        return (float) this.sampleIndex / this.samples.length;
+        return this.pcmSource.getProgress();
     }
 
+    @Deprecated(forRemoval = true)
     public void setProgress(final float progress) {
-        this.sampleIndex = (int) (progress * this.samples.length);
+        this.pcmSource.setProgress(progress);
     }
 
 }

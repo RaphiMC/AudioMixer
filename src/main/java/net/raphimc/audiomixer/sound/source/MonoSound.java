@@ -17,29 +17,35 @@
  */
 package net.raphimc.audiomixer.sound.source;
 
+import net.raphimc.audiomixer.sound.PcmSource;
 import net.raphimc.audiomixer.sound.Sound;
-import net.raphimc.audiomixer.util.InterpolationUtil;
+import net.raphimc.audiomixer.sound.pcmsource.IntPcmSource;
 
 import javax.sound.sampled.AudioFormat;
 
 public class MonoSound implements Sound {
 
-    private final int[] samples;
+    private final PcmSource pcmSource;
     private float pitch;
     private float volume;
     private float panning;
-    private double sampleIndex;
 
+    @Deprecated(forRemoval = true)
     public MonoSound(final int[] samples) {
-        this(samples, 1F, 1F, 0F);
+        this(new IntPcmSource(samples));
     }
 
+    @Deprecated(forRemoval = true)
     public MonoSound(final int[] samples, final float pitch, final float volume, final float panning) {
-        if (samples == null || samples.length == 0) {
-            throw new IllegalArgumentException("Samples must not be null or empty");
-        }
+        this(new IntPcmSource(samples), pitch, volume, panning);
+    }
 
-        this.samples = samples;
+    public MonoSound(final PcmSource pcmSource) {
+        this(pcmSource, 1F, 1F, 0F);
+    }
+
+    public MonoSound(final PcmSource pcmSource, final float pitch, final float volume, final float panning) {
+        this.pcmSource = pcmSource;
         this.setPitch(pitch);
         this.setVolume(volume);
         this.setPanning(panning);
@@ -55,7 +61,7 @@ public class MonoSound implements Sound {
 
         int renderedIndex = 0;
         for (int i = 0; i < numSamples && !this.isFinished(); i++) {
-            final int sample = InterpolationUtil.interpolateLinear(this.samples, this.sampleIndex);
+            final int sample = this.pcmSource.getCurrentSample();
             if (numChannels == 2) {
                 renderedSamples[renderedIndex++] = (int) (sample * leftVolume);
                 renderedSamples[renderedIndex++] = (int) (sample * rightVolume);
@@ -65,7 +71,7 @@ public class MonoSound implements Sound {
                 }
             }
 
-            this.sampleIndex += this.pitch;
+            this.pcmSource.incrementPosition(this.pitch);
         }
 
         while (renderedIndex < renderedSamples.length) {
@@ -75,11 +81,11 @@ public class MonoSound implements Sound {
 
     @Override
     public boolean isFinished() {
-        return (int) this.sampleIndex >= this.samples.length;
+        return this.pcmSource.hasReachedEnd();
     }
 
-    public int[] getSamples() {
-        return this.samples;
+    public PcmSource getPcmSource() {
+        return this.pcmSource;
     }
 
     public float getPitch() {
@@ -110,12 +116,14 @@ public class MonoSound implements Sound {
         this.panning = (Math.max(-1F, Math.min(1F, panning)) + 1) / 2F;
     }
 
+    @Deprecated(forRemoval = true)
     public float getProgress() {
-        return (float) this.sampleIndex / this.samples.length;
+        return this.pcmSource.getProgress();
     }
 
+    @Deprecated(forRemoval = true)
     public void setProgress(final float progress) {
-        this.sampleIndex = (int) (progress * this.samples.length);
+        this.pcmSource.setProgress(progress);
     }
 
 }

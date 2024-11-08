@@ -110,6 +110,11 @@ public class BackgroundSourceDataLineAudioMixer extends SourceDataLineAudioMixer
         return super.getActiveSounds();
     }
 
+    @Override
+    public void setMixSliceSampleCount(final int mixSliceSampleCount) {
+        throw new UnsupportedOperationException("Cannot change mix slice sample count for auto-mixing audio mixer");
+    }
+
     public boolean isRunning() {
         return !this.mixingScheduler.isTerminated();
     }

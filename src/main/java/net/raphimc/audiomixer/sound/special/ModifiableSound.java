@@ -93,7 +93,7 @@ public class ModifiableSound implements Sound {
         return this.soundModifiers;
     }
 
-    @Deprecated
+    @Deprecated(forRemoval = true)
     public void addSoundModifier(final SoundModifier soundModifier) {
         this.soundModifiers.add(soundModifier);
     }

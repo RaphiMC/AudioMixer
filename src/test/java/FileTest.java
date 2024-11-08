@@ -17,6 +17,7 @@
  */
 
 import net.raphimc.audiomixer.AudioMixer;
+import net.raphimc.audiomixer.sound.pcmsource.IntPcmSource;
 import net.raphimc.audiomixer.sound.source.MonoSound;
 import net.raphimc.audiomixer.util.AudioFormats;
 import net.raphimc.audiomixer.util.GrowableArray;
@@ -41,7 +42,7 @@ public class FileTest {
         // Create an audio mixer
         AudioMixer mixer = new AudioMixer(format);
         // Play the audio samples
-        mixer.playSound(new MonoSound(samples, 2F, 1, 0));
+        mixer.playSound(new MonoSound(new IntPcmSource(samples), 2F, 1, 0));
         // Create the output buffer
         GrowableArray outputSamples = new GrowableArray(0);
         // Mix 1 second of audio until there are no more active sounds (The mixer will automatically stop finished sounds)
