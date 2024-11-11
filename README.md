@@ -6,11 +6,17 @@ High performance Java audio mixing library.
 - Rendering mixed audio to a file
 - Sampled audio playback
   - Pitch control
-  - Volume control
-  - Stereo panning control
+  - Streaming (Pull and Push support)
+    - Pull: Audio data is read from an InputStream
+    - Push: Audio data is enqueued by the application
 - Basic 3D spatial audio
   - Position and orientation control
   - Distance attenuation
+- Audio effects
+  - Volume control
+  - Stereo panning control
+  - Bass Boost
+  - Bit Crusher
 - High performance (Mix thousands of simultaneously playing sounds in realtime)
 
 ## Releases

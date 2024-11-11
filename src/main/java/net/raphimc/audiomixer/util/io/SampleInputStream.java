@@ -18,6 +18,8 @@
 package net.raphimc.audiomixer.util.io;
 
 import javax.sound.sampled.AudioFormat;
+import javax.sound.sampled.AudioInputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -25,6 +27,13 @@ public class SampleInputStream extends InputStream {
 
     private final InputStream is;
     private final AudioFormat audioFormat;
+    private final byte[] buffer;
+    private int bufferIndex;
+    private int bufferLength;
+
+    public SampleInputStream(final AudioInputStream audioInputStream) {
+        this(audioInputStream, audioInputStream.getFormat());
+    }
 
     public SampleInputStream(final InputStream is, final AudioFormat audioFormat) {
         if (audioFormat.getEncoding() != AudioFormat.Encoding.PCM_SIGNED) {
@@ -33,11 +42,20 @@ public class SampleInputStream extends InputStream {
 
         this.is = is;
         this.audioFormat = audioFormat;
+        this.buffer = new byte[(audioFormat.getSampleSizeInBits() / 8) * audioFormat.getChannels()];
     }
 
     @Override
     public int read() throws IOException {
-        return this.is.read();
+        if (this.bufferIndex >= this.bufferLength) {
+            this.bufferLength = this.is.readNBytes(this.buffer, 0, this.buffer.length);
+            if (this.bufferLength == 0) {
+                return -1;
+            }
+            this.bufferIndex = 0;
+        }
+
+        return this.buffer[this.bufferIndex++] & 0xFF;
     }
 
     @Override
@@ -48,7 +66,9 @@ public class SampleInputStream extends InputStream {
     public int readSample() throws IOException {
         switch (this.audioFormat.getSampleSizeInBits()) {
             case 8:
-                return (byte) this.read();
+                final int b1 = this.read();
+                if (b1 == -1) throw new EOFException();
+                return (byte) b1;
             case 16:
                 return this.read16Bit();
             case 32:
@@ -61,7 +81,7 @@ public class SampleInputStream extends InputStream {
     private short read16Bit() throws IOException {
         final int b1 = this.read();
         final int b2 = this.read();
-        if (b1 == -1 || b2 == -1) return -1;
+        if (b1 == -1 || b2 == -1) throw new EOFException();
         if (this.audioFormat.isBigEndian()) {
             return (short) ((b1 << 8) | b2);
         } else {
@@ -74,7 +94,7 @@ public class SampleInputStream extends InputStream {
         final int b2 = this.read();
         final int b3 = this.read();
         final int b4 = this.read();
-        if (b1 == -1 || b2 == -1 || b3 == -1 || b4 == -1) return -1;
+        if (b1 == -1 || b2 == -1 || b3 == -1 || b4 == -1) throw new EOFException();
         if (this.audioFormat.isBigEndian()) {
             return (b1 << 24) | (b2 << 16) | (b3 << 8) | b4;
         } else {

@@ -17,9 +17,9 @@
  */
 package net.raphimc.audiomixer.sound.source;
 
-import net.raphimc.audiomixer.sound.PcmSource;
 import net.raphimc.audiomixer.sound.Sound;
-import net.raphimc.audiomixer.sound.pcmsource.IntPcmSource;
+import net.raphimc.audiomixer.sound.pcmsource.PcmSource;
+import net.raphimc.audiomixer.sound.pcmsource.impl.IntPcmSource;
 
 import javax.sound.sampled.AudioFormat;
 

@@ -15,12 +15,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.raphimc.audiomixer.sound.pcmsource;
+package net.raphimc.audiomixer.sound.pcmsource.impl;
 
-import net.raphimc.audiomixer.sound.PcmSource;
+import net.raphimc.audiomixer.sound.pcmsource.StaticPcmSource;
 import net.raphimc.audiomixer.util.InterpolationUtil;
 
-public class IntPcmSource implements PcmSource {
+public class IntPcmSource implements StaticPcmSource {
 
     private final int[] samples;
     private double position;
@@ -47,6 +47,21 @@ public class IntPcmSource implements PcmSource {
     }
 
     @Override
+    public void incrementPosition(final double increment) {
+        this.position += increment;
+    }
+
+    @Override
+    public boolean hasReachedEnd() {
+        return (int) this.position >= this.samples.length;
+    }
+
+    @Override
+    public int getSampleCount() {
+        return this.samples.length;
+    }
+
+    @Override
     public double getPosition() {
         return this.position;
     }
@@ -57,11 +72,6 @@ public class IntPcmSource implements PcmSource {
     }
 
     @Override
-    public void incrementPosition(final double increment) {
-        this.position += increment;
-    }
-
-    @Override
     public float getProgress() {
         return (float) (this.position / this.samples.length);
     }
@@ -69,11 +79,6 @@ public class IntPcmSource implements PcmSource {
     @Override
     public void setProgress(final float progress) {
         this.position = (int) ((double) progress * this.samples.length);
-    }
-
-    @Override
-    public boolean hasReachedEnd() {
-        return (int) this.position >= this.samples.length;
     }
 
 }
