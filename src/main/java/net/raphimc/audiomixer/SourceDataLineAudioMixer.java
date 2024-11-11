@@ -51,7 +51,7 @@ public class SourceDataLineAudioMixer extends AudioMixer {
         sourceDataLine.start();
 
         this.sampleByteSize = sourceDataLine.getFormat().getSampleSizeInBits() / 8;
-        this.setMixSliceSampleCount(mixSliceSampleCount);
+        this.mixSliceSampleCount = mixSliceSampleCount;
 
         this.normalizationModifier = new NormalizationModifier(decayPeriodMillis);
         this.volumeModifier = new VolumeModifier(1F);

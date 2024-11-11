@@ -45,7 +45,7 @@ public class BackgroundSourceDataLineAudioMixer extends SourceDataLineAudioMixer
     }
 
     public BackgroundSourceDataLineAudioMixer(final SourceDataLine sourceDataLine, final int maxSounds, final int decayPeriodMillis, final int updatePeriodMillis) throws LineUnavailableException {
-        super(sourceDataLine, maxSounds, decayPeriodMillis, (int) Math.ceil(updatePeriodMillis * sourceDataLine.getFormat().getSampleRate() / 1000F / sourceDataLine.getFormat().getChannels()) * sourceDataLine.getFormat().getChannels());
+        super(sourceDataLine, maxSounds, decayPeriodMillis, (int) Math.ceil(sourceDataLine.getFormat().getSampleRate() / 1000F * updatePeriodMillis) * sourceDataLine.getFormat().getChannels());
 
         this.mixingScheduler = Executors.newSingleThreadScheduledExecutor(r -> {
             final Thread thread = new Thread(r, "AudioMixer-MixingThread");
