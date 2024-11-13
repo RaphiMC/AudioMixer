@@ -15,11 +15,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.raphimc.audiomixer.sound.pcmsource;
+package net.raphimc.audiomixer.pcmsource;
 
-public interface PcmSource {
+public interface StereoPcmSource extends PcmSource {
 
-    int getCurrentSample();
+    int[] consumeSample(final float increment);
 
     default int consumeSamples(final int[] buffer) {
         return this.consumeSamples(buffer, 0, buffer.length);
@@ -27,16 +27,14 @@ public interface PcmSource {
 
     default int consumeSamples(final int[] buffer, final int offset, final int length) {
         int i;
-        for (i = 0; i < length && !this.hasReachedEnd(); i++) {
-            buffer[offset + i] = this.getCurrentSample();
-            this.incrementPosition(1);
+        for (i = 0; i < length && !this.hasReachedEnd(); i += 2) {
+            final int index = offset * 2 + i;
+            final int[] sample = this.consumeSample(1);
+            buffer[index] = sample[0];
+            buffer[index + 1] = sample[1];
         }
 
         return i;
     }
-
-    void incrementPosition(final double increment);
-
-    boolean hasReachedEnd();
 
 }

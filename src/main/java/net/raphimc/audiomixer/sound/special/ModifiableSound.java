@@ -18,30 +18,29 @@
 package net.raphimc.audiomixer.sound.special;
 
 import net.raphimc.audiomixer.sound.Sound;
-import net.raphimc.audiomixer.sound.SoundModifier;
+import net.raphimc.audiomixer.soundmodifier.SoundModifier;
+import net.raphimc.audiomixer.soundmodifier.SoundModifiers;
 
 import javax.sound.sampled.AudioFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.function.Predicate;
 
 public class ModifiableSound implements Sound {
 
     private final Sound sound;
-    private final List<SoundModifier> soundModifiers = new ArrayList<>();
+    private final SoundModifiers soundModifiers;
 
     public ModifiableSound(final Sound sound, final SoundModifier... modifiers) {
+        this(sound, new SoundModifiers(modifiers));
+    }
+
+    public ModifiableSound(final Sound sound, final SoundModifiers soundModifiers) {
         this.sound = sound;
-        this.soundModifiers.addAll(Arrays.asList(modifiers));
+        this.soundModifiers = soundModifiers;
     }
 
     @Override
     public void render(final AudioFormat audioFormat, final int[] renderedSamples) {
         this.sound.render(audioFormat, renderedSamples);
-        for (SoundModifier modifier : this.soundModifiers) {
-            modifier.modify(audioFormat, renderedSamples);
-        }
+        this.soundModifiers.modify(audioFormat, renderedSamples);
     }
 
     @Override
@@ -53,49 +52,8 @@ public class ModifiableSound implements Sound {
         return this.sound;
     }
 
-    public List<SoundModifier> getSoundModifiers(final Predicate<SoundModifier> predicate) {
-        return this.soundModifiers.stream().filter(predicate).toList();
-    }
-
-    public void appendSoundModifier(final SoundModifier soundModifier) {
-        this.soundModifiers.add(soundModifier);
-    }
-
-    public void prependSoundModifier(final SoundModifier soundModifier) {
-        this.soundModifiers.add(0, soundModifier);
-    }
-
-    public boolean insertSoundModifierBefore(final SoundModifier soundModifier, final SoundModifier other) {
-        final int index = this.soundModifiers.indexOf(other);
-        if (index != -1) {
-            this.soundModifiers.add(index, soundModifier);
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public boolean insertSoundModifierAfter(final SoundModifier soundModifier, final SoundModifier other) {
-        final int index = this.soundModifiers.indexOf(other);
-        if (index != -1) {
-            this.soundModifiers.add(index + 1, soundModifier);
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public void removeSoundModifier(final SoundModifier soundModifier) {
-        this.soundModifiers.remove(soundModifier);
-    }
-
-    protected List<SoundModifier> getSoundModifiers() {
+    public SoundModifiers getSoundModifiers() {
         return this.soundModifiers;
-    }
-
-    @Deprecated(forRemoval = true)
-    public void addSoundModifier(final SoundModifier soundModifier) {
-        this.soundModifiers.add(soundModifier);
     }
 
 }

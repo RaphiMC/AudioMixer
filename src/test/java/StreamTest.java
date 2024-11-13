@@ -17,8 +17,8 @@
  */
 
 import net.raphimc.audiomixer.BackgroundSourceDataLineAudioMixer;
-import net.raphimc.audiomixer.sound.pcmsource.impl.PullIntPcmSource;
-import net.raphimc.audiomixer.sound.source.StaticStereoSound;
+import net.raphimc.audiomixer.pcmsource.impl.StereoPullIntPcmSource;
+import net.raphimc.audiomixer.sound.source.pcm.StereoSound;
 import net.raphimc.audiomixer.util.io.SampleInputStream;
 
 import javax.sound.sampled.AudioFormat;
@@ -35,7 +35,7 @@ public class StreamTest {
         AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new URL("https://example.com/sound.wav"));
         if (!audioInputStream.getFormat().matches(format)) audioInputStream = AudioSystem.getAudioInputStream(format, audioInputStream);
 
-        audioMixer.playSound(new StaticStereoSound(new PullIntPcmSource(new SampleInputStream(audioInputStream), 48000 * 4)));
+        audioMixer.playSound(new StereoSound(new StereoPullIntPcmSource(new SampleInputStream(audioInputStream), 48000 * 4)));
 
         Thread.sleep(Integer.MAX_VALUE);
     }

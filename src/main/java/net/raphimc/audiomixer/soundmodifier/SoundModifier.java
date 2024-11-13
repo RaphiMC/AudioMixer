@@ -15,37 +15,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.raphimc.audiomixer.sound.modifier;
-
-import net.raphimc.audiomixer.sound.SoundModifier;
+package net.raphimc.audiomixer.soundmodifier;
 
 import javax.sound.sampled.AudioFormat;
 
-public class VolumeModifier implements SoundModifier {
+public interface SoundModifier {
 
-    private float volume;
-
-    public VolumeModifier(final float volume) {
-        this.setVolume(volume);
-    }
-
-    @Override
-    public void modify(final AudioFormat audioFormat, final int[] renderedSamples) {
-        for (int i = 0; i < renderedSamples.length; i++) {
-            renderedSamples[i] = (int) (renderedSamples[i] * this.volume);
-        }
-    }
-
-    public float getVolume() {
-        return this.volume;
-    }
-
-    public void setVolume(final float volume) {
-        if (volume < 0 || volume > 1) {
-            throw new IllegalArgumentException("Volume must be between 0 and 1");
-        }
-
-        this.volume = volume;
-    }
+    void modify(final AudioFormat audioFormat, final int[] renderedSamples);
 
 }

@@ -17,9 +17,9 @@
  */
 
 import net.raphimc.audiomixer.BackgroundSourceDataLineAudioMixer;
-import net.raphimc.audiomixer.sound.modifier.SpatialModifier;
 import net.raphimc.audiomixer.sound.source.SineWaveSound;
 import net.raphimc.audiomixer.sound.special.ModifiableSound;
+import net.raphimc.audiomixer.soundmodifier.impl.SpatialModifier;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;

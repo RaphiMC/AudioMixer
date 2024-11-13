@@ -15,18 +15,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.raphimc.audiomixer.sound.pcmsource;
+package net.raphimc.audiomixer.pcmsource;
 
-public interface StaticPcmSource extends PcmSource {
+public interface PcmSource {
 
-    int getSampleCount();
-
-    double getPosition();
-
-    void setPosition(final double position);
-
-    float getProgress();
-
-    void setProgress(final float progress);
+    boolean hasReachedEnd();
 
 }

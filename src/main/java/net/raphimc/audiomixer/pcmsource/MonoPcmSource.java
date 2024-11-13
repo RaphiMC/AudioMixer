@@ -15,26 +15,23 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.raphimc.audiomixer.util;
+package net.raphimc.audiomixer.pcmsource;
 
-public class InterpolationUtil {
+public interface MonoPcmSource extends PcmSource {
 
-    public static int interpolateLinear(final int[] arr, final double index) {
-        return interpolateLinear(arr, index, 0, 1);
+    int consumeSample(final float increment);
+
+    default int consumeSamples(final int[] buffer) {
+        return this.consumeSamples(buffer, 0, buffer.length);
     }
 
-    public static int interpolateLinear(final int[] arr, final double index, final int offset, final int channels) {
-        final int floorIndex = (int) index * channels + offset;
-        final int ceilIndex = floorIndex + channels;
-
-        if (ceilIndex >= arr.length) {
-            return arr[floorIndex];
+    default int consumeSamples(final int[] buffer, final int offset, final int length) {
+        int i;
+        for (i = 0; i < length && !this.hasReachedEnd(); i++) {
+            buffer[offset + i] = this.consumeSample(1);
         }
 
-        final double fraction = index * channels + offset - floorIndex;
-        final int floorValue = arr[floorIndex];
-        final int ceilValue = arr[ceilIndex];
-        return floorValue + (int) ((ceilValue - floorValue) * fraction);
+        return i;
     }
 
 }

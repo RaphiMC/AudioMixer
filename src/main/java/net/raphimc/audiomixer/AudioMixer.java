@@ -18,29 +18,22 @@
 package net.raphimc.audiomixer;
 
 import net.raphimc.audiomixer.sound.Sound;
-import net.raphimc.audiomixer.sound.SoundModifier;
 import net.raphimc.audiomixer.sound.special.SubMixSound;
+import net.raphimc.audiomixer.soundmodifier.SoundModifiers;
 
 import javax.sound.sampled.AudioFormat;
-import java.util.List;
-import java.util.function.Predicate;
 
 public class AudioMixer {
 
     private final AudioFormat audioFormat;
-    private final SubMixSound masterMixSound;
+    private final SubMixSound masterMixSound = new SubMixSound();
 
     public AudioMixer(final AudioFormat audioFormat) {
-        this(audioFormat, 512);
-    }
-
-    public AudioMixer(final AudioFormat audioFormat, final int maxSounds) {
         if (audioFormat.getEncoding() != AudioFormat.Encoding.PCM_SIGNED) {
             throw new IllegalArgumentException("Unsupported audio format: " + audioFormat);
         }
 
         this.audioFormat = audioFormat;
-        this.masterMixSound = new SubMixSound(maxSounds);
     }
 
     public void playSound(final Sound sound) {
@@ -55,28 +48,8 @@ public class AudioMixer {
         this.masterMixSound.stopAllSounds();
     }
 
-    public List<SoundModifier> getSoundModifiers(final Predicate<SoundModifier> predicate) {
-        return this.masterMixSound.getSoundModifiers(predicate);
-    }
-
-    public void appendSoundModifier(final SoundModifier soundModifier) {
-        this.masterMixSound.appendSoundModifier(soundModifier);
-    }
-
-    public void prependSoundModifier(final SoundModifier soundModifier) {
-        this.masterMixSound.prependSoundModifier(soundModifier);
-    }
-
-    public boolean insertSoundModifierBefore(final SoundModifier soundModifier, final SoundModifier other) {
-        return this.masterMixSound.insertSoundModifierBefore(soundModifier, other);
-    }
-
-    public boolean insertSoundModifierAfter(final SoundModifier soundModifier, final SoundModifier other) {
-        return this.masterMixSound.insertSoundModifierAfter(soundModifier, other);
-    }
-
-    public void removeSoundModifier(final SoundModifier soundModifier) {
-        this.masterMixSound.removeSoundModifier(soundModifier);
+    public SoundModifiers getSoundModifiers() {
+        return this.masterMixSound.getSoundModifiers();
     }
 
     public int[] mix(final float millis) {
@@ -96,21 +69,8 @@ public class AudioMixer {
         return this.audioFormat;
     }
 
-    public int getMaxSounds() {
-        return this.masterMixSound.getMaxSounds();
-    }
-
-    public int getMixedSounds() {
-        return this.masterMixSound.getMixedSounds();
-    }
-
-    public int getActiveSounds() {
-        return this.masterMixSound.getActiveSounds();
-    }
-
-    @Deprecated(forRemoval = true)
-    public void addSoundModifier(final SoundModifier soundModifier) {
-        this.masterMixSound.appendSoundModifier(soundModifier);
+    public SubMixSound getMasterMixSound() {
+        return this.masterMixSound;
     }
 
 }

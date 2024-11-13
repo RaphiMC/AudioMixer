@@ -18,18 +18,17 @@
 package net.raphimc.audiomixer.sound.special;
 
 import net.raphimc.audiomixer.sound.Sound;
-import net.raphimc.audiomixer.sound.SoundModifier;
+import net.raphimc.audiomixer.soundmodifier.SoundModifiers;
 
 import javax.sound.sampled.AudioFormat;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Predicate;
 
 public class SubMixSound implements Sound {
 
-    private final int maxSounds;
-    private final List<Sound> sounds = new ArrayList<>();
-    private final List<SoundModifier> soundModifiers = new ArrayList<>();
+    protected final List<Sound> sounds = new ArrayList<>();
+    private final SoundModifiers soundModifiers = new SoundModifiers();
+    private int maxSounds;
     private int mixedSounds;
 
     public SubMixSound() {
@@ -37,6 +36,50 @@ public class SubMixSound implements Sound {
     }
 
     public SubMixSound(final int maxSounds) {
+        this.setMaxSounds(maxSounds);
+    }
+
+    @Override
+    public synchronized void render(final AudioFormat audioFormat, final int[] finalMixBuffer) {
+        this.mixedSounds = this.sounds.size();
+
+        final int[] renderedSamples = new int[finalMixBuffer.length];
+        for (Sound sound : this.sounds) {
+            sound.render(audioFormat, renderedSamples);
+            for (int i = 0; i < finalMixBuffer.length; i++) {
+                finalMixBuffer[i] += renderedSamples[i];
+            }
+        }
+        this.soundModifiers.modify(audioFormat, finalMixBuffer);
+
+        this.sounds.removeIf(Sound::isFinished);
+    }
+
+    @Override
+    public boolean isFinished() {
+        return false;
+    }
+
+    public synchronized void playSound(final Sound sound) {
+        if (this.sounds.size() >= this.maxSounds) {
+            this.sounds.remove(0);
+        }
+        this.sounds.add(sound);
+    }
+
+    public synchronized void stopSound(final Sound sound) {
+        this.sounds.remove(sound);
+    }
+
+    public synchronized void stopAllSounds() {
+        this.sounds.clear();
+    }
+
+    public int getMaxSounds() {
+        return this.maxSounds;
+    }
+
+    public void setMaxSounds(final int maxSounds) {
         if (maxSounds < 1) {
             throw new IllegalArgumentException("Max sounds must be at least 1");
         }
@@ -47,103 +90,16 @@ public class SubMixSound implements Sound {
         this.maxSounds = maxSounds;
     }
 
-    @Override
-    public void render(final AudioFormat audioFormat, final int[] finalMixBuffer) {
-        this.mixedSounds = this.sounds.size();
-
-        final int[] renderedSamples = new int[finalMixBuffer.length];
-        for (Sound sound : this.sounds) {
-            sound.render(audioFormat, renderedSamples);
-            for (int i = 0; i < finalMixBuffer.length; i++) {
-                finalMixBuffer[i] += renderedSamples[i];
-            }
-        }
-        for (SoundModifier modifier : this.soundModifiers) {
-            modifier.modify(audioFormat, finalMixBuffer);
-        }
-
-        this.sounds.removeIf(Sound::isFinished);
-    }
-
-    @Override
-    public boolean isFinished() {
-        return false;
-    }
-
-    public void playSound(final Sound sound) {
-        if (this.sounds.size() >= this.maxSounds) {
-            this.sounds.remove(0);
-        }
-        this.sounds.add(sound);
-    }
-
-    public void stopSound(final Sound sound) {
-        this.sounds.remove(sound);
-    }
-
-    public void stopAllSounds() {
-        this.sounds.clear();
-    }
-
-    public List<SoundModifier> getSoundModifiers(final Predicate<SoundModifier> predicate) {
-        return this.soundModifiers.stream().filter(predicate).toList();
-    }
-
-    public void appendSoundModifier(final SoundModifier soundModifier) {
-        this.soundModifiers.add(soundModifier);
-    }
-
-    public void prependSoundModifier(final SoundModifier soundModifier) {
-        this.soundModifiers.add(0, soundModifier);
-    }
-
-    public boolean insertSoundModifierBefore(final SoundModifier soundModifier, final SoundModifier other) {
-        final int index = this.soundModifiers.indexOf(other);
-        if (index != -1) {
-            this.soundModifiers.add(index, soundModifier);
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public boolean insertSoundModifierAfter(final SoundModifier soundModifier, final SoundModifier other) {
-        final int index = this.soundModifiers.indexOf(other);
-        if (index != -1) {
-            this.soundModifiers.add(index + 1, soundModifier);
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public void removeSoundModifier(final SoundModifier soundModifier) {
-        this.soundModifiers.remove(soundModifier);
-    }
-
-    public int getMaxSounds() {
-        return this.maxSounds;
+    public SoundModifiers getSoundModifiers() {
+        return this.soundModifiers;
     }
 
     public int getMixedSounds() {
         return this.mixedSounds;
     }
 
-    public int getActiveSounds() {
+    public synchronized int getActiveSounds() {
         return this.sounds.size();
-    }
-
-    protected List<Sound> getSounds() {
-        return this.sounds;
-    }
-
-    protected List<SoundModifier> getSoundModifiers() {
-        return this.soundModifiers;
-    }
-
-    @Deprecated(forRemoval = true)
-    public void addSoundModifier(final SoundModifier soundModifier) {
-        this.appendSoundModifier(soundModifier);
     }
 
 }

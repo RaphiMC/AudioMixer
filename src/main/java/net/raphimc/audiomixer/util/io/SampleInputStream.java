@@ -78,6 +78,10 @@ public class SampleInputStream extends InputStream {
         }
     }
 
+    public AudioFormat getAudioFormat() {
+        return this.audioFormat;
+    }
+
     private short read16Bit() throws IOException {
         final int b1 = this.read();
         final int b2 = this.read();

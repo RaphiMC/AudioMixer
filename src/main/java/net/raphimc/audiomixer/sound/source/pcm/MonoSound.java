@@ -15,44 +15,40 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.raphimc.audiomixer.sound.source;
+package net.raphimc.audiomixer.sound.source.pcm;
 
+import net.raphimc.audiomixer.pcmsource.MonoPcmSource;
 import net.raphimc.audiomixer.sound.Sound;
-import net.raphimc.audiomixer.sound.pcmsource.PcmSource;
-import net.raphimc.audiomixer.sound.pcmsource.impl.IntPcmSource;
 
 import javax.sound.sampled.AudioFormat;
 
-public class StaticStereoSound implements Sound {
+public class MonoSound implements Sound {
 
-    private final PcmSource pcmSource;
+    private final MonoPcmSource pcmSource;
+    private float pitch;
 
-    @Deprecated(forRemoval = true)
-    public StaticStereoSound(final int[] samples) {
-        this(new IntPcmSource(samples));
+    public MonoSound(final MonoPcmSource pcmSource) {
+        this(pcmSource, 1F);
     }
 
-    public StaticStereoSound(final PcmSource pcmSource) {
+    public MonoSound(final MonoPcmSource pcmSource, final float pitch) {
         this.pcmSource = pcmSource;
+        this.setPitch(pitch);
     }
 
     @Override
     public void render(final AudioFormat audioFormat, final int[] renderedSamples) {
         int renderedIndex = 0;
-        if (audioFormat.getChannels() == 2) {
+        if (this.pitch == 1F && audioFormat.getChannels() == 1) {
             renderedIndex += this.pcmSource.consumeSamples(renderedSamples);
         } else {
             final int numChannels = audioFormat.getChannels();
             final int numSamples = renderedSamples.length / numChannels;
 
             for (int i = 0; i < numSamples && !this.isFinished(); i++) {
-                final int sample1 = this.pcmSource.getCurrentSample();
-                this.pcmSource.incrementPosition(1);
-                final int sample2 = this.pcmSource.getCurrentSample();
-                this.pcmSource.incrementPosition(1);
-                final int monoSample = (sample1 + sample2) / 2;
+                final int sample = this.pcmSource.consumeSample(this.pitch);
                 for (int j = 0; j < numChannels; j++) {
-                    renderedSamples[renderedIndex++] = monoSample;
+                    renderedSamples[renderedIndex++] = sample;
                 }
             }
         }
@@ -67,18 +63,20 @@ public class StaticStereoSound implements Sound {
         return this.pcmSource.hasReachedEnd();
     }
 
-    public PcmSource getPcmSource() {
+    public MonoPcmSource getPcmSource() {
         return this.pcmSource;
     }
 
-    @Deprecated(forRemoval = true)
-    public float getProgress() {
-        return this.pcmSource.getProgress();
+    public float getPitch() {
+        return this.pitch;
     }
 
-    @Deprecated(forRemoval = true)
-    public void setProgress(final float progress) {
-        this.pcmSource.setProgress(progress);
+    public void setPitch(final float pitch) {
+        if (pitch <= 0) {
+            throw new IllegalArgumentException("Pitch must be greater than 0");
+        }
+
+        this.pitch = pitch;
     }
 
 }

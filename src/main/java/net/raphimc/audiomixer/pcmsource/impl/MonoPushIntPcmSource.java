@@ -15,39 +15,34 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.raphimc.audiomixer.sound.pcmsource.impl;
+package net.raphimc.audiomixer.pcmsource.impl;
 
-import net.raphimc.audiomixer.sound.pcmsource.PcmSource;
+import net.raphimc.audiomixer.pcmsource.MonoPcmSource;
 import net.raphimc.audiomixer.util.InterpolationUtil;
 
-import java.util.LinkedList;
-import java.util.Queue;
+import java.util.ArrayList;
+import java.util.List;
 
-public class PushIntPcmSource implements PcmSource {
+public class MonoPushIntPcmSource implements MonoPcmSource {
 
-    private final Queue<int[]> samples = new LinkedList<>();
+    private final List<int[]> samples = new ArrayList<>();
     private double position;
 
     @Override
-    public synchronized int getCurrentSample() {
-        final int[] currentSamples = this.samples.peek();
-        if (currentSamples == null) {
+    public synchronized int consumeSample(final float increment) {
+        if (this.samples.isEmpty()) {
             return 0;
         }
+        final int[] currentSamples = this.samples.get(0);
         if ((int) this.position >= currentSamples.length) {
-            this.samples.poll();
+            this.samples.remove(0);
             this.position = 0;
-            return this.getCurrentSample();
+            return this.consumeSample(increment);
         }
 
-        return InterpolationUtil.interpolateLinear(currentSamples, this.position);
-    }
-
-    @Override
-    public synchronized void incrementPosition(final double increment) {
-        if (!this.samples.isEmpty()) {
-            this.position += increment;
-        }
+        final int sample = InterpolationUtil.interpolateLinear(currentSamples, this.position);
+        this.position += increment;
+        return sample;
     }
 
     @Override
@@ -56,6 +51,10 @@ public class PushIntPcmSource implements PcmSource {
     }
 
     public synchronized void enqueueSamples(final int[] samples) {
+        if (samples == null || samples.length == 0) {
+            throw new IllegalArgumentException("Samples must not be null or empty");
+        }
+
         this.samples.add(samples);
     }
 

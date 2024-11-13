@@ -15,38 +15,37 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.raphimc.audiomixer.sound.modifier;
+package net.raphimc.audiomixer.soundmodifier.impl;
 
-import net.raphimc.audiomixer.sound.SoundModifier;
+import net.raphimc.audiomixer.soundmodifier.SoundModifier;
 
 import javax.sound.sampled.AudioFormat;
 
-public class PanningModifier implements SoundModifier {
+public class VolumeModifier implements SoundModifier {
 
-    private float panning;
+    private float volume;
 
-    public PanningModifier(final float panning) {
-        this.setPanning(panning);
+    public VolumeModifier(final float volume) {
+        this.setVolume(volume);
     }
 
     @Override
     public void modify(final AudioFormat audioFormat, final int[] renderedSamples) {
-        if (audioFormat.getChannels() != 2) {
-            throw new UnsupportedOperationException("Target audio format must have 2 channels");
-        }
-
-        for (int i = 0; i < renderedSamples.length; i += 2) {
-            renderedSamples[i] = (int) (renderedSamples[i] * (1F - this.panning));
-            renderedSamples[i + 1] = (int) (renderedSamples[i + 1] * this.panning);
+        for (int i = 0; i < renderedSamples.length; i++) {
+            renderedSamples[i] = (int) (renderedSamples[i] * this.volume);
         }
     }
 
-    public float getPanning() {
-        return this.panning * 2F - 1F;
+    public float getVolume() {
+        return this.volume;
     }
 
-    public void setPanning(final float panning) {
-        this.panning = (Math.max(-1F, Math.min(1F, panning)) + 1) / 2F;
+    public void setVolume(final float volume) {
+        if (volume < 0 || volume > 1) {
+            throw new IllegalArgumentException("Volume must be between 0 and 1");
+        }
+
+        this.volume = volume;
     }
 
 }

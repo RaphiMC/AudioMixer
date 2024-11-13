@@ -17,7 +17,7 @@ High performance Java audio mixing library.
   - Stereo panning control
   - Bass Boost
   - Bit Crusher
-- High performance (Mix thousands of simultaneously playing sounds in realtime)
+- High performance (Mixes thousands of simultaneously playing sounds in realtime)
 
 ## Releases
 ### Gradle/Maven

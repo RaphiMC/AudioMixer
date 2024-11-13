@@ -15,17 +15,18 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.raphimc.audiomixer.sound.pcmsource.impl;
+package net.raphimc.audiomixer.pcmsource.impl;
 
-import net.raphimc.audiomixer.sound.pcmsource.StaticPcmSource;
+import net.raphimc.audiomixer.pcmsource.MonoPcmSource;
+import net.raphimc.audiomixer.pcmsource.StaticPcmSource;
 import net.raphimc.audiomixer.util.InterpolationUtil;
 
-public class IntPcmSource implements StaticPcmSource {
+public class MonoIntPcmSource implements MonoPcmSource, StaticPcmSource {
 
     private final int[] samples;
     private double position;
 
-    public IntPcmSource(final int[] samples) {
+    public MonoIntPcmSource(final int[] samples) {
         if (samples == null || samples.length == 0) {
             throw new IllegalArgumentException("Samples must not be null or empty");
         }
@@ -34,8 +35,10 @@ public class IntPcmSource implements StaticPcmSource {
     }
 
     @Override
-    public int getCurrentSample() {
-        return InterpolationUtil.interpolateLinear(this.samples, this.position);
+    public int consumeSample(final float increment) {
+        final int sample = InterpolationUtil.interpolateLinear(this.samples, this.position);
+        this.position += increment;
+        return sample;
     }
 
     @Override
@@ -44,11 +47,6 @@ public class IntPcmSource implements StaticPcmSource {
         System.arraycopy(this.samples, (int) this.position, buffer, offset, numSamples);
         this.position += numSamples;
         return numSamples;
-    }
-
-    @Override
-    public void incrementPosition(final double increment) {
-        this.position += increment;
     }
 
     @Override

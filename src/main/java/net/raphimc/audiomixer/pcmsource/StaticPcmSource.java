@@ -15,12 +15,18 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.raphimc.audiomixer.sound;
+package net.raphimc.audiomixer.pcmsource;
 
-import javax.sound.sampled.AudioFormat;
+public interface StaticPcmSource {
 
-public interface SoundModifier {
+    int getSampleCount();
 
-    void modify(final AudioFormat audioFormat, final int[] renderedSamples);
+    double getPosition();
+
+    void setPosition(final double position);
+
+    float getProgress();
+
+    void setProgress(final float progress);
 
 }

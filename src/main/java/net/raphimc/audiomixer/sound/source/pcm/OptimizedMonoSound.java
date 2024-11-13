@@ -15,36 +15,25 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.raphimc.audiomixer.sound.source;
+package net.raphimc.audiomixer.sound.source.pcm;
 
+import net.raphimc.audiomixer.pcmsource.MonoPcmSource;
 import net.raphimc.audiomixer.sound.Sound;
-import net.raphimc.audiomixer.sound.pcmsource.PcmSource;
-import net.raphimc.audiomixer.sound.pcmsource.impl.IntPcmSource;
 
 import javax.sound.sampled.AudioFormat;
 
-public class MonoSound implements Sound {
+public class OptimizedMonoSound implements Sound {
 
-    private final PcmSource pcmSource;
+    private final MonoPcmSource pcmSource;
     private float pitch;
     private float volume;
     private float panning;
 
-    @Deprecated(forRemoval = true)
-    public MonoSound(final int[] samples) {
-        this(new IntPcmSource(samples));
-    }
-
-    @Deprecated(forRemoval = true)
-    public MonoSound(final int[] samples, final float pitch, final float volume, final float panning) {
-        this(new IntPcmSource(samples), pitch, volume, panning);
-    }
-
-    public MonoSound(final PcmSource pcmSource) {
+    public OptimizedMonoSound(final MonoPcmSource pcmSource) {
         this(pcmSource, 1F, 1F, 0F);
     }
 
-    public MonoSound(final PcmSource pcmSource, final float pitch, final float volume, final float panning) {
+    public OptimizedMonoSound(final MonoPcmSource pcmSource, final float pitch, final float volume, final float panning) {
         this.pcmSource = pcmSource;
         this.setPitch(pitch);
         this.setVolume(volume);
@@ -61,7 +50,7 @@ public class MonoSound implements Sound {
 
         int renderedIndex = 0;
         for (int i = 0; i < numSamples && !this.isFinished(); i++) {
-            final int sample = this.pcmSource.getCurrentSample();
+            final int sample = this.pcmSource.consumeSample(this.pitch);
             if (numChannels == 2) {
                 renderedSamples[renderedIndex++] = (int) (sample * leftVolume);
                 renderedSamples[renderedIndex++] = (int) (sample * rightVolume);
@@ -70,8 +59,6 @@ public class MonoSound implements Sound {
                     renderedSamples[renderedIndex++] = (int) (sample * this.volume);
                 }
             }
-
-            this.pcmSource.incrementPosition(this.pitch);
         }
 
         while (renderedIndex < renderedSamples.length) {
@@ -84,7 +71,7 @@ public class MonoSound implements Sound {
         return this.pcmSource.hasReachedEnd();
     }
 
-    public PcmSource getPcmSource() {
+    public MonoPcmSource getPcmSource() {
         return this.pcmSource;
     }
 
@@ -114,16 +101,6 @@ public class MonoSound implements Sound {
 
     public void setPanning(final float panning) {
         this.panning = (Math.max(-1F, Math.min(1F, panning)) + 1) / 2F;
-    }
-
-    @Deprecated(forRemoval = true)
-    public float getProgress() {
-        return this.pcmSource.getProgress();
-    }
-
-    @Deprecated(forRemoval = true)
-    public void setProgress(final float progress) {
-        this.pcmSource.setProgress(progress);
     }
 
 }

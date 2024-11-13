@@ -15,9 +15,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.raphimc.audiomixer.sound.modifier;
+package net.raphimc.audiomixer.soundmodifier.impl;
 
-import net.raphimc.audiomixer.sound.SoundModifier;
+import net.raphimc.audiomixer.soundmodifier.SoundModifier;
 
 import javax.sound.sampled.AudioFormat;
 import java.util.Arrays;

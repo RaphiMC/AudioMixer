@@ -17,8 +17,8 @@
  */
 package net.raphimc.audiomixer;
 
-import net.raphimc.audiomixer.sound.modifier.NormalizationModifier;
-import net.raphimc.audiomixer.sound.modifier.VolumeModifier;
+import net.raphimc.audiomixer.soundmodifier.impl.NormalizationModifier;
+import net.raphimc.audiomixer.soundmodifier.impl.VolumeModifier;
 import net.raphimc.audiomixer.util.io.SampleOutputStream;
 
 import javax.sound.sampled.LineUnavailableException;
@@ -31,19 +31,11 @@ public class SourceDataLineAudioMixer extends AudioMixer {
     private final SourceDataLine sourceDataLine;
     private final int sampleByteSize;
     private int mixSliceSampleCount;
-    private final NormalizationModifier normalizationModifier;
-    private final VolumeModifier volumeModifier;
+    private final NormalizationModifier normalizationModifier = new NormalizationModifier();
+    private final VolumeModifier volumeModifier = new VolumeModifier(1F);
 
-    public SourceDataLineAudioMixer(final SourceDataLine sourceDataLine, final int mixSampleCount) throws LineUnavailableException {
-        this(sourceDataLine, 512, mixSampleCount);
-    }
-
-    public SourceDataLineAudioMixer(final SourceDataLine sourceDataLine, final int maxSounds, final int mixSampleCount) throws LineUnavailableException {
-        this(sourceDataLine, maxSounds, 4000, mixSampleCount);
-    }
-
-    public SourceDataLineAudioMixer(final SourceDataLine sourceDataLine, final int maxSounds, final int decayPeriodMillis, final int mixSliceSampleCount) throws LineUnavailableException {
-        super(sourceDataLine.getFormat(), maxSounds);
+    public SourceDataLineAudioMixer(final SourceDataLine sourceDataLine, final int mixSliceSampleCount) throws LineUnavailableException {
+        super(sourceDataLine.getFormat());
         this.sourceDataLine = sourceDataLine;
         if (!sourceDataLine.isOpen()) {
             sourceDataLine.open(sourceDataLine.getFormat(), (int) sourceDataLine.getFormat().getSampleRate());
@@ -53,10 +45,8 @@ public class SourceDataLineAudioMixer extends AudioMixer {
         this.sampleByteSize = sourceDataLine.getFormat().getSampleSizeInBits() / 8;
         this.mixSliceSampleCount = mixSliceSampleCount;
 
-        this.normalizationModifier = new NormalizationModifier(decayPeriodMillis);
-        this.volumeModifier = new VolumeModifier(1F);
-        this.appendSoundModifier(this.normalizationModifier);
-        this.appendSoundModifier(this.volumeModifier);
+        this.getSoundModifiers().append(this.normalizationModifier);
+        this.getSoundModifiers().append(this.volumeModifier);
     }
 
     @Override
@@ -99,6 +89,14 @@ public class SourceDataLineAudioMixer extends AudioMixer {
 
     public void setMixSliceSampleCount(final int mixSliceSampleCount) {
         this.mixSliceSampleCount = mixSliceSampleCount;
+    }
+
+    public VolumeModifier getVolumeModifier() {
+        return this.volumeModifier;
+    }
+
+    public NormalizationModifier getNormalizationModifier() {
+        return this.normalizationModifier;
     }
 
     public void setMasterVolume(final int masterVolume) {

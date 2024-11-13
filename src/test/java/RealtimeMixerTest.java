@@ -17,8 +17,8 @@
  */
 
 import net.raphimc.audiomixer.BackgroundSourceDataLineAudioMixer;
-import net.raphimc.audiomixer.sound.pcmsource.impl.IntPcmSource;
-import net.raphimc.audiomixer.sound.source.MonoSound;
+import net.raphimc.audiomixer.pcmsource.impl.MonoIntPcmSource;
+import net.raphimc.audiomixer.sound.source.pcm.OptimizedMonoSound;
 import net.raphimc.audiomixer.util.AudioFormats;
 import net.raphimc.audiomixer.util.io.SoundIO;
 
@@ -44,17 +44,17 @@ public class RealtimeMixerTest {
             @Override
             public void keyPressed(KeyEvent e) {
                 if (e.getKeyCode() >= KeyEvent.VK_1 && e.getKeyCode() <= KeyEvent.VK_9) {
-                    audioMixer.playSound(new MonoSound(new IntPcmSource(pianoSamples), (float) Math.pow(2, ((e.getKeyCode() - KeyEvent.VK_1) - 4) / 4F), 1, 0));
+                    audioMixer.playSound(new OptimizedMonoSound(new MonoIntPcmSource(pianoSamples), (float) Math.pow(2, ((e.getKeyCode() - KeyEvent.VK_1) - 4) / 4F), 1, 0));
                 } else if (e.getKeyCode() == KeyEvent.VK_Q) {
-                    audioMixer.playSound(new MonoSound(new IntPcmSource(pianoSamples), 1, 1, -1));
+                    audioMixer.playSound(new OptimizedMonoSound(new MonoIntPcmSource(pianoSamples), 1, 1, -1));
                 } else if (e.getKeyCode() == KeyEvent.VK_P) {
-                    audioMixer.playSound(new MonoSound(new IntPcmSource(pianoSamples), 1, 1, 1));
+                    audioMixer.playSound(new OptimizedMonoSound(new MonoIntPcmSource(pianoSamples), 1, 1, 1));
                 } else if (e.getKeyCode() == KeyEvent.VK_W) {
-                    audioMixer.playSound(new MonoSound(new IntPcmSource(pianoSamples), 1, 0.25F, 0));
+                    audioMixer.playSound(new OptimizedMonoSound(new MonoIntPcmSource(pianoSamples), 1, 0.25F, 0));
                 } else if (e.getKeyCode() == KeyEvent.VK_E) {
-                    audioMixer.playSound(new MonoSound(new IntPcmSource(pianoSamples), 1, 0.75F, 0));
+                    audioMixer.playSound(new OptimizedMonoSound(new MonoIntPcmSource(pianoSamples), 1, 0.75F, 0));
                 } else if (e.getKeyCode() == KeyEvent.VK_R) {
-                    audioMixer.playSound(new MonoSound(new IntPcmSource(pianoSamples), 1, 1.25F, 0));
+                    audioMixer.playSound(new OptimizedMonoSound(new MonoIntPcmSource(pianoSamples), 1, 1.25F, 0));
                 } else if (e.getKeyCode() == KeyEvent.VK_SPACE) {
                     audioMixer.stopAllSounds();
                 }

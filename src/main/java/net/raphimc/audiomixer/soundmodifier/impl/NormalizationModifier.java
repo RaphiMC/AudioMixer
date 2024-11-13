@@ -15,9 +15,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.raphimc.audiomixer.sound.modifier;
+package net.raphimc.audiomixer.soundmodifier.impl;
 
-import net.raphimc.audiomixer.sound.SoundModifier;
+import net.raphimc.audiomixer.soundmodifier.SoundModifier;
 import net.raphimc.audiomixer.util.SoundSampleUtil;
 
 import javax.sound.sampled.AudioFormat;
@@ -28,7 +28,7 @@ public class NormalizationModifier implements SoundModifier {
     private int runningMaxSampleValue = 1;
 
     public NormalizationModifier() {
-        this(4000);
+        this(3000);
     }
 
     public NormalizationModifier(final int decayPeriodMillis) {

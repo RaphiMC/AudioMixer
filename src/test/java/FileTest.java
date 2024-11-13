@@ -17,8 +17,8 @@
  */
 
 import net.raphimc.audiomixer.AudioMixer;
-import net.raphimc.audiomixer.sound.pcmsource.impl.IntPcmSource;
-import net.raphimc.audiomixer.sound.source.MonoSound;
+import net.raphimc.audiomixer.pcmsource.impl.MonoIntPcmSource;
+import net.raphimc.audiomixer.sound.source.pcm.OptimizedMonoSound;
 import net.raphimc.audiomixer.util.AudioFormats;
 import net.raphimc.audiomixer.util.GrowableArray;
 import net.raphimc.audiomixer.util.SoundSampleUtil;
@@ -42,11 +42,11 @@ public class FileTest {
         // Create an audio mixer
         AudioMixer mixer = new AudioMixer(format);
         // Play the audio samples
-        mixer.playSound(new MonoSound(new IntPcmSource(samples), 2F, 1, 0));
+        mixer.playSound(new OptimizedMonoSound(new MonoIntPcmSource(samples), 2F, 1, 0));
         // Create the output buffer
         GrowableArray outputSamples = new GrowableArray(0);
         // Mix 1 second of audio until there are no more active sounds (The mixer will automatically stop finished sounds)
-        while (mixer.getActiveSounds() > 0) {
+        while (mixer.getMasterMixSound().getActiveSounds() > 0) {
             outputSamples.add(mixer.mix(1000F));
         }
         // Normalize the audio samples, so that they are in the range of a short (16 bit)

@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.raphimc.audiomixer.sound.pcmsource.impl;
+package net.raphimc.audiomixer.pcmsource.impl;
 
 import net.raphimc.audiomixer.util.io.SampleInputStream;
 
@@ -23,18 +23,18 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.Arrays;
 
-public class PullIntPcmSource extends PushIntPcmSource implements Closeable {
+public class MonoPullIntPcmSource extends MonoPushIntPcmSource implements Closeable {
 
     private final SampleInputStream sampleInputStream;
     private final int bufferSize;
     private final Thread readThread;
     private volatile boolean reachedEnd;
 
-    public PullIntPcmSource(final SampleInputStream sampleInputStream) {
+    public MonoPullIntPcmSource(final SampleInputStream sampleInputStream) {
         this(sampleInputStream, 1024 * 1024);
     }
 
-    public PullIntPcmSource(final SampleInputStream sampleInputStream, final int bufferSize) {
+    public MonoPullIntPcmSource(final SampleInputStream sampleInputStream, final int bufferSize) {
         if (bufferSize <= 0) {
             throw new IllegalArgumentException("Buffer size must be greater than 0");
         }
@@ -72,7 +72,7 @@ public class PullIntPcmSource extends PushIntPcmSource implements Closeable {
                 e.printStackTrace();
                 this.reachedEnd = true;
             }
-        }, "PullIntPcmSource-ReadThread");
+        }, "MonoPullIntPcmSource-ReadThread");
         this.readThread.setDaemon(true);
         this.readThread.start();
     }
