@@ -44,6 +44,14 @@ public class SoundModifiers {
         return this.soundModifiers.stream().filter(predicate).toList();
     }
 
+    public synchronized SoundModifier getFirst(final Predicate<SoundModifier> predicate) {
+        return this.soundModifiers.stream().filter(predicate).findFirst().orElse(null);
+    }
+
+    public synchronized <T extends SoundModifier> T getFirst(final Class<T> clazz) {
+        return this.soundModifiers.stream().filter(m -> m.getClass().equals(clazz)).map(clazz::cast).findFirst().orElse(null);
+    }
+
     public synchronized void append(final SoundModifier soundModifier) {
         this.soundModifiers.add(soundModifier);
     }

@@ -65,6 +65,15 @@ public class StereoPushIntPcmSource implements StereoPcmSource {
         this.samples.add(samples);
     }
 
+    public synchronized void flushQueue() {
+        this.samples.clear();
+        this.position = 0;
+    }
+
+    public synchronized int getQueuedBufferCount() {
+        return this.samples.size();
+    }
+
     public synchronized int getQueuedSampleCount() {
         int total = -(int) this.position * 2;
         for (int[] sample : this.samples) {
