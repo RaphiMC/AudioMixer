@@ -17,12 +17,64 @@
  */
 package net.raphimc.audiomixer.oscillator;
 
-public interface Oscillator {
+public abstract class Oscillator {
 
-    float getNextValue(final float referenceFrequency);
+    protected float frequency;
+    protected Oscillator frequencyOscillator;
+    private float multiplier;
 
-    float getFrequency();
+    public Oscillator() {
+    }
 
-    void setFrequency(final float frequency);
+    public Oscillator(final float frequency) {
+        this.setFrequency(frequency);
+        this.setMultiplier(1F);
+    }
+
+    public float getNextValue(final float referenceFrequency) {
+        return this.getNextNormalizedValue(referenceFrequency) * this.multiplier;
+    }
+
+    public int getNextValueInt(final float referenceFrequency) {
+        return Math.round(this.getNextValue(referenceFrequency));
+    }
+
+    protected abstract float getNextNormalizedValue(final float referenceFrequency);
+
+    public float modifyValue(final float value, final float referenceFrequency) {
+        return value + this.getNextValue(referenceFrequency);
+    }
+
+    public int modifyValueInt(final int value, final float referenceFrequency) {
+        return value + this.getNextValueInt(referenceFrequency);
+    }
+
+    public float getFrequency() {
+        return this.frequency;
+    }
+
+    public void setFrequency(final float frequency) {
+        if (frequency <= 0) {
+            throw new IllegalArgumentException("Frequency must be greater than 0");
+        }
+
+        this.frequency = frequency;
+    }
+
+    public Oscillator getFrequencyOscillator() {
+        return this.frequencyOscillator;
+    }
+
+    public void setFrequencyOscillator(final Oscillator frequencyOscillator) {
+        this.frequencyOscillator = frequencyOscillator;
+    }
+
+    public float getMultiplier() {
+        return this.multiplier;
+    }
+
+    public void setMultiplier(final float multiplier) {
+        this.multiplier = multiplier;
+    }
 
 }

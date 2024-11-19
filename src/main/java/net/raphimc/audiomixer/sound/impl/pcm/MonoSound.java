@@ -17,6 +17,7 @@
  */
 package net.raphimc.audiomixer.sound.impl.pcm;
 
+import net.raphimc.audiomixer.oscillator.Oscillator;
 import net.raphimc.audiomixer.pcmsource.MonoPcmSource;
 import net.raphimc.audiomixer.sound.Sound;
 
@@ -27,6 +28,7 @@ public class MonoSound extends Sound {
 
     private final MonoPcmSource pcmSource;
     private float pitch;
+    private Oscillator pitchOscillator;
 
     public MonoSound(final MonoPcmSource pcmSource) {
         this(pcmSource, 1F);
@@ -40,14 +42,15 @@ public class MonoSound extends Sound {
     @Override
     public void render(final AudioFormat audioFormat, final int[] renderedSamples) {
         int renderedIndex = 0;
-        if (this.pitch == 1F && audioFormat.getChannels() == 1) {
+        if (this.pitch == 1F && audioFormat.getChannels() == 1 && this.pitchOscillator == null) {
             renderedIndex += this.pcmSource.consumeSamples(renderedSamples);
         } else {
             final int numChannels = audioFormat.getChannels();
             final int numSamples = renderedSamples.length / numChannels;
+            final boolean hasPitchOscillator = this.pitchOscillator != null;
 
             for (int i = 0; i < numSamples && !this.isFinished(); i++) {
-                final int sample = this.pcmSource.consumeSample(this.pitch);
+                final int sample = this.pcmSource.consumeSample(!hasPitchOscillator ? this.pitch : this.pitchOscillator.modifyValue(this.pitch, audioFormat.getSampleRate()));
                 for (int j = 0; j < numChannels; j++) {
                     renderedSamples[renderedIndex++] = sample;
                 }
@@ -77,6 +80,14 @@ public class MonoSound extends Sound {
         }
 
         this.pitch = pitch;
+    }
+
+    public Oscillator getPitchOscillator() {
+        return this.pitchOscillator;
+    }
+
+    public void setPitchOscillator(final Oscillator pitchOscillator) {
+        this.pitchOscillator = pitchOscillator;
     }
 
 }

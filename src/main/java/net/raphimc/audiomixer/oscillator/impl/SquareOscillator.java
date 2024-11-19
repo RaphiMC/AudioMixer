@@ -19,9 +19,8 @@ package net.raphimc.audiomixer.oscillator.impl;
 
 import net.raphimc.audiomixer.oscillator.Oscillator;
 
-public class SquareOscillator implements Oscillator {
+public class SquareOscillator extends Oscillator {
 
-    private float frequency;
     private float dutyCycle;
     private double phase;
 
@@ -30,34 +29,24 @@ public class SquareOscillator implements Oscillator {
     }
 
     public SquareOscillator(final float frequency, final float dutyCycle) {
-        this.setFrequency(frequency);
+        super(frequency);
         this.setDutyCycle(dutyCycle);
     }
 
     @Override
-    public float getNextValue(final float referenceFrequency) {
+    public float getNextNormalizedValue(final float referenceFrequency) {
         float value = this.phase < this.dutyCycle ? 1F : -1F;
 
-        this.phase += this.frequency / referenceFrequency;
+        if (this.frequencyOscillator == null) {
+            this.phase += this.frequency / referenceFrequency;
+        } else {
+            this.phase += this.frequencyOscillator.modifyValue(this.frequency, referenceFrequency) / referenceFrequency;
+        }
         if (this.phase >= 1.0) {
             this.phase -= 1.0;
         }
 
         return value;
-    }
-
-    @Override
-    public float getFrequency() {
-        return this.frequency;
-    }
-
-    @Override
-    public void setFrequency(final float frequency) {
-        if (frequency <= 0) {
-            throw new IllegalArgumentException("Frequency must be greater than 0");
-        }
-
-        this.frequency = frequency;
     }
 
     public float getDutyCycle() {

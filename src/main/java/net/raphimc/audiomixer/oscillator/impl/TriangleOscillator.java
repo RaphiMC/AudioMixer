@@ -19,41 +19,30 @@ package net.raphimc.audiomixer.oscillator.impl;
 
 import net.raphimc.audiomixer.oscillator.Oscillator;
 
-public class TriangleOscillator implements Oscillator {
+public class TriangleOscillator extends Oscillator {
 
     private static final double TWO_PI = 2 * Math.PI;
 
-    private float frequency;
     private double angle;
 
     public TriangleOscillator(final float frequency) {
-        this.setFrequency(frequency);
+        super(frequency);
     }
 
     @Override
-    public float getNextValue(final float referenceFrequency) {
+    public float getNextNormalizedValue(final float referenceFrequency) {
         final float value = (float) (2 * Math.abs(2 * (this.angle / TWO_PI) - 1) - 1);
 
-        this.angle += TWO_PI * this.frequency / referenceFrequency;
+        if (this.frequencyOscillator == null) {
+            this.angle += TWO_PI * this.frequency / referenceFrequency;
+        } else {
+            this.angle += TWO_PI * this.frequencyOscillator.modifyValue(this.frequency, referenceFrequency) / referenceFrequency;
+        }
         if (this.angle > TWO_PI) {
             this.angle -= TWO_PI;
         }
 
         return value;
-    }
-
-    @Override
-    public float getFrequency() {
-        return this.frequency;
-    }
-
-    @Override
-    public void setFrequency(final float frequency) {
-        if (frequency <= 0) {
-            throw new IllegalArgumentException("Frequency must be greater than 0");
-        }
-
-        this.frequency = frequency;
     }
 
 }

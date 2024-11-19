@@ -21,23 +21,13 @@ import net.raphimc.audiomixer.oscillator.Oscillator;
 
 import java.util.Random;
 
-public class NoiseOscillator implements Oscillator {
+public class NoiseOscillator extends Oscillator {
 
     private final Random random = new Random();
 
     @Override
-    public float getNextValue(final float referenceFrequency) {
+    public float getNextNormalizedValue(final float referenceFrequency) {
         return this.random.nextFloat() * 2 - 1;
-    }
-
-    @Override
-    public float getFrequency() {
-        throw new UnsupportedOperationException("Noise oscillators do not have a frequency");
-    }
-
-    @Override
-    public void setFrequency(final float frequency) {
-        throw new UnsupportedOperationException("Noise oscillators do not have a frequency");
     }
 
 }

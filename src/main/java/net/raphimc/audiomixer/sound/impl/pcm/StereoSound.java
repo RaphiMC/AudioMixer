@@ -17,6 +17,7 @@
  */
 package net.raphimc.audiomixer.sound.impl.pcm;
 
+import net.raphimc.audiomixer.oscillator.Oscillator;
 import net.raphimc.audiomixer.pcmsource.StereoPcmSource;
 import net.raphimc.audiomixer.sound.Sound;
 
@@ -27,6 +28,7 @@ public class StereoSound extends Sound {
 
     private final StereoPcmSource pcmSource;
     private float pitch;
+    private Oscillator pitchOscillator;
 
     public StereoSound(final StereoPcmSource pcmSource) {
         this(pcmSource, 1F);
@@ -40,21 +42,22 @@ public class StereoSound extends Sound {
     @Override
     public void render(final AudioFormat audioFormat, final int[] renderedSamples) {
         int renderedIndex = 0;
-        if (this.pitch == 1F && audioFormat.getChannels() == 2) {
+        if (this.pitch == 1F && audioFormat.getChannels() == 2 && this.pitchOscillator == null) {
             renderedIndex += this.pcmSource.consumeSamples(renderedSamples);
         } else {
             final int numChannels = audioFormat.getChannels();
             final int numSamples = renderedSamples.length / numChannels;
+            final boolean hasPitchOscillator = this.pitchOscillator != null;
 
             if (numChannels == 2) {
                 for (int i = 0; i < numSamples && !this.isFinished(); i++) {
-                    final int[] sample = this.pcmSource.consumeSample(this.pitch);
+                    final int[] sample = this.pcmSource.consumeSample(!hasPitchOscillator ? this.pitch : this.pitchOscillator.modifyValue(this.pitch, audioFormat.getSampleRate()));
                     renderedSamples[renderedIndex++] = sample[0];
                     renderedSamples[renderedIndex++] = sample[1];
                 }
             } else {
                 for (int i = 0; i < numSamples && !this.isFinished(); i++) {
-                    final int[] sample = this.pcmSource.consumeSample(this.pitch);
+                    final int[] sample = this.pcmSource.consumeSample(!hasPitchOscillator ? this.pitch : this.pitchOscillator.modifyValue(this.pitch, audioFormat.getSampleRate()));
                     final int monoSample = (sample[0] + sample[1]) / 2;
                     for (int j = 0; j < numChannels; j++) {
                         renderedSamples[renderedIndex++] = monoSample;
@@ -86,6 +89,14 @@ public class StereoSound extends Sound {
         }
 
         this.pitch = pitch;
+    }
+
+    public Oscillator getPitchOscillator() {
+        return this.pitchOscillator;
+    }
+
+    public void setPitchOscillator(final Oscillator pitchOscillator) {
+        this.pitchOscillator = pitchOscillator;
     }
 
 }
