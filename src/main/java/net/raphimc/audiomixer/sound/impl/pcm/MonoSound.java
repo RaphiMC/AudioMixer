@@ -15,55 +15,47 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.raphimc.audiomixer.sound.source.pcm;
+package net.raphimc.audiomixer.sound.impl.pcm;
 
 import net.raphimc.audiomixer.pcmsource.MonoPcmSource;
 import net.raphimc.audiomixer.sound.Sound;
 
 import javax.sound.sampled.AudioFormat;
+import java.util.Arrays;
 
-public class OptimizedMonoSound implements Sound {
+public class MonoSound extends Sound {
 
     private final MonoPcmSource pcmSource;
     private float pitch;
-    private float volume;
-    private float panning;
 
-    public OptimizedMonoSound(final MonoPcmSource pcmSource) {
-        this(pcmSource, 1F, 1F, 0F);
+    public MonoSound(final MonoPcmSource pcmSource) {
+        this(pcmSource, 1F);
     }
 
-    public OptimizedMonoSound(final MonoPcmSource pcmSource, final float pitch, final float volume, final float panning) {
+    public MonoSound(final MonoPcmSource pcmSource, final float pitch) {
         this.pcmSource = pcmSource;
         this.setPitch(pitch);
-        this.setVolume(volume);
-        this.setPanning(panning);
     }
 
     @Override
     public void render(final AudioFormat audioFormat, final int[] renderedSamples) {
-        final int numChannels = audioFormat.getChannels();
-        final int numSamples = renderedSamples.length / numChannels;
-
-        final float leftVolume = numChannels == 2 ? (1F - this.panning) * this.volume : 0;
-        final float rightVolume = numChannels == 2 ? this.panning * this.volume : 0;
-
         int renderedIndex = 0;
-        for (int i = 0; i < numSamples && !this.isFinished(); i++) {
-            final int sample = this.pcmSource.consumeSample(this.pitch);
-            if (numChannels == 2) {
-                renderedSamples[renderedIndex++] = (int) (sample * leftVolume);
-                renderedSamples[renderedIndex++] = (int) (sample * rightVolume);
-            } else {
+        if (this.pitch == 1F && audioFormat.getChannels() == 1) {
+            renderedIndex += this.pcmSource.consumeSamples(renderedSamples);
+        } else {
+            final int numChannels = audioFormat.getChannels();
+            final int numSamples = renderedSamples.length / numChannels;
+
+            for (int i = 0; i < numSamples && !this.isFinished(); i++) {
+                final int sample = this.pcmSource.consumeSample(this.pitch);
                 for (int j = 0; j < numChannels; j++) {
-                    renderedSamples[renderedIndex++] = (int) (sample * this.volume);
+                    renderedSamples[renderedIndex++] = sample;
                 }
             }
         }
+        Arrays.fill(renderedSamples, renderedIndex, renderedSamples.length, 0);
 
-        while (renderedIndex < renderedSamples.length) {
-            renderedSamples[renderedIndex++] = 0;
-        }
+        this.soundModifiers.modify(audioFormat, renderedSamples);
     }
 
     @Override
@@ -85,22 +77,6 @@ public class OptimizedMonoSound implements Sound {
         }
 
         this.pitch = pitch;
-    }
-
-    public float getVolume() {
-        return this.volume;
-    }
-
-    public void setVolume(final float volume) {
-        this.volume = Math.max(0, volume);
-    }
-
-    public float getPanning() {
-        return this.panning * 2F - 1F;
-    }
-
-    public void setPanning(final float panning) {
-        this.panning = (Math.max(-1F, Math.min(1F, panning)) + 1) / 2F;
     }
 
 }

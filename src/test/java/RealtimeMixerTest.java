@@ -18,7 +18,7 @@
 
 import net.raphimc.audiomixer.BackgroundSourceDataLineAudioMixer;
 import net.raphimc.audiomixer.pcmsource.impl.MonoIntPcmSource;
-import net.raphimc.audiomixer.sound.source.pcm.OptimizedMonoSound;
+import net.raphimc.audiomixer.sound.impl.pcm.OptimizedMonoSound;
 import net.raphimc.audiomixer.util.AudioFormats;
 import net.raphimc.audiomixer.util.io.SoundIO;
 

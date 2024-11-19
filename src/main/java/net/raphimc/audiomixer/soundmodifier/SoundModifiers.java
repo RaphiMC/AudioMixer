@@ -35,6 +35,10 @@ public class SoundModifiers {
     }
 
     public synchronized void modify(final AudioFormat audioFormat, final int[] renderedSamples) {
+        if (this.soundModifiers.isEmpty()) {
+            return;
+        }
+
         for (SoundModifier modifier : this.soundModifiers) {
             modifier.modify(audioFormat, renderedSamples);
         }
@@ -82,6 +86,14 @@ public class SoundModifiers {
 
     public synchronized void remove(final SoundModifier soundModifier) {
         this.soundModifiers.remove(soundModifier);
+    }
+
+    public synchronized void clear() {
+        this.soundModifiers.clear();
+    }
+
+    public synchronized boolean isEmpty() {
+        return this.soundModifiers.isEmpty();
     }
 
 }

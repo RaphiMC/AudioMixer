@@ -15,41 +15,35 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.raphimc.audiomixer.sound.source;
+package net.raphimc.audiomixer.sound.impl;
 
+import net.raphimc.audiomixer.oscillator.Oscillator;
 import net.raphimc.audiomixer.sound.Sound;
 
 import javax.sound.sampled.AudioFormat;
 
-@Deprecated(forRemoval = true)
-public class SineWaveSound implements Sound {
+public class OscillatorSound extends Sound {
 
-    private int frequency;
-    private float volume;
-    private double angle;
+    private final Oscillator oscillator;
 
-    public SineWaveSound(final int frequency, final float volume) {
-        this.setFrequency(frequency);
-        this.setVolume(volume);
+    public OscillatorSound(final Oscillator oscillator) {
+        this.oscillator = oscillator;
     }
 
     @Override
     public void render(final AudioFormat audioFormat, final int[] renderedSamples) {
         final int maxValue = (int) Math.pow(2, audioFormat.getSampleSizeInBits() - 1) - 1;
         final int numChannels = audioFormat.getChannels();
-        final double angularVelocity = 2 * Math.PI * this.frequency / audioFormat.getSampleRate();
+        final float sampleRate = audioFormat.getSampleRate();
 
         for (int i = 0; i < renderedSamples.length; i += numChannels) {
-            final int sample = (int) (Math.sin(this.angle) * this.volume * maxValue);
+            final int sample = (int) (this.oscillator.getNextValue(sampleRate) * maxValue);
             for (int channel = 0; channel < numChannels; channel++) {
                 renderedSamples[i + channel] = sample;
             }
-
-            this.angle += angularVelocity;
-            if (this.angle > 2 * Math.PI) {
-                this.angle -= 2 * Math.PI;
-            }
         }
+
+        this.soundModifiers.modify(audioFormat, renderedSamples);
     }
 
     @Override
@@ -57,24 +51,8 @@ public class SineWaveSound implements Sound {
         return false;
     }
 
-    public int getFrequency() {
-        return this.frequency;
-    }
-
-    public void setFrequency(final int frequency) {
-        if (frequency <= 0) {
-            throw new IllegalArgumentException("Frequency must be greater than 0");
-        }
-
-        this.frequency = frequency;
-    }
-
-    public float getVolume() {
-        return this.volume;
-    }
-
-    public void setVolume(final float volume) {
-        this.volume = Math.max(0, volume);
+    public Oscillator getOscillator() {
+        return this.oscillator;
     }
 
 }

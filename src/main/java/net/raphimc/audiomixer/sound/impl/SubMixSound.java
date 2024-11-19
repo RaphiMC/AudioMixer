@@ -15,19 +15,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.raphimc.audiomixer.sound.special;
+package net.raphimc.audiomixer.sound.impl;
 
 import net.raphimc.audiomixer.sound.Sound;
-import net.raphimc.audiomixer.soundmodifier.SoundModifiers;
 
 import javax.sound.sampled.AudioFormat;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SubMixSound implements Sound {
+public class SubMixSound extends Sound {
 
     protected final List<Sound> sounds = new ArrayList<>();
-    private final SoundModifiers soundModifiers = new SoundModifiers();
     private int maxSounds;
     private int mixedSounds;
 
@@ -88,10 +86,6 @@ public class SubMixSound implements Sound {
         }
 
         this.maxSounds = maxSounds;
-    }
-
-    public SoundModifiers getSoundModifiers() {
-        return this.soundModifiers;
     }
 
     public int getMixedSounds() {

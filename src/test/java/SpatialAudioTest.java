@@ -18,8 +18,7 @@
 
 import net.raphimc.audiomixer.BackgroundSourceDataLineAudioMixer;
 import net.raphimc.audiomixer.oscillator.impl.SineOscillator;
-import net.raphimc.audiomixer.sound.source.OscillatorSound;
-import net.raphimc.audiomixer.sound.special.ModifiableSound;
+import net.raphimc.audiomixer.sound.impl.OscillatorSound;
 import net.raphimc.audiomixer.soundmodifier.impl.SpatialModifier;
 
 import javax.sound.sampled.AudioFormat;
@@ -35,8 +34,10 @@ public class SpatialAudioTest {
         AudioFormat format = new AudioFormat(48000, 16, 2, true, false);
         BackgroundSourceDataLineAudioMixer audioMixer = new BackgroundSourceDataLineAudioMixer(AudioSystem.getSourceDataLine(format));
 
+        final OscillatorSound sound = new OscillatorSound(new SineOscillator(440));
         final SpatialModifier spatialModifier = new SpatialModifier(250);
-        audioMixer.playSound(new ModifiableSound(new OscillatorSound(new SineOscillator(400)), spatialModifier));
+        sound.getSoundModifiers().append(spatialModifier);
+        audioMixer.playSound(sound);
 
         JFrame frame = new JFrame("AudioMixer Test");
         frame.setLayout(new BoxLayout(frame.getContentPane(), BoxLayout.Y_AXIS));

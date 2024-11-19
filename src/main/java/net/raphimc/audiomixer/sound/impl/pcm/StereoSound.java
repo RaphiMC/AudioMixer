@@ -15,14 +15,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.raphimc.audiomixer.sound.source.pcm;
+package net.raphimc.audiomixer.sound.impl.pcm;
 
 import net.raphimc.audiomixer.pcmsource.StereoPcmSource;
 import net.raphimc.audiomixer.sound.Sound;
 
 import javax.sound.sampled.AudioFormat;
+import java.util.Arrays;
 
-public class StereoSound implements Sound {
+public class StereoSound extends Sound {
 
     private final StereoPcmSource pcmSource;
     private float pitch;
@@ -61,10 +62,9 @@ public class StereoSound implements Sound {
                 }
             }
         }
+        Arrays.fill(renderedSamples, renderedIndex, renderedSamples.length, 0);
 
-        while (renderedIndex < renderedSamples.length) {
-            renderedSamples[renderedIndex++] = 0;
-        }
+        this.soundModifiers.modify(audioFormat, renderedSamples);
     }
 
     @Override

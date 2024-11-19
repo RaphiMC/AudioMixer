@@ -17,12 +17,20 @@
  */
 package net.raphimc.audiomixer.sound;
 
+import net.raphimc.audiomixer.soundmodifier.SoundModifiers;
+
 import javax.sound.sampled.AudioFormat;
 
-public interface Sound {
+public abstract class Sound {
 
-    void render(final AudioFormat audioFormat, final int[] renderedSamples);
+    protected final SoundModifiers soundModifiers = new SoundModifiers();
 
-    boolean isFinished();
+    public abstract void render(final AudioFormat audioFormat, final int[] renderedSamples);
+
+    public abstract boolean isFinished();
+
+    public SoundModifiers getSoundModifiers() {
+        return this.soundModifiers;
+    }
 
 }

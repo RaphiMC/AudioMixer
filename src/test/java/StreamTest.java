@@ -18,7 +18,7 @@
 
 import net.raphimc.audiomixer.BackgroundSourceDataLineAudioMixer;
 import net.raphimc.audiomixer.pcmsource.impl.StereoPullIntPcmSource;
-import net.raphimc.audiomixer.sound.source.pcm.StereoSound;
+import net.raphimc.audiomixer.sound.impl.pcm.StereoSound;
 import net.raphimc.audiomixer.util.io.SampleInputStream;
 
 import javax.sound.sampled.AudioFormat;

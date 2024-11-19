@@ -18,7 +18,7 @@
 package net.raphimc.audiomixer;
 
 import net.raphimc.audiomixer.sound.Sound;
-import net.raphimc.audiomixer.sound.special.SubMixSound;
+import net.raphimc.audiomixer.sound.impl.SubMixSound;
 import net.raphimc.audiomixer.soundmodifier.SoundModifiers;
 
 import javax.sound.sampled.AudioFormat;
