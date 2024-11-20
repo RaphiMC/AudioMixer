@@ -17,6 +17,12 @@ High performance Java audio mixing library.
   - Stereo panning control
   - Bass Boost
   - Bit Crusher
+- Modulation effects
+  - Pitch modulation (Vibrato)
+  - Volume modulation (Tremolo)
+- Oscillators
+  - Sine, Square, Triangle, Sawtooth
+  - Random noise
 - High performance (Mixes thousands of simultaneously playing sounds in realtime)
 
 ## Releases
