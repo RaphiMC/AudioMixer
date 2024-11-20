@@ -20,6 +20,7 @@ package net.raphimc.audiomixer.sound.impl.pcm;
 import net.raphimc.audiomixer.oscillator.Oscillator;
 import net.raphimc.audiomixer.pcmsource.StereoPcmSource;
 import net.raphimc.audiomixer.sound.Sound;
+import net.raphimc.audiomixer.util.ArrayUtil;
 
 import javax.sound.sampled.AudioFormat;
 import java.util.Arrays;
@@ -49,19 +50,15 @@ public class StereoSound extends Sound {
             final int numSamples = renderedSamples.length / numChannels;
             final boolean hasPitchOscillator = this.pitchOscillator != null;
 
-            if (numChannels == 2) {
-                for (int i = 0; i < numSamples && !this.isFinished(); i++) {
-                    final int[] sample = this.pcmSource.consumeSample(!hasPitchOscillator ? this.pitch : this.pitchOscillator.modifyValue(this.pitch, audioFormat.getSampleRate()));
+            for (int i = 0; i < numSamples && !this.isFinished(); i++) {
+                final int[] sample = this.pcmSource.consumeSample(!hasPitchOscillator ? this.pitch : this.pitchOscillator.modifyValue(this.pitch, audioFormat.getSampleRate()));
+                if (numChannels == 2) {
                     renderedSamples[renderedIndex++] = sample[0];
                     renderedSamples[renderedIndex++] = sample[1];
-                }
-            } else {
-                for (int i = 0; i < numSamples && !this.isFinished(); i++) {
-                    final int[] sample = this.pcmSource.consumeSample(!hasPitchOscillator ? this.pitch : this.pitchOscillator.modifyValue(this.pitch, audioFormat.getSampleRate()));
+                } else {
                     final int monoSample = (sample[0] + sample[1]) / 2;
-                    for (int j = 0; j < numChannels; j++) {
-                        renderedSamples[renderedIndex++] = monoSample;
-                    }
+                    ArrayUtil.fillFast(renderedSamples, renderedIndex, numChannels, monoSample);
+                    renderedIndex += numChannels;
                 }
             }
         }

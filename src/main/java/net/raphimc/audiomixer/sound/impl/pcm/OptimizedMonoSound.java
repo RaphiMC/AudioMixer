@@ -19,6 +19,7 @@ package net.raphimc.audiomixer.sound.impl.pcm;
 
 import net.raphimc.audiomixer.pcmsource.MonoPcmSource;
 import net.raphimc.audiomixer.sound.Sound;
+import net.raphimc.audiomixer.util.ArrayUtil;
 
 import javax.sound.sampled.AudioFormat;
 import java.util.Arrays;
@@ -56,9 +57,8 @@ public class OptimizedMonoSound extends Sound {
                 renderedSamples[renderedIndex++] = (int) (sample * leftVolume);
                 renderedSamples[renderedIndex++] = (int) (sample * rightVolume);
             } else {
-                for (int j = 0; j < numChannels; j++) {
-                    renderedSamples[renderedIndex++] = (int) (sample * this.volume);
-                }
+                ArrayUtil.fillFast(renderedSamples, renderedIndex, numChannels, (int) (sample * this.volume));
+                renderedIndex += numChannels;
             }
         }
         Arrays.fill(renderedSamples, renderedIndex, renderedSamples.length, 0);

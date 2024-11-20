@@ -20,6 +20,7 @@ package net.raphimc.audiomixer.sound.impl.pcm;
 import net.raphimc.audiomixer.oscillator.Oscillator;
 import net.raphimc.audiomixer.pcmsource.MonoPcmSource;
 import net.raphimc.audiomixer.sound.Sound;
+import net.raphimc.audiomixer.util.ArrayUtil;
 
 import javax.sound.sampled.AudioFormat;
 import java.util.Arrays;
@@ -51,9 +52,8 @@ public class MonoSound extends Sound {
 
             for (int i = 0; i < numSamples && !this.isFinished(); i++) {
                 final int sample = this.pcmSource.consumeSample(!hasPitchOscillator ? this.pitch : this.pitchOscillator.modifyValue(this.pitch, audioFormat.getSampleRate()));
-                for (int j = 0; j < numChannels; j++) {
-                    renderedSamples[renderedIndex++] = sample;
-                }
+                ArrayUtil.fillFast(renderedSamples, renderedIndex, numChannels, sample);
+                renderedIndex += numChannels;
             }
         }
         Arrays.fill(renderedSamples, renderedIndex, renderedSamples.length, 0);
