@@ -17,7 +17,7 @@
  */
 package net.raphimc.audiomixer.soundmodifier.impl;
 
-import net.raphimc.audiomixer.oscillator.Oscillator;
+import net.raphimc.audiomixer.modulator.Modulator;
 import net.raphimc.audiomixer.soundmodifier.SoundModifier;
 
 import javax.sound.sampled.AudioFormat;
@@ -25,7 +25,7 @@ import javax.sound.sampled.AudioFormat;
 public class VolumeModifier implements SoundModifier {
 
     private float volume;
-    private Oscillator volumeOscillator;
+    private Modulator volumeModulator;
 
     public VolumeModifier(final float volume) {
         this.setVolume(volume);
@@ -33,9 +33,9 @@ public class VolumeModifier implements SoundModifier {
 
     @Override
     public void modify(final AudioFormat audioFormat, final int[] renderedSamples) {
-        final boolean hasVolumeOscillator = this.volumeOscillator != null;
+        final boolean hasVolumeModulator = this.volumeModulator != null;
         for (int i = 0; i < renderedSamples.length; i++) {
-            renderedSamples[i] = (int) (renderedSamples[i] * (!hasVolumeOscillator ? this.volume : this.volumeOscillator.modifyValue(this.volume, audioFormat.getSampleRate())));
+            renderedSamples[i] = (int) (renderedSamples[i] * (!hasVolumeModulator ? this.volume : this.volumeModulator.modifyValue(this.volume, audioFormat.getSampleRate())));
         }
     }
 
@@ -51,12 +51,12 @@ public class VolumeModifier implements SoundModifier {
         this.volume = volume;
     }
 
-    public Oscillator getVolumeOscillator() {
-        return this.volumeOscillator;
+    public Modulator getVolumeModulator() {
+        return this.volumeModulator;
     }
 
-    public void setVolumeOscillator(final Oscillator volumeOscillator) {
-        this.volumeOscillator = volumeOscillator;
+    public void setVolumeModulator(final Modulator volumeModulator) {
+        this.volumeModulator = volumeModulator;
     }
 
 }

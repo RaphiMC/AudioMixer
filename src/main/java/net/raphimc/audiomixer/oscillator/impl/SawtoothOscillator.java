@@ -21,28 +21,13 @@ import net.raphimc.audiomixer.oscillator.Oscillator;
 
 public class SawtoothOscillator extends Oscillator {
 
-    private static final double TWO_PI = 2 * Math.PI;
-
-    private double angle;
-
     public SawtoothOscillator(final float frequency) {
         super(frequency);
     }
 
     @Override
-    public float getNextNormalizedValue(final float referenceFrequency) {
-        final float value = (float) (2 * (this.angle / TWO_PI) - 1);
-
-        if (this.frequencyOscillator == null) {
-            this.angle += TWO_PI * this.frequency / referenceFrequency;
-        } else {
-            this.angle += TWO_PI * this.frequencyOscillator.modifyValue(this.frequency, referenceFrequency) / referenceFrequency;
-        }
-        if (this.angle > TWO_PI) {
-            this.angle -= TWO_PI;
-        }
-
-        return value;
+    protected float computeNextValue() {
+        return (float) (2 * (this.angle / TWO_PI) - 1);
     }
 
 }

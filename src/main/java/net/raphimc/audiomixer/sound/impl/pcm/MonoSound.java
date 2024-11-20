@@ -17,7 +17,7 @@
  */
 package net.raphimc.audiomixer.sound.impl.pcm;
 
-import net.raphimc.audiomixer.oscillator.Oscillator;
+import net.raphimc.audiomixer.modulator.Modulator;
 import net.raphimc.audiomixer.pcmsource.MonoPcmSource;
 import net.raphimc.audiomixer.sound.Sound;
 import net.raphimc.audiomixer.util.ArrayUtil;
@@ -29,7 +29,7 @@ public class MonoSound extends Sound {
 
     private final MonoPcmSource pcmSource;
     private float pitch;
-    private Oscillator pitchOscillator;
+    private Modulator pitchModulator;
 
     public MonoSound(final MonoPcmSource pcmSource) {
         this(pcmSource, 1F);
@@ -43,15 +43,15 @@ public class MonoSound extends Sound {
     @Override
     public void render(final AudioFormat audioFormat, final int[] renderedSamples) {
         int renderedIndex = 0;
-        if (this.pitch == 1F && audioFormat.getChannels() == 1 && this.pitchOscillator == null) {
+        if (this.pitch == 1F && audioFormat.getChannels() == 1 && this.pitchModulator == null) {
             renderedIndex += this.pcmSource.consumeSamples(renderedSamples);
         } else {
             final int numChannels = audioFormat.getChannels();
             final int numSamples = renderedSamples.length / numChannels;
-            final boolean hasPitchOscillator = this.pitchOscillator != null;
+            final boolean hasPitchModulator = this.pitchModulator != null;
 
             for (int i = 0; i < numSamples && !this.isFinished(); i++) {
-                final int sample = this.pcmSource.consumeSample(!hasPitchOscillator ? this.pitch : this.pitchOscillator.modifyValue(this.pitch, audioFormat.getSampleRate()));
+                final int sample = this.pcmSource.consumeSample(!hasPitchModulator ? this.pitch : this.pitchModulator.modifyValue(this.pitch, audioFormat.getSampleRate()));
                 ArrayUtil.fillFast(renderedSamples, renderedIndex, numChannels, sample);
                 renderedIndex += numChannels;
             }
@@ -82,12 +82,12 @@ public class MonoSound extends Sound {
         this.pitch = pitch;
     }
 
-    public Oscillator getPitchOscillator() {
-        return this.pitchOscillator;
+    public Modulator getPitchModulator() {
+        return this.pitchModulator;
     }
 
-    public void setPitchOscillator(final Oscillator pitchOscillator) {
-        this.pitchOscillator = pitchOscillator;
+    public void setPitchModulator(final Modulator pitchModulator) {
+        this.pitchModulator = pitchModulator;
     }
 
 }

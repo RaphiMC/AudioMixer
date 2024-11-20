@@ -15,13 +15,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.raphimc.audiomixer.oscillator.impl;
+package net.raphimc.audiomixer.modulator.impl;
 
-import net.raphimc.audiomixer.oscillator.Oscillator;
+import net.raphimc.audiomixer.modulator.Modulator;
 
 import java.util.Random;
 
-public class NoiseOscillator extends Oscillator {
+public class NoiseModulator extends Modulator {
 
     private final Random random = new Random();
 

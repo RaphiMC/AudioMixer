@@ -17,37 +17,40 @@
  */
 package net.raphimc.audiomixer.oscillator;
 
-public abstract class Oscillator {
+import net.raphimc.audiomixer.modulator.Modulator;
 
-    protected float frequency;
-    protected Oscillator frequencyOscillator;
-    private float multiplier;
+public abstract class Oscillator extends Modulator {
+
+    protected static final double TWO_PI = 2 * Math.PI;
+
+    private float frequency;
+    private Modulator frequencyModulator;
+    protected double angle;
 
     public Oscillator() {
     }
 
     public Oscillator(final float frequency) {
         this.setFrequency(frequency);
-        this.setMultiplier(1F);
     }
 
-    public float getNextValue(final float referenceFrequency) {
-        return this.getNextNormalizedValue(referenceFrequency) * this.multiplier;
+    @Override
+    protected float getNextNormalizedValue(final float referenceFrequency) {
+        final float value = this.computeNextValue();
+
+        if (this.frequencyModulator == null) {
+            this.angle += TWO_PI * (this.frequency / referenceFrequency);
+        } else {
+            this.angle += TWO_PI * (this.frequencyModulator.modifyValue(this.frequency, referenceFrequency) / referenceFrequency);
+        }
+        if (this.angle > TWO_PI) {
+            this.angle -= TWO_PI;
+        }
+
+        return value;
     }
 
-    public int getNextValueInt(final float referenceFrequency) {
-        return Math.round(this.getNextValue(referenceFrequency));
-    }
-
-    protected abstract float getNextNormalizedValue(final float referenceFrequency);
-
-    public float modifyValue(final float value, final float referenceFrequency) {
-        return value + this.getNextValue(referenceFrequency);
-    }
-
-    public int modifyValueInt(final int value, final float referenceFrequency) {
-        return value + this.getNextValueInt(referenceFrequency);
-    }
+    protected abstract float computeNextValue();
 
     public float getFrequency() {
         return this.frequency;
@@ -61,20 +64,12 @@ public abstract class Oscillator {
         this.frequency = frequency;
     }
 
-    public Oscillator getFrequencyOscillator() {
-        return this.frequencyOscillator;
+    public Modulator getFrequencyModulator() {
+        return this.frequencyModulator;
     }
 
-    public void setFrequencyOscillator(final Oscillator frequencyOscillator) {
-        this.frequencyOscillator = frequencyOscillator;
-    }
-
-    public float getMultiplier() {
-        return this.multiplier;
-    }
-
-    public void setMultiplier(final float multiplier) {
-        this.multiplier = multiplier;
+    public void setFrequencyModulator(final Modulator frequencyModulator) {
+        this.frequencyModulator = frequencyModulator;
     }
 
 }
