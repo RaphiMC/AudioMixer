@@ -35,7 +35,14 @@ public class VolumeModifier implements SoundModifier {
     public void modify(final AudioFormat audioFormat, final int[] renderedSamples) {
         final boolean hasVolumeModulator = this.volumeModulator != null;
         for (int i = 0; i < renderedSamples.length; i++) {
-            renderedSamples[i] = (int) (renderedSamples[i] * (!hasVolumeModulator ? this.volume : this.volumeModulator.modifyValue(this.volume, audioFormat.getSampleRate())));
+            final float volume;
+            if (!hasVolumeModulator) {
+                volume = this.volume;
+            } else {
+                volume = Math.min(Math.max(this.volumeModulator.modifyValue(this.volume, audioFormat.getSampleRate()), 0F), 1F);
+            }
+
+            renderedSamples[i] = (int) (renderedSamples[i] * volume);
         }
     }
 

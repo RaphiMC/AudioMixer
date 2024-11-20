@@ -51,7 +51,14 @@ public class MonoSound extends Sound {
             final boolean hasPitchModulator = this.pitchModulator != null;
 
             for (int i = 0; i < numSamples && !this.isFinished(); i++) {
-                final int sample = this.pcmSource.consumeSample(!hasPitchModulator ? this.pitch : this.pitchModulator.modifyValue(this.pitch, audioFormat.getSampleRate()));
+                final float pitch;
+                if (!hasPitchModulator) {
+                    pitch = this.pitch;
+                } else {
+                    pitch = Math.max(this.pitchModulator.modifyValue(this.pitch, audioFormat.getSampleRate()), 0.0001F);
+                }
+
+                final int sample = this.pcmSource.consumeSample(pitch);
                 ArrayUtil.fillFast(renderedSamples, renderedIndex, numChannels, sample);
                 renderedIndex += numChannels;
             }

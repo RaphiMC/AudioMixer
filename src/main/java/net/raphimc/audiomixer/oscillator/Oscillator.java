@@ -41,7 +41,7 @@ public abstract class Oscillator extends Modulator {
         if (this.frequencyModulator == null) {
             this.angle += TWO_PI * (this.frequency / referenceFrequency);
         } else {
-            this.angle += TWO_PI * (this.frequencyModulator.modifyValue(this.frequency, referenceFrequency) / referenceFrequency);
+            this.angle += TWO_PI * (Math.max(this.frequencyModulator.modifyValue(this.frequency, referenceFrequency), 0.0001) / referenceFrequency);
         }
         if (this.angle > TWO_PI) {
             this.angle -= TWO_PI;
