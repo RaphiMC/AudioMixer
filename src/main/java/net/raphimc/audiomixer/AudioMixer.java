@@ -53,7 +53,7 @@ public class AudioMixer {
     }
 
     public int[] mix(final float millis) {
-        return this.mix((int) Math.ceil(millis * this.audioFormat.getSampleRate() / 1000F / this.audioFormat.getChannels()) * this.audioFormat.getChannels());
+        return this.mix((int) Math.ceil(this.audioFormat.getSampleRate() / 1000F * millis) * this.audioFormat.getChannels());
     }
 
     public int[] mix(final int sampleCount) {
