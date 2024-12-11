@@ -18,13 +18,14 @@
 package net.raphimc.audiomixer.oscillator;
 
 import net.raphimc.audiomixer.modulator.Modulator;
+import net.raphimc.audiomixer.valuemodifier.ValueModifier;
 
 public abstract class Oscillator extends Modulator {
 
     protected static final double TWO_PI = 2 * Math.PI;
 
     private float frequency;
-    private Modulator frequencyModulator;
+    private ValueModifier frequencyModifier;
     protected double angle;
 
     public Oscillator() {
@@ -38,10 +39,10 @@ public abstract class Oscillator extends Modulator {
     protected float getNextNormalizedValue(final float referenceFrequency) {
         final float value = this.computeNextValue();
 
-        if (this.frequencyModulator == null) {
+        if (this.frequencyModifier == null) {
             this.angle += TWO_PI * (this.frequency / referenceFrequency);
         } else {
-            this.angle += TWO_PI * (Math.max(this.frequencyModulator.modifyValue(this.frequency, referenceFrequency), 0.0001) / referenceFrequency);
+            this.angle += TWO_PI * (Math.max(this.frequencyModifier.modify(this.frequency, referenceFrequency), 0.0001) / referenceFrequency);
         }
         if (this.angle > TWO_PI) {
             this.angle -= TWO_PI;
@@ -64,12 +65,12 @@ public abstract class Oscillator extends Modulator {
         this.frequency = frequency;
     }
 
-    public Modulator getFrequencyModulator() {
-        return this.frequencyModulator;
+    public ValueModifier getFrequencyModifier() {
+        return this.frequencyModifier;
     }
 
-    public void setFrequencyModulator(final Modulator frequencyModulator) {
-        this.frequencyModulator = frequencyModulator;
+    public void setFrequencyModifier(final ValueModifier frequencyModifier) {
+        this.frequencyModifier = frequencyModifier;
     }
 
 }

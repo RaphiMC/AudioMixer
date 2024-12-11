@@ -17,10 +17,10 @@
  */
 package net.raphimc.audiomixer.sound.impl.pcm;
 
-import net.raphimc.audiomixer.modulator.Modulator;
 import net.raphimc.audiomixer.pcmsource.MonoPcmSource;
 import net.raphimc.audiomixer.sound.Sound;
 import net.raphimc.audiomixer.util.ArrayUtil;
+import net.raphimc.audiomixer.valuemodifier.ValueModifier;
 
 import javax.sound.sampled.AudioFormat;
 import java.util.Arrays;
@@ -29,7 +29,7 @@ public class MonoSound extends Sound {
 
     private final MonoPcmSource pcmSource;
     private float pitch;
-    private Modulator pitchModulator;
+    private ValueModifier pitchModifier;
 
     public MonoSound(final MonoPcmSource pcmSource) {
         this(pcmSource, 1F);
@@ -43,19 +43,19 @@ public class MonoSound extends Sound {
     @Override
     public void render(final AudioFormat audioFormat, final int[] renderedSamples) {
         int renderedIndex = 0;
-        if (this.pitch == 1F && audioFormat.getChannels() == 1 && this.pitchModulator == null) {
+        if (this.pitch == 1F && audioFormat.getChannels() == 1 && this.pitchModifier == null) {
             renderedIndex += this.pcmSource.consumeSamples(renderedSamples);
         } else {
             final int numChannels = audioFormat.getChannels();
             final int numSamples = renderedSamples.length / numChannels;
-            final boolean hasPitchModulator = this.pitchModulator != null;
+            final boolean hasPitchModifier = this.pitchModifier != null;
 
             for (int i = 0; i < numSamples && !this.isFinished(); i++) {
                 final float pitch;
-                if (!hasPitchModulator) {
+                if (!hasPitchModifier) {
                     pitch = this.pitch;
                 } else {
-                    pitch = Math.max(this.pitchModulator.modifyValue(this.pitch, audioFormat.getSampleRate()), 0.0001F);
+                    pitch = Math.max(this.pitchModifier.modify(this.pitch, audioFormat.getSampleRate()), 0.0001F);
                 }
 
                 final int sample = this.pcmSource.consumeSample(pitch);
@@ -89,12 +89,12 @@ public class MonoSound extends Sound {
         this.pitch = pitch;
     }
 
-    public Modulator getPitchModulator() {
-        return this.pitchModulator;
+    public ValueModifier getPitchModifier() {
+        return this.pitchModifier;
     }
 
-    public void setPitchModulator(final Modulator pitchModulator) {
-        this.pitchModulator = pitchModulator;
+    public void setPitchModifier(final ValueModifier pitchModifier) {
+        this.pitchModifier = pitchModifier;
     }
 
 }

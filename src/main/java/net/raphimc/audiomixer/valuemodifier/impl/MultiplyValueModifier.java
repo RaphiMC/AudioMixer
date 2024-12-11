@@ -15,35 +15,33 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.raphimc.audiomixer.modulator;
+package net.raphimc.audiomixer.valuemodifier.impl;
 
 import net.raphimc.audiomixer.valuemodifier.ValueModifier;
 
-public abstract class Modulator implements ValueModifier {
+public class MultiplyValueModifier implements ValueModifier {
 
-    private float multiplier;
+    private float modifier;
 
-    public Modulator() {
-        this.setMultiplier(1F);
+    public MultiplyValueModifier() {
+        this.setModifier(1F);
+    }
+
+    public MultiplyValueModifier(final float modifier) {
+        this.setModifier(modifier);
     }
 
     @Override
     public float modify(final float value, final float referenceFrequency) {
-        return value + this.getNextValue(referenceFrequency);
+        return value * this.modifier;
     }
 
-    public float getNextValue(final float referenceFrequency) {
-        return this.getNextNormalizedValue(referenceFrequency) * this.multiplier;
+    public float getModifier() {
+        return this.modifier;
     }
 
-    protected abstract float getNextNormalizedValue(final float referenceFrequency);
-
-    public float getMultiplier() {
-        return this.multiplier;
-    }
-
-    public void setMultiplier(final float multiplier) {
-        this.multiplier = multiplier;
+    public void setModifier(final float modifier) {
+        this.modifier = modifier;
     }
 
 }

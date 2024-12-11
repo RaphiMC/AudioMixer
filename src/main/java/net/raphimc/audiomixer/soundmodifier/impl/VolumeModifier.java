@@ -17,15 +17,15 @@
  */
 package net.raphimc.audiomixer.soundmodifier.impl;
 
-import net.raphimc.audiomixer.modulator.Modulator;
 import net.raphimc.audiomixer.soundmodifier.SoundModifier;
+import net.raphimc.audiomixer.valuemodifier.ValueModifier;
 
 import javax.sound.sampled.AudioFormat;
 
 public class VolumeModifier implements SoundModifier {
 
     private float volume;
-    private Modulator volumeModulator;
+    private ValueModifier volumeModifier;
 
     public VolumeModifier(final float volume) {
         this.setVolume(volume);
@@ -33,13 +33,13 @@ public class VolumeModifier implements SoundModifier {
 
     @Override
     public void modify(final AudioFormat audioFormat, final int[] renderedSamples) {
-        final boolean hasVolumeModulator = this.volumeModulator != null;
+        final boolean hasVolumeModifier = this.volumeModifier != null;
         for (int i = 0; i < renderedSamples.length; i++) {
             final float volume;
-            if (!hasVolumeModulator) {
+            if (!hasVolumeModifier) {
                 volume = this.volume;
             } else {
-                volume = Math.min(Math.max(this.volumeModulator.modifyValue(this.volume, audioFormat.getSampleRate()), 0F), 1F);
+                volume = Math.min(Math.max(this.volumeModifier.modify(this.volume, audioFormat.getSampleRate()), 0F), 1F);
             }
 
             renderedSamples[i] = (int) (renderedSamples[i] * volume);
@@ -58,12 +58,12 @@ public class VolumeModifier implements SoundModifier {
         this.volume = volume;
     }
 
-    public Modulator getVolumeModulator() {
-        return this.volumeModulator;
+    public ValueModifier getVolumeModifier() {
+        return this.volumeModifier;
     }
 
-    public void setVolumeModulator(final Modulator volumeModulator) {
-        this.volumeModulator = volumeModulator;
+    public void setVolumeModifier(final ValueModifier volumeModifier) {
+        this.volumeModifier = volumeModifier;
     }
 
 }
