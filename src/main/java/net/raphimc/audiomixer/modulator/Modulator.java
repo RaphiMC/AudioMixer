@@ -22,6 +22,7 @@ import net.raphimc.audiomixer.valuemodifier.ValueModifier;
 public abstract class Modulator implements ValueModifier {
 
     private float multiplier;
+    private ValueModifier multiplierModifier;
 
     public Modulator() {
         this.setMultiplier(1F);
@@ -33,7 +34,8 @@ public abstract class Modulator implements ValueModifier {
     }
 
     public float getNextValue(final float referenceFrequency) {
-        return this.getNextNormalizedValue(referenceFrequency) * this.multiplier;
+        final float multiplier = this.multiplierModifier == null ? this.multiplier : this.multiplierModifier.modify(this.multiplier, referenceFrequency);
+        return this.getNextNormalizedValue(referenceFrequency) * multiplier;
     }
 
     protected abstract float getNextNormalizedValue(final float referenceFrequency);
@@ -44,6 +46,14 @@ public abstract class Modulator implements ValueModifier {
 
     public void setMultiplier(final float multiplier) {
         this.multiplier = multiplier;
+    }
+
+    public ValueModifier getMultiplierModifier() {
+        return this.multiplierModifier;
+    }
+
+    public void setMultiplierModifier(final ValueModifier multiplierModifier) {
+        this.multiplierModifier = multiplierModifier;
     }
 
 }
