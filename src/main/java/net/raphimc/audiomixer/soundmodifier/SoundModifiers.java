@@ -23,7 +23,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Predicate;
 
-public class SoundModifiers {
+public class SoundModifiers implements SoundModifier {
 
     protected final List<SoundModifier> soundModifiers = new ArrayList<>();
 
@@ -34,6 +34,7 @@ public class SoundModifiers {
         this.soundModifiers.addAll(Arrays.asList(modifiers));
     }
 
+    @Override
     public synchronized void modify(final AudioFormat audioFormat, final int[] renderedSamples) {
         if (this.soundModifiers.isEmpty()) {
             return;
