@@ -37,8 +37,8 @@ public class NormalizationModifier implements SoundModifier {
 
     @Override
     public void modify(final AudioFormat audioFormat, final int[] renderedSamples) {
-        final int timeElapsedMillis = ((renderedSamples.length / audioFormat.getChannels()) * 1000) / (int) audioFormat.getSampleRate();
-        final double decayFactor = Math.exp(-((double) timeElapsedMillis / this.decayPeriodMillis));
+        final float timeElapsedMillis = (((float) renderedSamples.length / audioFormat.getChannels()) * 1000F) / audioFormat.getSampleRate();
+        final double decayFactor = Math.exp(-(timeElapsedMillis / this.decayPeriodMillis));
         final int newRunningMaxSampleValue = (int) (this.runningMaxSampleValue * decayFactor);
         this.runningMaxSampleValue = Math.max(1, Math.max(newRunningMaxSampleValue, SoundSampleUtil.getMax(renderedSamples)));
         SoundSampleUtil.normalize(renderedSamples, (int) Math.pow(2, audioFormat.getSampleSizeInBits() - 1) - 1, this.runningMaxSampleValue);

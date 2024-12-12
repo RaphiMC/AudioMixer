@@ -47,7 +47,7 @@ public class FileTest {
         GrowableArray outputSamples = new GrowableArray(0);
         // Mix 1 second of audio until there are no more active sounds (The mixer will automatically stop finished sounds)
         while (mixer.getMasterMixSound().getActiveSounds() > 0) {
-            outputSamples.add(mixer.mix(1000F));
+            outputSamples.add(mixer.mixMillis(1000));
         }
         // Normalize the audio samples, so that they are in the range of a short (16 bit)
         SoundSampleUtil.normalize(outputSamples.getArrayDirect(), Short.MAX_VALUE);

@@ -42,7 +42,7 @@ public abstract class Oscillator extends Modulator {
         if (this.frequencyModifier == null) {
             this.angle += TWO_PI * (this.frequency / referenceFrequency);
         } else {
-            this.angle += TWO_PI * (Math.max(this.frequencyModifier.modify(this.frequency, referenceFrequency), 0.0001) / referenceFrequency);
+            this.angle += TWO_PI * (Math.max(this.frequencyModifier.modify(this.frequency, referenceFrequency), 0F) / referenceFrequency);
         }
         if (this.angle > TWO_PI) {
             this.angle -= TWO_PI;
@@ -58,8 +58,8 @@ public abstract class Oscillator extends Modulator {
     }
 
     public Oscillator setFrequency(final float frequency) {
-        if (frequency <= 0) {
-            throw new IllegalArgumentException("Frequency must be greater than 0");
+        if (frequency < 0) {
+            throw new IllegalArgumentException("Frequency must be greater than or equal to 0");
         }
 
         this.frequency = frequency;

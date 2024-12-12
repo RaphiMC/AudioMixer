@@ -42,13 +42,13 @@ public class Benchmark {
 
         // Warmup (Mix 1 second of audio)
         for (int i = 0; i < 100; i++) {
-            mixer.mix(10F);
+            mixer.mixMillis(10);
         }
 
         // Benchmark (Mix 2 seconds of audio)
         long start = System.currentTimeMillis();
         for (int i = 0; i < 200; i++) {
-            mixer.mix(10F);
+            mixer.mixMillis(10);
         }
         long end = System.currentTimeMillis();
         System.out.println("Time: " + (end - start) + "ms");

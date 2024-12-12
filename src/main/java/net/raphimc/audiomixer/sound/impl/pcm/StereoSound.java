@@ -55,7 +55,7 @@ public class StereoSound extends Sound {
                 if (!hasPitchModifier) {
                     pitch = this.pitch;
                 } else {
-                    pitch = Math.max(this.pitchModifier.modify(this.pitch, audioFormat.getSampleRate()), 0.0001F);
+                    pitch = Math.max(this.pitchModifier.modify(this.pitch, audioFormat.getSampleRate()), 0F);
                 }
 
                 final int[] sample = this.pcmSource.consumeSample(pitch);
@@ -88,8 +88,8 @@ public class StereoSound extends Sound {
     }
 
     public StereoSound setPitch(final float pitch) {
-        if (pitch <= 0) {
-            throw new IllegalArgumentException("Pitch must be greater than 0");
+        if (pitch < 0) {
+            throw new IllegalArgumentException("Pitch must be greater than or equal to 0");
         }
 
         this.pitch = pitch;

@@ -52,7 +52,7 @@ public class AudioMixer {
         return this.masterMixSound.getSoundModifiers();
     }
 
-    public int[] mix(final float millis) {
+    public int[] mixMillis(final int millis) {
         return this.mix((int) Math.ceil(this.audioFormat.getSampleRate() / 1000F * millis) * this.audioFormat.getChannels());
     }
 
