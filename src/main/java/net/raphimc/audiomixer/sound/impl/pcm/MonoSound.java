@@ -81,20 +81,22 @@ public class MonoSound extends Sound {
         return this.pitch;
     }
 
-    public void setPitch(final float pitch) {
+    public MonoSound setPitch(final float pitch) {
         if (pitch <= 0) {
             throw new IllegalArgumentException("Pitch must be greater than 0");
         }
 
         this.pitch = pitch;
+        return this;
     }
 
     public ValueModifier getPitchModifier() {
         return this.pitchModifier;
     }
 
-    public void setPitchModifier(final ValueModifier pitchModifier) {
+    public MonoSound setPitchModifier(final ValueModifier pitchModifier) {
         this.pitchModifier = pitchModifier;
+        return this;
     }
 
 }

@@ -61,84 +61,92 @@ public class SpatialModifier implements SoundModifier {
         return this.maxDistance;
     }
 
-    public void setMaxDistance(final float maxDistance) {
+    public SpatialModifier setMaxDistance(final float maxDistance) {
         if (maxDistance <= 0) {
             throw new IllegalArgumentException("Max distance must be greater than zero");
         }
 
         this.maxDistance = maxDistance;
         this.recalculate = true;
+        return this;
     }
 
     public float getSoundX() {
         return this.soundX;
     }
 
-    public void setSoundX(final float soundX) {
+    public SpatialModifier setSoundX(final float soundX) {
         this.soundX = soundX;
         this.recalculate = true;
+        return this;
     }
 
     public float getSoundY() {
         return this.soundY;
     }
 
-    public void setSoundY(final float soundY) {
+    public SpatialModifier setSoundY(final float soundY) {
         this.soundY = soundY;
         this.recalculate = true;
+        return this;
     }
 
     public float getSoundZ() {
         return this.soundZ;
     }
 
-    public void setSoundZ(final float soundZ) {
+    public SpatialModifier setSoundZ(final float soundZ) {
         this.soundZ = soundZ;
         this.recalculate = true;
+        return this;
     }
 
     public float getListenerX() {
         return this.listenerX;
     }
 
-    public void setListenerX(final float listenerX) {
+    public SpatialModifier setListenerX(final float listenerX) {
         this.listenerX = listenerX;
         this.recalculate = true;
+        return this;
     }
 
     public float getListenerY() {
         return this.listenerY;
     }
 
-    public void setListenerY(final float listenerY) {
+    public SpatialModifier setListenerY(final float listenerY) {
         this.listenerY = listenerY;
         this.recalculate = true;
+        return this;
     }
 
     public float getListenerZ() {
         return this.listenerZ;
     }
 
-    public void setListenerZ(final float listenerZ) {
+    public SpatialModifier setListenerZ(final float listenerZ) {
         this.listenerZ = listenerZ;
         this.recalculate = true;
+        return this;
     }
 
     public float getListenerYaw() {
         return this.listenerYaw;
     }
 
-    public void setListenerYaw(final float listenerYaw) {
+    public SpatialModifier setListenerYaw(final float listenerYaw) {
         this.listenerYaw = listenerYaw;
         this.recalculate = true;
+        return this;
     }
 
     public float getListenerYawDegrees() {
         return (float) Math.toDegrees(this.listenerYaw);
     }
 
-    public void setListenerYawDegrees(final int listenerYaw) {
-        this.setListenerYaw((float) Math.toRadians(listenerYaw % 360));
+    public SpatialModifier setListenerYawDegrees(final int listenerYaw) {
+        return this.setListenerYaw((float) Math.toRadians(listenerYaw % 360));
     }
 
     private void calculatePanningAndAttenuation() {

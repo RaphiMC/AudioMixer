@@ -41,12 +41,13 @@ public class SquareOscillator extends Oscillator {
         return this.dutyCycle;
     }
 
-    public void setDutyCycle(final float dutyCycle) {
+    public SquareOscillator setDutyCycle(final float dutyCycle) {
         if (dutyCycle <= 0 || dutyCycle >= 1) {
             throw new IllegalArgumentException("Duty cycle must be between 0 and 1 (exclusive)");
         }
 
         this.dutyCycle = dutyCycle;
+        return this;
     }
 
 }

@@ -87,8 +87,9 @@ public class SourceDataLineAudioMixer extends AudioMixer {
         return this.mixSliceSampleCount;
     }
 
-    public void setMixSliceSampleCount(final int mixSliceSampleCount) {
+    public SourceDataLineAudioMixer setMixSliceSampleCount(final int mixSliceSampleCount) {
         this.mixSliceSampleCount = mixSliceSampleCount;
+        return this;
     }
 
     public VolumeModifier getVolumeModifier() {
@@ -99,12 +100,13 @@ public class SourceDataLineAudioMixer extends AudioMixer {
         return this.normalizationModifier;
     }
 
-    public void setMasterVolume(final int masterVolume) {
-        this.setMasterVolume(masterVolume / 100F);
+    public SourceDataLineAudioMixer setMasterVolume(final int masterVolume) {
+        return this.setMasterVolume(masterVolume / 100F);
     }
 
-    public void setMasterVolume(final float masterVolume) {
+    public SourceDataLineAudioMixer setMasterVolume(final float masterVolume) {
         this.volumeModifier.setVolume(masterVolume);
+        return this;
     }
 
     public float getMasterVolume() {

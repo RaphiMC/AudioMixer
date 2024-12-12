@@ -44,16 +44,18 @@ public abstract class Modulator implements ValueModifier {
         return this.multiplier;
     }
 
-    public void setMultiplier(final float multiplier) {
+    public Modulator setMultiplier(final float multiplier) {
         this.multiplier = multiplier;
+        return this;
     }
 
     public ValueModifier getMultiplierModifier() {
         return this.multiplierModifier;
     }
 
-    public void setMultiplierModifier(final ValueModifier multiplierModifier) {
+    public Modulator setMultiplierModifier(final ValueModifier multiplierModifier) {
         this.multiplierModifier = multiplierModifier;
+        return this;
     }
 
 }

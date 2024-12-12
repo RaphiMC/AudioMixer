@@ -45,10 +45,8 @@ public class SpatialAudioTest {
         frame.setSize(480, 360);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
-        spatialModifier.setListenerX(frame.getWidth() / 2F);
-        spatialModifier.setListenerZ(frame.getHeight() / 2F);
-        spatialModifier.setSoundX(frame.getWidth() / 2F);
-        spatialModifier.setSoundZ(frame.getHeight() / 2F);
+        spatialModifier.setListenerX(frame.getWidth() / 2F).setListenerZ(frame.getHeight() / 2F)
+                .setSoundX(frame.getWidth() / 2F).setSoundZ(frame.getHeight() / 2F);
 
         JPanel panel = new JPanel() {
             @Override
@@ -64,8 +62,7 @@ public class SpatialAudioTest {
         panel.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseDragged(MouseEvent e) {
-                spatialModifier.setSoundX(e.getX());
-                spatialModifier.setSoundZ(e.getY());
+                spatialModifier.setSoundX(e.getX()).setSoundZ(e.getY());
                 e.getComponent().repaint();
             }
         });

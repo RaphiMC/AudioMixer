@@ -65,8 +65,9 @@ public class MonoIntPcmSource implements MonoPcmSource, StaticPcmSource {
     }
 
     @Override
-    public void setPosition(final double position) {
+    public StaticPcmSource setPosition(final double position) {
         this.position = position;
+        return this;
     }
 
     @Override
@@ -75,8 +76,9 @@ public class MonoIntPcmSource implements MonoPcmSource, StaticPcmSource {
     }
 
     @Override
-    public void setProgress(final float progress) {
+    public StaticPcmSource setProgress(final float progress) {
         this.position = (int) ((double) progress * this.samples.length);
+        return this;
     }
 
 }

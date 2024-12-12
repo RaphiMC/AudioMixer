@@ -77,7 +77,7 @@ public class SubMixSound extends Sound {
         return this.maxSounds;
     }
 
-    public void setMaxSounds(final int maxSounds) {
+    public SubMixSound setMaxSounds(final int maxSounds) {
         if (maxSounds < 1) {
             throw new IllegalArgumentException("Max sounds must be at least 1");
         }
@@ -86,6 +86,7 @@ public class SubMixSound extends Sound {
         }
 
         this.maxSounds = maxSounds;
+        return this;
     }
 
     public int getMixedSounds() {

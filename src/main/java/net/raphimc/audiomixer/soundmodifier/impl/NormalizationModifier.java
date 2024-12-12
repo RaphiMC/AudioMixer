@@ -52,8 +52,9 @@ public class NormalizationModifier implements SoundModifier {
         return decayPeriodMillis;
     }
 
-    public void setDecayPeriodMillis(final int decayPeriodMillis) {
+    public NormalizationModifier setDecayPeriodMillis(final int decayPeriodMillis) {
         this.decayPeriodMillis = decayPeriodMillis;
+        return this;
     }
 
 }

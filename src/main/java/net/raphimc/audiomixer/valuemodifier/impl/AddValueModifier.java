@@ -39,8 +39,9 @@ public class AddValueModifier implements ValueModifier {
         return this.modifier;
     }
 
-    public void setModifier(final float modifier) {
+    public AddValueModifier setModifier(final float modifier) {
         this.modifier = modifier;
+        return this;
     }
 
 }

@@ -40,8 +40,9 @@ public class MultiplyValueModifier implements ValueModifier {
         return this.modifier;
     }
 
-    public void setModifier(final float modifier) {
+    public MultiplyValueModifier setModifier(final float modifier) {
         this.modifier = modifier;
+        return this;
     }
 
 }

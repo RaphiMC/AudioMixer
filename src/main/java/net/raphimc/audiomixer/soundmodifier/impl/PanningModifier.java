@@ -45,8 +45,9 @@ public class PanningModifier implements SoundModifier {
         return this.panning * 2F - 1F;
     }
 
-    public void setPanning(final float panning) {
+    public PanningModifier setPanning(final float panning) {
         this.panning = (Math.max(-1F, Math.min(1F, panning)) + 1) / 2F;
+        return this;
     }
 
 }

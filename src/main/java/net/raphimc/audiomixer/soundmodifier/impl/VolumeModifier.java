@@ -50,20 +50,22 @@ public class VolumeModifier implements SoundModifier {
         return this.volume;
     }
 
-    public void setVolume(final float volume) {
+    public VolumeModifier setVolume(final float volume) {
         if (volume < 0 || volume > 1) {
             throw new IllegalArgumentException("Volume must be between 0 and 1");
         }
 
         this.volume = volume;
+        return this;
     }
 
     public ValueModifier getVolumeModifier() {
         return this.volumeModifier;
     }
 
-    public void setVolumeModifier(final ValueModifier volumeModifier) {
+    public VolumeModifier setVolumeModifier(final ValueModifier volumeModifier) {
         this.volumeModifier = volumeModifier;
+        return this;
     }
 
 }

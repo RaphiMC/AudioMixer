@@ -55,20 +55,22 @@ public class BassBoostModifier implements SoundModifier {
         }
     }
 
-    public void setCutoffFrequency(final float cutoffFrequency) {
+    public BassBoostModifier setCutoffFrequency(final float cutoffFrequency) {
         this.rc = (float) (1D / (2 * Math.PI * cutoffFrequency));
+        return this;
     }
 
     public float getFactor() {
         return this.factor;
     }
 
-    public void setFactor(final float factor) {
+    public BassBoostModifier setFactor(final float factor) {
         if (factor < 0) {
             throw new IllegalArgumentException("Factor must be greater than or equal to 0");
         }
 
         this.factor = factor;
+        return this;
     }
 
 }

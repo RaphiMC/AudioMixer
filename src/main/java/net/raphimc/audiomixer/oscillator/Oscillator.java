@@ -57,20 +57,22 @@ public abstract class Oscillator extends Modulator {
         return this.frequency;
     }
 
-    public void setFrequency(final float frequency) {
+    public Oscillator setFrequency(final float frequency) {
         if (frequency <= 0) {
             throw new IllegalArgumentException("Frequency must be greater than 0");
         }
 
         this.frequency = frequency;
+        return this;
     }
 
     public ValueModifier getFrequencyModifier() {
         return this.frequencyModifier;
     }
 
-    public void setFrequencyModifier(final ValueModifier frequencyModifier) {
+    public Oscillator setFrequencyModifier(final ValueModifier frequencyModifier) {
         this.frequencyModifier = frequencyModifier;
+        return this;
     }
 
 }

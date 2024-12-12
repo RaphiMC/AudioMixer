@@ -62,12 +62,13 @@ public class BitCrushModifier implements SoundModifier {
         return this.interval;
     }
 
-    public void setInterval(final int interval) {
+    public BitCrushModifier setInterval(final int interval) {
         if (interval <= 0) {
             throw new IllegalArgumentException("Interval must be greater than 0");
         }
 
         this.interval = interval;
+        return this;
     }
 
 }

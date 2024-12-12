@@ -43,7 +43,7 @@ public class BackgroundSourceDataLineAudioMixer extends SourceDataLineAudioMixer
     }
 
     @Override
-    public void setMixSliceSampleCount(final int mixSliceSampleCount) {
+    public SourceDataLineAudioMixer setMixSliceSampleCount(final int mixSliceSampleCount) {
         throw new UnsupportedOperationException("Cannot change mix slice sample count for auto-mixing audio mixer");
     }
 

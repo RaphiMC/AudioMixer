@@ -79,28 +79,31 @@ public class OptimizedMonoSound extends Sound {
         return this.pitch;
     }
 
-    public void setPitch(final float pitch) {
+    public OptimizedMonoSound setPitch(final float pitch) {
         if (pitch <= 0) {
             throw new IllegalArgumentException("Pitch must be greater than 0");
         }
 
         this.pitch = pitch;
+        return this;
     }
 
     public float getVolume() {
         return this.volume;
     }
 
-    public void setVolume(final float volume) {
+    public OptimizedMonoSound setVolume(final float volume) {
         this.volume = Math.max(0, volume);
+        return this;
     }
 
     public float getPanning() {
         return this.panning * 2F - 1F;
     }
 
-    public void setPanning(final float panning) {
+    public OptimizedMonoSound setPanning(final float panning) {
         this.panning = (Math.max(-1F, Math.min(1F, panning)) + 1) / 2F;
+        return this;
     }
 
 }

@@ -23,10 +23,10 @@ public interface StaticPcmSource {
 
     double getPosition();
 
-    void setPosition(final double position);
+    StaticPcmSource setPosition(final double position);
 
     float getProgress();
 
-    void setProgress(final float progress);
+    StaticPcmSource setProgress(final float progress);
 
 }
