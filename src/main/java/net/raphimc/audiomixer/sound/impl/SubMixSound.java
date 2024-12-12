@@ -28,6 +28,7 @@ public class SubMixSound extends Sound {
     protected final List<Sound> sounds = new ArrayList<>();
     private int maxSounds;
     private int mixedSounds;
+    private long mixRenderTime;
 
     public SubMixSound() {
         this(512);
@@ -39,6 +40,7 @@ public class SubMixSound extends Sound {
 
     @Override
     public synchronized void render(final AudioFormat audioFormat, final int[] finalMixBuffer) {
+        final long start = System.nanoTime();
         this.mixedSounds = this.sounds.size();
 
         final int[] renderedSamples = new int[finalMixBuffer.length];
@@ -51,6 +53,7 @@ public class SubMixSound extends Sound {
         this.soundModifiers.modify(audioFormat, finalMixBuffer);
 
         this.sounds.removeIf(Sound::isFinished);
+        this.mixRenderTime = System.nanoTime() - start;
     }
 
     @Override
@@ -91,6 +94,10 @@ public class SubMixSound extends Sound {
 
     public int getMixedSounds() {
         return this.mixedSounds;
+    }
+
+    public long getMixRenderTime() {
+        return this.mixRenderTime;
     }
 
     public synchronized int getActiveSounds() {
