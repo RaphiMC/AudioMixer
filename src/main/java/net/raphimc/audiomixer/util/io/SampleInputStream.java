@@ -64,22 +64,23 @@ public class SampleInputStream extends InputStream {
     }
 
     public int readSample() throws IOException {
-        switch (this.audioFormat.getSampleSizeInBits()) {
-            case 8:
-                final int b1 = this.read();
-                if (b1 == -1) throw new EOFException();
-                return (byte) b1;
-            case 16:
-                return this.read16Bit();
-            case 32:
-                return this.read32Bit();
-            default:
-                throw new UnsupportedOperationException("Unsupported sample size: " + this.audioFormat.getSampleSizeInBits());
-        }
+        return switch (this.audioFormat.getSampleSizeInBits()) {
+            case 8 -> this.read8Bit();
+            case 16 -> this.read16Bit();
+            case 24 -> this.read24Bit();
+            case 32 -> this.read32Bit();
+            default -> throw new UnsupportedOperationException("Unsupported sample size: " + this.audioFormat.getSampleSizeInBits());
+        };
     }
 
     public AudioFormat getAudioFormat() {
         return this.audioFormat;
+    }
+
+    private byte read8Bit() throws IOException {
+        final int b1 = this.read();
+        if (b1 == -1) throw new EOFException();
+        return (byte) b1;
     }
 
     private short read16Bit() throws IOException {
@@ -90,6 +91,18 @@ public class SampleInputStream extends InputStream {
             return (short) ((b1 << 8) | b2);
         } else {
             return (short) ((b2 << 8) | b1);
+        }
+    }
+
+    private int read24Bit() throws IOException {
+        final int b1 = this.read();
+        final int b2 = this.read();
+        final int b3 = this.read();
+        if (b1 == -1 || b2 == -1 || b3 == -1) throw new EOFException();
+        if (this.audioFormat.isBigEndian()) {
+            return (b1 << 16) | (b2 << 8) | b3;
+        } else {
+            return (b3 << 16) | (b2 << 8) | b1;
         }
     }
 

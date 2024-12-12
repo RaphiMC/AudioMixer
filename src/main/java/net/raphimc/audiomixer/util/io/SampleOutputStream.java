@@ -53,6 +53,9 @@ public class SampleOutputStream extends OutputStream {
             case 16:
                 this.write16Bit(sample);
                 break;
+            case 24:
+                this.write24Bit(sample);
+                break;
             case 32:
                 this.write32Bit(sample);
                 break;
@@ -68,6 +71,18 @@ public class SampleOutputStream extends OutputStream {
         } else {
             this.write(sample & 0xFF);
             this.write((sample >> 8) & 0xFF);
+        }
+    }
+
+    private void write24Bit(final int sample) throws IOException {
+        if (this.audioFormat.isBigEndian()) {
+            this.write((sample >> 16) & 0xFF);
+            this.write((sample >> 8) & 0xFF);
+            this.write(sample & 0xFF);
+        } else {
+            this.write(sample & 0xFF);
+            this.write((sample >> 8) & 0xFF);
+            this.write((sample >> 16) & 0xFF);
         }
     }
 
