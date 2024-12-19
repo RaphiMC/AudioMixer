@@ -27,7 +27,7 @@ High performance Java audio mixing library.
 
 ## Releases
 ### Gradle/Maven
-To use AudioMixer with Gradle/Maven you can get it from [Maven Central](https://mvnrepository.com/artifact/net.raphimc/AudioMixer), [Lenni0451's Maven](https://maven.lenni0451.net/#/releases/net/raphimc/AudioMixer) or [Jitpack](https://jitpack.io/#RaphiMC/AudioMixer).
+To use AudioMixer with Gradle/Maven you can get it from [Maven Central](https://mvnrepository.com/artifact/net.raphimc/audio-mixer), [Lenni0451's Maven](https://maven.lenni0451.net/#/releases/net/raphimc/audio-mixer) or [Jitpack](https://jitpack.io/#RaphiMC/AudioMixer).
 You can also find instructions how to implement it into your build script there.
 
 ### Jar File
