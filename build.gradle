@@ -6,7 +6,7 @@ plugins {
 
 base {
     java.toolchain.languageVersion = JavaLanguageVersion.of(17)
-    compileJava.options.encoding = compileTestJava.options.encoding = "UTF-8"
+    compileJava.options.encoding = compileTestJava.options.encoding = javadoc.options.encoding = "UTF-8"
 
     group = project.maven_group ?: rootProject.maven_group
     archivesName = project.maven_name ?: rootProject.maven_name
@@ -23,6 +23,7 @@ dependencies {
 
 java {
     withSourcesJar()
+    withJavadocJar()
 }
 
 jar {
@@ -32,7 +33,7 @@ jar {
 }
 
 artifacts {
-    archives sourcesJar
+    archives javadocJar, sourcesJar
 }
 
 publishing {
