@@ -17,6 +17,8 @@
  */
 package net.raphimc.audiomixer;
 
+import net.raphimc.audiomixer.util.TimerHack;
+
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
 import java.util.concurrent.Executors;
@@ -34,8 +36,10 @@ public class BackgroundSourceDataLineAudioMixer extends SourceDataLineAudioMixer
     public BackgroundSourceDataLineAudioMixer(final SourceDataLine sourceDataLine, final int updatePeriodMillis) throws LineUnavailableException {
         super(sourceDataLine, (int) Math.ceil(sourceDataLine.getFormat().getSampleRate() / 1000F * updatePeriodMillis) * sourceDataLine.getFormat().getChannels());
 
+        TimerHack.ensureRunning();
         this.mixingScheduler = Executors.newSingleThreadScheduledExecutor(r -> {
             final Thread thread = new Thread(r, "AudioMixer-MixingThread");
+            thread.setPriority(Thread.NORM_PRIORITY + 1);
             thread.setDaemon(true);
             return thread;
         });
