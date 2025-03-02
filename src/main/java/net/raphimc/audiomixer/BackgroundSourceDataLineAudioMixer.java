@@ -34,7 +34,7 @@ public class BackgroundSourceDataLineAudioMixer extends SourceDataLineAudioMixer
     }
 
     public BackgroundSourceDataLineAudioMixer(final SourceDataLine sourceDataLine, final int updatePeriodMillis) throws LineUnavailableException {
-        super(sourceDataLine, (int) Math.ceil(sourceDataLine.getFormat().getSampleRate() / 1000F * updatePeriodMillis) * sourceDataLine.getFormat().getChannels());
+        super(sourceDataLine, updatePeriodMillis);
 
         TimerHack.ensureRunning();
         this.mixingScheduler = Executors.newSingleThreadScheduledExecutor(r -> {
@@ -48,7 +48,7 @@ public class BackgroundSourceDataLineAudioMixer extends SourceDataLineAudioMixer
 
     @Override
     public SourceDataLineAudioMixer setMixSliceSampleCount(final int mixSliceSampleCount) {
-        throw new UnsupportedOperationException("Cannot change mix slice sample count for auto-mixing audio mixer");
+        throw new UnsupportedOperationException("Cannot change mix slice size for auto-mixing audio mixer");
     }
 
     public boolean isRunning() {
