@@ -33,7 +33,7 @@ public class TimerHack {
             THREAD = new Thread(() -> {
                 while (true) {
                     try {
-                        Thread.sleep(Integer.MAX_VALUE);
+                        Thread.sleep(Long.MAX_VALUE);
                     } catch (InterruptedException ignored) {
                     }
                 }
