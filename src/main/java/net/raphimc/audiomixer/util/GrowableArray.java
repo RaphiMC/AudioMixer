@@ -21,47 +21,38 @@ import java.util.Arrays;
 
 public class GrowableArray {
 
-    private int[] array;
+    private float[] array;
     private int size;
 
     public GrowableArray(final int initialSize) {
-        this.array = new int[initialSize];
+        this.array = new float[initialSize];
     }
 
-    public void add(final int value) {
-        this.ensureSize(this.size + 1);
+    public void add(final float value) {
+        this.ensureHasEnoughSpace(1);
         this.array[this.size++] = value;
     }
 
-    public void add(final int[] value) {
-        this.ensureSize(this.size + value.length);
+    public void add(final float[] value) {
+        this.ensureHasEnoughSpace(value.length);
         System.arraycopy(value, 0, this.array, this.size, value.length);
         this.size += value.length;
     }
 
-    public void set(final int index, final int[] values) {
-        this.ensureSize(index + values.length);
-        System.arraycopy(values, 0, this.array, index, values.length);
-        this.size = Math.max(this.size, index + values.length);
-    }
-
-    public int[] getArrayDirect() {
+    public float[] getArrayDirect() {
         return this.array;
     }
 
-    public int[] getArray() {
+    public float[] getArray() {
         return Arrays.copyOf(this.array, this.size);
     }
 
-    private void ensureSize(final int size) {
-        if (size <= this.array.length) {
+    private void ensureHasEnoughSpace(final int bytes) {
+        if (this.size + bytes <= this.array.length) {
             return;
         }
 
-        int newSize = this.array.length << 1;
-        if (newSize - size < 0) {
-            newSize = size;
-        }
+        final int newSize = this.array.length + Math.max(bytes, this.array.length);
         this.array = Arrays.copyOf(this.array, newSize);
     }
 

@@ -17,32 +17,40 @@
  */
 package net.raphimc.audiomixer.util.io;
 
+import net.raphimc.audiomixer.util.AudioFormatModifier;
+
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
-import java.io.EOFException;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.UnsupportedAudioFileException;
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
 public class SampleInputStream extends InputStream {
 
     private final InputStream is;
-    private final AudioFormat audioFormat;
     private final byte[] buffer;
     private int bufferIndex;
     private int bufferLength;
 
-    public SampleInputStream(final AudioInputStream audioInputStream) {
-        this(audioInputStream, audioInputStream.getFormat());
+    public SampleInputStream(final InputStream is, final AudioFormatModifier audioFormatModifier) throws UnsupportedAudioFileException, IOException {
+        this(new BufferedInputStream(is), audioFormatModifier);
     }
 
-    public SampleInputStream(final InputStream is, final AudioFormat audioFormat) {
-        if (audioFormat.getEncoding() != AudioFormat.Encoding.PCM_SIGNED) {
-            throw new IllegalArgumentException("Unsupported audio format: " + audioFormat);
+    public SampleInputStream(final BufferedInputStream is, final AudioFormatModifier audioFormatModifier) throws UnsupportedAudioFileException, IOException {
+        this(AudioSystem.getAudioInputStream(is), audioFormatModifier);
+    }
+
+    public SampleInputStream(AudioInputStream is, final AudioFormatModifier audioFormatModifier) {
+        final AudioFormat sourceAudioFormat = is.getFormat();
+        final AudioFormat targetAudioFormat = audioFormatModifier.getFloatAudioFormat(sourceAudioFormat);
+        if (!sourceAudioFormat.matches(targetAudioFormat)) {
+            is = AudioSystem.getAudioInputStream(targetAudioFormat, is);
         }
 
         this.is = is;
-        this.audioFormat = audioFormat;
-        this.buffer = new byte[(audioFormat.getSampleSizeInBits() / 8) * audioFormat.getChannels()];
+        this.buffer = new byte[targetAudioFormat.getFrameSize()];
     }
 
     @Override
@@ -63,59 +71,15 @@ public class SampleInputStream extends InputStream {
         this.is.close();
     }
 
-    public int readSample() throws IOException {
-        return switch (this.audioFormat.getSampleSizeInBits()) {
-            case 8 -> this.read8Bit();
-            case 16 -> this.read16Bit();
-            case 24 -> this.read24Bit();
-            case 32 -> this.read32Bit();
-            default -> throw new UnsupportedOperationException("Unsupported sample size: " + this.audioFormat.getSampleSizeInBits());
-        };
-    }
-
-    public AudioFormat getAudioFormat() {
-        return this.audioFormat;
-    }
-
-    private byte read8Bit() throws IOException {
-        final int b1 = this.read();
-        if (b1 == -1) throw new EOFException();
-        return (byte) b1;
-    }
-
-    private short read16Bit() throws IOException {
-        final int b1 = this.read();
-        final int b2 = this.read();
-        if (b1 == -1 || b2 == -1) throw new EOFException();
-        if (this.audioFormat.isBigEndian()) {
-            return (short) ((b1 << 8) | b2);
-        } else {
-            return (short) ((b2 << 8) | b1);
-        }
-    }
-
-    private int read24Bit() throws IOException {
-        final int b1 = this.read();
-        final int b2 = this.read();
-        final int b3 = this.read();
-        if (b1 == -1 || b2 == -1 || b3 == -1) throw new EOFException();
-        if (this.audioFormat.isBigEndian()) {
-            return (b1 << 16) | (b2 << 8) | b3;
-        } else {
-            return (b3 << 16) | (b2 << 8) | b1;
-        }
-    }
-
-    private int read32Bit() throws IOException {
+    public float readSample() throws IOException {
         final int b1 = this.read();
         final int b2 = this.read();
         final int b3 = this.read();
         final int b4 = this.read();
-        if (b1 == -1 || b2 == -1 || b3 == -1 || b4 == -1) throw new EOFException();
-        if (this.audioFormat.isBigEndian()) {
-            return (b1 << 24) | (b2 << 16) | (b3 << 8) | b4;
+        if (b1 == -1 || b2 == -1 || b3 == -1 || b4 == -1) {
+            return Float.NaN;
         } else {
-            return (b4 << 24) | (b3 << 16) | (b2 << 8) | b1;
+            return Float.intBitsToFloat((b1 << 24) | (b2 << 16) | (b3 << 8) | b4);
         }
     }
 

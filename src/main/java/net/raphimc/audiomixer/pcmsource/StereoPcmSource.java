@@ -19,17 +19,17 @@ package net.raphimc.audiomixer.pcmsource;
 
 public interface StereoPcmSource extends PcmSource {
 
-    int[] consumeSample(final float increment);
+    float[] consumeSample(final float increment);
 
-    default int consumeSamples(final int[] buffer) {
+    default int consumeSamples(final float[] buffer) {
         return this.consumeSamples(buffer, 0, buffer.length);
     }
 
-    default int consumeSamples(final int[] buffer, final int offset, final int length) {
+    default int consumeSamples(final float[] buffer, final int offset, final int length) {
         int i;
         for (i = 0; i < length && !this.hasReachedEnd(); i += 2) {
             final int index = offset * 2 + i;
-            final int[] sample = this.consumeSample(1);
+            final float[] sample = this.consumeSample(1);
             buffer[index] = sample[0];
             buffer[index + 1] = sample[1];
         }

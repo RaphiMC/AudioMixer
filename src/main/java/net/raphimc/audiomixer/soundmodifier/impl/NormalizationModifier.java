@@ -25,7 +25,7 @@ import javax.sound.sampled.AudioFormat;
 public class NormalizationModifier implements SoundModifier {
 
     private int decayPeriodMillis;
-    private int runningMaxSampleValue = 1;
+    private float runningMaxSampleValue = 0F;
 
     public NormalizationModifier() {
         this(3000);
@@ -36,16 +36,19 @@ public class NormalizationModifier implements SoundModifier {
     }
 
     @Override
-    public void modify(final AudioFormat audioFormat, final int[] renderedSamples) {
+    public void modify(final AudioFormat audioFormat, final float[] renderedSamples) {
         final float timeElapsedMillis = (((float) renderedSamples.length / audioFormat.getChannels()) * 1000F) / audioFormat.getSampleRate();
-        final double decayFactor = Math.exp(-(timeElapsedMillis / this.decayPeriodMillis));
-        final int newRunningMaxSampleValue = (int) (this.runningMaxSampleValue * decayFactor);
-        this.runningMaxSampleValue = Math.max(1, Math.max(newRunningMaxSampleValue, SoundSampleUtil.getMax(renderedSamples)));
-        SoundSampleUtil.normalize(renderedSamples, (int) Math.pow(2, audioFormat.getSampleSizeInBits() - 1) - 1, this.runningMaxSampleValue);
+        final float decayFactor = (float) Math.exp(-timeElapsedMillis / this.decayPeriodMillis);
+        this.runningMaxSampleValue *= decayFactor;
+        final float max = SoundSampleUtil.getMax(renderedSamples);
+        if (max > this.runningMaxSampleValue) {
+            this.runningMaxSampleValue = max;
+        }
+        SoundSampleUtil.normalize(renderedSamples, this.runningMaxSampleValue);
     }
 
     public void reset() {
-        this.runningMaxSampleValue = 1;
+        this.runningMaxSampleValue = 0F;
     }
 
     public int getDecayPeriodMillis() {

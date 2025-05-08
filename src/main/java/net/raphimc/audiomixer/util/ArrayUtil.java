@@ -21,7 +21,7 @@ import java.util.Arrays;
 
 public class ArrayUtil {
 
-    public static void fillFast(final int[] arr, final int index, final int length, final int value) {
+    public static void fillFast(final float[] arr, final int index, final int length, final float value) {
         switch (length) {
             case 0 -> {
             }

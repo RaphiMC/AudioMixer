@@ -41,7 +41,7 @@ public class MonoSound extends Sound {
     }
 
     @Override
-    public void render(final AudioFormat audioFormat, final int[] renderedSamples) {
+    public void render(final AudioFormat audioFormat, final float[] renderedSamples) {
         int renderedIndex = 0;
         if (this.pitch == 1F && audioFormat.getChannels() == 1 && this.pitchModifier == null) {
             renderedIndex += this.pcmSource.consumeSamples(renderedSamples);
@@ -58,12 +58,12 @@ public class MonoSound extends Sound {
                     pitch = Math.max(this.pitchModifier.modify(this.pitch, audioFormat.getSampleRate()), 0F);
                 }
 
-                final int sample = this.pcmSource.consumeSample(pitch);
+                final float sample = this.pcmSource.consumeSample(pitch);
                 ArrayUtil.fillFast(renderedSamples, renderedIndex, numChannels, sample);
                 renderedIndex += numChannels;
             }
         }
-        Arrays.fill(renderedSamples, renderedIndex, renderedSamples.length, 0);
+        Arrays.fill(renderedSamples, renderedIndex, renderedSamples.length, 0F);
 
         this.soundModifiers.modify(audioFormat, renderedSamples);
     }

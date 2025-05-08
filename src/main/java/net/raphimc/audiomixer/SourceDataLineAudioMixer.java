@@ -73,12 +73,12 @@ public class SourceDataLineAudioMixer extends AudioMixer {
         if (this.bufferOverrunStrategy == BufferOverrunStrategy.DO_NOTHING && this.sourceDataLine.available() < samplesSize) {
             return;
         }
-        final int[] samples = this.mix(this.mixSliceSampleCount);
+        final float[] samples = this.mix(this.mixSliceSampleCount);
 
         final ByteArrayOutputStream baos = new ByteArrayOutputStream(samplesSize);
         final SampleOutputStream sos = new SampleOutputStream(baos, this.getAudioFormat());
         try {
-            for (int sample : samples) {
+            for (float sample : samples) {
                 sos.writeSample(sample);
             }
         } catch (IOException ignored) {

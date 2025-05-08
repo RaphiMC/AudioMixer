@@ -21,27 +21,37 @@ import java.util.Arrays;
 
 public class SoundSampleUtil {
 
-    public static void normalize(final int[] samples, final int maxValue) {
-        normalize(samples, maxValue, getMax(samples));
+    public static void normalize(final float[] samples) {
+        normalize(samples, getMax(samples));
     }
 
-    public static void normalize(final int[] samples, final int maxValue, final int max) {
-        final float factor = Math.min(1F, (float) maxValue / max);
+    public static void normalize(final float[] samples, final float max) {
+        if (max <= 1F) return;
+
+        final float factor = 1F / max;
         for (int i = 0; i < samples.length; i++) {
-            samples[i] = (int) (samples[i] * factor);
+            samples[i] *= factor;
         }
     }
 
-    public static int getMax(final int[] samples) {
-        int max = 1;
-        for (int sample : samples) max = Math.max(max, Math.abs(sample));
+    public static float getMax(final float[] samples) {
+        float max = 0F;
+        for (float sample : samples) {
+            max = Math.max(max, Math.abs(sample));
+        }
         return max;
     }
 
-    public static int[] trimZeroesAtEnd(final int[] samples) {
+    public static float[] trimZeroesAtStart(final float[] samples) {
+        int i = 0;
+        while (i < samples.length && samples[i] == 0) i++;
+        return i == 0 ? samples : i == samples.length ? new float[0] : Arrays.copyOfRange(samples, i, samples.length);
+    }
+
+    public static float[] trimZeroesAtEnd(final float[] samples) {
         int i = samples.length - 1;
         while (i >= 0 && samples[i] == 0) i--;
-        return i == samples.length - 1 ? samples : i < 0 ? new int[0] : Arrays.copyOf(samples, i + 1);
+        return i == samples.length - 1 ? samples : i < 0 ? new float[0] : Arrays.copyOf(samples, i + 1);
     }
 
 }

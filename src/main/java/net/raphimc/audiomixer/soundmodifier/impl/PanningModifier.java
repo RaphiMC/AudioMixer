@@ -30,14 +30,14 @@ public class PanningModifier implements SoundModifier {
     }
 
     @Override
-    public void modify(final AudioFormat audioFormat, final int[] renderedSamples) {
+    public void modify(final AudioFormat audioFormat, final float[] renderedSamples) {
         if (audioFormat.getChannels() != 2) {
             throw new UnsupportedOperationException("Target audio format must have 2 channels");
         }
 
         for (int i = 0; i < renderedSamples.length; i += 2) {
-            renderedSamples[i] = (int) (renderedSamples[i] * (1F - this.panning));
-            renderedSamples[i + 1] = (int) (renderedSamples[i + 1] * this.panning);
+            renderedSamples[i] = renderedSamples[i] * (1F - this.panning);
+            renderedSamples[i + 1] = renderedSamples[i + 1] * this.panning;
         }
     }
 

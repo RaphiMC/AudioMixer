@@ -35,7 +35,7 @@ public class SoundModifiers implements SoundModifier {
     }
 
     @Override
-    public synchronized void modify(final AudioFormat audioFormat, final int[] renderedSamples) {
+    public synchronized void modify(final AudioFormat audioFormat, final float[] renderedSamples) {
         if (this.soundModifiers.isEmpty()) {
             return;
         }

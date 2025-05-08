@@ -52,15 +52,15 @@ public class AudioMixer {
         return this.masterMixSound.getSoundModifiers();
     }
 
-    public int[] mixMillis(final int millis) {
+    public float[] mixMillis(final int millis) {
         return this.mix((int) Math.ceil(this.audioFormat.getSampleRate() / 1000F * millis) * this.audioFormat.getChannels());
     }
 
-    public int[] mix(final int sampleCount) {
+    public float[] mix(final int sampleCount) {
         if (sampleCount % this.audioFormat.getChannels() != 0) {
             throw new IllegalArgumentException("Sample count must be a multiple of the channel count");
         }
-        final int[] renderedSamples = new int[sampleCount];
+        final float[] renderedSamples = new float[sampleCount];
         this.masterMixSound.render(this.audioFormat, renderedSamples);
         return renderedSamples;
     }

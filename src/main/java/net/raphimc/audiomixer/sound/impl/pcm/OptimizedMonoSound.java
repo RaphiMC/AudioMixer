@@ -43,25 +43,25 @@ public class OptimizedMonoSound extends Sound {
     }
 
     @Override
-    public void render(final AudioFormat audioFormat, final int[] renderedSamples) {
+    public void render(final AudioFormat audioFormat, final float[] renderedSamples) {
         final int numChannels = audioFormat.getChannels();
         final int numSamples = renderedSamples.length / numChannels;
 
-        final float leftVolume = numChannels == 2 ? (1F - this.panning) * this.volume : 0;
-        final float rightVolume = numChannels == 2 ? this.panning * this.volume : 0;
+        final float leftVolume = numChannels == 2 ? (1F - this.panning) * this.volume : 0F;
+        final float rightVolume = numChannels == 2 ? this.panning * this.volume : 0F;
 
         int renderedIndex = 0;
         for (int i = 0; i < numSamples && !this.isFinished(); i++) {
-            final int sample = this.pcmSource.consumeSample(this.pitch);
+            final float sample = this.pcmSource.consumeSample(this.pitch);
             if (numChannels == 2) {
-                renderedSamples[renderedIndex++] = (int) (sample * leftVolume);
-                renderedSamples[renderedIndex++] = (int) (sample * rightVolume);
+                renderedSamples[renderedIndex++] = sample * leftVolume;
+                renderedSamples[renderedIndex++] = sample * rightVolume;
             } else {
-                ArrayUtil.fillFast(renderedSamples, renderedIndex, numChannels, (int) (sample * this.volume));
+                ArrayUtil.fillFast(renderedSamples, renderedIndex, numChannels, sample * this.volume);
                 renderedIndex += numChannels;
             }
         }
-        Arrays.fill(renderedSamples, renderedIndex, renderedSamples.length, 0);
+        Arrays.fill(renderedSamples, renderedIndex, renderedSamples.length, 0F);
 
         this.soundModifiers.modify(audioFormat, renderedSamples);
     }

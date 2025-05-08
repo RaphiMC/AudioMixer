@@ -19,11 +19,11 @@ package net.raphimc.audiomixer.util;
 
 public class InterpolationUtil {
 
-    public static int interpolateLinear(final int[] arr, final double index) {
+    public static float interpolateLinear(final float[] arr, final double index) {
         return interpolateLinear(arr, index, 0, 1);
     }
 
-    public static int interpolateLinear(final int[] arr, final double index, final int offset, final int channels) {
+    public static float interpolateLinear(final float[] arr, final double index, final int offset, final int channels) {
         final int floorIndex = (int) index * channels + offset;
         final int ceilIndex = floorIndex + channels;
 
@@ -32,9 +32,9 @@ public class InterpolationUtil {
         }
 
         final double fraction = index * channels + offset - floorIndex;
-        final int floorValue = arr[floorIndex];
-        final int ceilValue = arr[ceilIndex];
-        return floorValue + (int) ((ceilValue - floorValue) * fraction);
+        final float floorValue = arr[floorIndex];
+        final float ceilValue = arr[ceilIndex];
+        return floorValue + (float) ((ceilValue - floorValue) * fraction);
     }
 
 }

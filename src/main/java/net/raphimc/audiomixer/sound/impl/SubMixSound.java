@@ -39,11 +39,11 @@ public class SubMixSound extends Sound {
     }
 
     @Override
-    public synchronized void render(final AudioFormat audioFormat, final int[] finalMixBuffer) {
+    public synchronized void render(final AudioFormat audioFormat, final float[] finalMixBuffer) {
         final long start = System.nanoTime();
         this.mixedSounds = this.sounds.size();
 
-        final int[] renderedSamples = new int[finalMixBuffer.length];
+        final float[] renderedSamples = new float[finalMixBuffer.length];
         for (Sound sound : this.sounds) {
             sound.render(audioFormat, renderedSamples);
             for (int i = 0; i < finalMixBuffer.length; i++) {
@@ -83,9 +83,6 @@ public class SubMixSound extends Sound {
     public SubMixSound setMaxSounds(final int maxSounds) {
         if (maxSounds < 1) {
             throw new IllegalArgumentException("Max sounds must be at least 1");
-        }
-        if (maxSounds > 65535) {
-            throw new IllegalArgumentException("Max sounds must be at most 65535");
         }
 
         this.maxSounds = maxSounds;

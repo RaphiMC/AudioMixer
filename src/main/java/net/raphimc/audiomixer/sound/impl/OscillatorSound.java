@@ -31,13 +31,12 @@ public class OscillatorSound extends Sound {
     }
 
     @Override
-    public void render(final AudioFormat audioFormat, final int[] renderedSamples) {
-        final int maxValue = (int) Math.pow(2, audioFormat.getSampleSizeInBits() - 1) - 1;
+    public void render(final AudioFormat audioFormat, final float[] renderedSamples) {
         final int numChannels = audioFormat.getChannels();
         final float sampleRate = audioFormat.getSampleRate();
 
         for (int i = 0; i < renderedSamples.length; i += numChannels) {
-            final int sample = (int) (this.oscillator.getNextValue(sampleRate) * maxValue);
+            final float sample = this.oscillator.getNextValue(sampleRate);
             for (int channel = 0; channel < numChannels; channel++) {
                 renderedSamples[i + channel] = sample;
             }

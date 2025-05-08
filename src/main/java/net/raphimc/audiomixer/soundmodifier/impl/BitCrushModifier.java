@@ -24,21 +24,21 @@ import java.util.Arrays;
 
 public class BitCrushModifier implements SoundModifier {
 
-    private int interval;
+    private int decimationRate;
 
     private int counter;
-    private int[] lastSample = new int[2];
+    private float[] lastSample = new float[2];
 
     public BitCrushModifier() {
         this(15);
     }
 
-    public BitCrushModifier(final int interval) {
-        this.setInterval(interval);
+    public BitCrushModifier(final int decimationRate) {
+        this.setDecimationRate(decimationRate);
     }
 
     @Override
-    public void modify(final AudioFormat audioFormat, final int[] renderedSamples) {
+    public void modify(final AudioFormat audioFormat, final float[] renderedSamples) {
         final int channels = audioFormat.getChannels();
         if (this.lastSample.length < channels) {
             this.lastSample = Arrays.copyOf(this.lastSample, channels);
@@ -46,9 +46,10 @@ public class BitCrushModifier implements SoundModifier {
 
         for (int i = 0; i < renderedSamples.length; i += channels) {
             if (this.counter == 0) {
-                this.counter = this.interval;
-                for (int j = 0; j < channels; j++) {
-                    this.lastSample[j] = (renderedSamples[i + j] & 0xFFFFFFFC);
+                this.counter = this.decimationRate;
+                for (int channelIndex = 0; channelIndex < channels; channelIndex++) {
+                    final int intSample = (int) (renderedSamples[i + channelIndex] * Short.MAX_VALUE);
+                    this.lastSample[channelIndex] = (intSample & 0xFFFFFFFC) / (float) Short.MAX_VALUE;
                 }
             } else {
                 this.counter--;
@@ -58,16 +59,16 @@ public class BitCrushModifier implements SoundModifier {
         }
     }
 
-    public int getInterval() {
-        return this.interval;
+    public int getDecimationRate() {
+        return this.decimationRate;
     }
 
-    public BitCrushModifier setInterval(final int interval) {
-        if (interval <= 0) {
-            throw new IllegalArgumentException("Interval must be greater than 0");
+    public BitCrushModifier setDecimationRate(final int decimationRate) {
+        if (decimationRate <= 0) {
+            throw new IllegalArgumentException("Decimation rate must be greater than 0");
         }
 
-        this.interval = interval;
+        this.decimationRate = decimationRate;
         return this;
     }
 

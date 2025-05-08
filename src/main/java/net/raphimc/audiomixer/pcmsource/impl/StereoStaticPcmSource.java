@@ -21,14 +21,14 @@ import net.raphimc.audiomixer.pcmsource.StaticPcmSource;
 import net.raphimc.audiomixer.pcmsource.StereoPcmSource;
 import net.raphimc.audiomixer.util.InterpolationUtil;
 
-public class StereoIntPcmSource implements StereoPcmSource, StaticPcmSource {
+public class StereoStaticPcmSource implements StereoPcmSource, StaticPcmSource {
 
-    private final int[] samples;
+    private final float[] samples;
     private final int sampleCount;
-    private final int[] buffer = new int[2];
+    private final float[] buffer = new float[2];
     private double position;
 
-    public StereoIntPcmSource(final int[] samples) {
+    public StereoStaticPcmSource(final float[] samples) {
         if (samples == null || samples.length == 0) {
             throw new IllegalArgumentException("Samples must not be null or empty");
         }
@@ -41,7 +41,7 @@ public class StereoIntPcmSource implements StereoPcmSource, StaticPcmSource {
     }
 
     @Override
-    public int[] consumeSample(final float increment) {
+    public float[] consumeSample(final float increment) {
         this.buffer[0] = InterpolationUtil.interpolateLinear(this.samples, this.position, 0, 2);
         this.buffer[1] = InterpolationUtil.interpolateLinear(this.samples, this.position, 1, 2);
         this.position += increment;
@@ -49,7 +49,7 @@ public class StereoIntPcmSource implements StereoPcmSource, StaticPcmSource {
     }
 
     @Override
-    public int consumeSamples(final int[] buffer, final int offset, final int length) {
+    public int consumeSamples(final float[] buffer, final int offset, final int length) {
         final int numSamples = Math.min(length / 2, this.sampleCount - (int) this.position);
         System.arraycopy(this.samples, (int) this.position * 2, buffer, offset * 2, numSamples * 2);
         this.position += numSamples;

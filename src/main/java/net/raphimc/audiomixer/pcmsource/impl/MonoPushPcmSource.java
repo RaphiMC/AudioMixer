@@ -17,36 +17,32 @@
  */
 package net.raphimc.audiomixer.pcmsource.impl;
 
-import net.raphimc.audiomixer.pcmsource.StereoPcmSource;
+import net.raphimc.audiomixer.pcmsource.MonoPcmSource;
 import net.raphimc.audiomixer.util.InterpolationUtil;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class StereoPushIntPcmSource implements StereoPcmSource {
+public class MonoPushPcmSource implements MonoPcmSource {
 
-    private final List<int[]> samples = new ArrayList<>();
-    private final int[] buffer = new int[2];
+    private final List<float[]> samplesQueue = new ArrayList<>();
     private double position;
 
     @Override
-    public synchronized int[] consumeSample(final float increment) {
-        if (this.samples.isEmpty()) {
-            this.buffer[0] = 0;
-            this.buffer[1] = 0;
-            return this.buffer;
+    public synchronized float consumeSample(final float increment) {
+        if (this.samplesQueue.isEmpty()) {
+            return 0;
         }
-        final int[] currentSamples = this.samples.get(0);
-        if ((int) this.position * 2 >= currentSamples.length) {
-            this.samples.remove(0);
+        final float[] samples = this.samplesQueue.get(0);
+        if ((int) this.position >= samples.length) {
+            this.samplesQueue.remove(0);
             this.position = 0;
             return this.consumeSample(increment);
         }
 
-        this.buffer[0] = InterpolationUtil.interpolateLinear(currentSamples, this.position, 0, 2);
-        this.buffer[1] = InterpolationUtil.interpolateLinear(currentSamples, this.position, 1, 2);
+        final float sample = InterpolationUtil.interpolateLinear(samples, this.position);
         this.position += increment;
-        return this.buffer;
+        return sample;
     }
 
     @Override
@@ -54,32 +50,29 @@ public class StereoPushIntPcmSource implements StereoPcmSource {
         return false;
     }
 
-    public synchronized void enqueueSamples(final int[] samples) {
+    public synchronized void enqueueSamples(final float[] samples) {
         if (samples == null || samples.length == 0) {
             throw new IllegalArgumentException("Samples must not be null or empty");
         }
-        if (samples.length % 2 != 0) {
-            throw new IllegalArgumentException("Sample count must be a multiple of 2");
-        }
 
-        this.samples.add(samples);
+        this.samplesQueue.add(samples);
     }
 
     public synchronized void flushQueue() {
-        this.samples.clear();
+        this.samplesQueue.clear();
         this.position = 0;
     }
 
     public synchronized int getQueuedBufferCount() {
-        return this.samples.size();
+        return this.samplesQueue.size();
     }
 
     public synchronized int getQueuedSampleCount() {
-        int total = -(int) this.position * 2;
-        for (int[] sample : this.samples) {
-            total += sample.length;
+        int total = -(int) this.position;
+        for (float[] samples : this.samplesQueue) {
+            total += samples.length;
         }
-        return total / 2;
+        return total;
     }
 
 }

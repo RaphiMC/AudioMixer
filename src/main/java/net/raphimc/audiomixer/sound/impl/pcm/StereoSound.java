@@ -41,7 +41,7 @@ public class StereoSound extends Sound {
     }
 
     @Override
-    public void render(final AudioFormat audioFormat, final int[] renderedSamples) {
+    public void render(final AudioFormat audioFormat, final float[] renderedSamples) {
         int renderedIndex = 0;
         if (this.pitch == 1F && audioFormat.getChannels() == 2 && this.pitchModifier == null) {
             renderedIndex += this.pcmSource.consumeSamples(renderedSamples);
@@ -58,18 +58,18 @@ public class StereoSound extends Sound {
                     pitch = Math.max(this.pitchModifier.modify(this.pitch, audioFormat.getSampleRate()), 0F);
                 }
 
-                final int[] sample = this.pcmSource.consumeSample(pitch);
+                final float[] sample = this.pcmSource.consumeSample(pitch);
                 if (numChannels == 2) {
                     renderedSamples[renderedIndex++] = sample[0];
                     renderedSamples[renderedIndex++] = sample[1];
                 } else {
-                    final int monoSample = (sample[0] + sample[1]) / 2;
+                    final float monoSample = (sample[0] + sample[1]) / 2F;
                     ArrayUtil.fillFast(renderedSamples, renderedIndex, numChannels, monoSample);
                     renderedIndex += numChannels;
                 }
             }
         }
-        Arrays.fill(renderedSamples, renderedIndex, renderedSamples.length, 0);
+        Arrays.fill(renderedSamples, renderedIndex, renderedSamples.length, 0F);
 
         this.soundModifiers.modify(audioFormat, renderedSamples);
     }

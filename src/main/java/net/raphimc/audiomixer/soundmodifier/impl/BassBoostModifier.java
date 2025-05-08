@@ -38,7 +38,7 @@ public class BassBoostModifier implements SoundModifier {
     }
 
     @Override
-    public void modify(final AudioFormat audioFormat, final int[] renderedSamples) {
+    public void modify(final AudioFormat audioFormat, final float[] renderedSamples) {
         final int channels = audioFormat.getChannels();
         if (this.previousResult.length < channels) {
             this.previousResult = Arrays.copyOf(this.previousResult, channels);
@@ -48,10 +48,10 @@ public class BassBoostModifier implements SoundModifier {
 
         for (int i = 0; i < renderedSamples.length; i++) {
             final int channelIndex = i % channels;
-            final int sample = renderedSamples[i];
+            final float sample = renderedSamples[i];
             final float result = (1 - alpha) * this.previousResult[channelIndex] + alpha * sample;
             this.previousResult[channelIndex] = result;
-            renderedSamples[i] = (int) (sample + result * this.factor);
+            renderedSamples[i] = sample + result * this.factor;
         }
     }
 

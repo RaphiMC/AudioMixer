@@ -17,6 +17,9 @@
  */
 package net.raphimc.audiomixer.util.io;
 
+import net.raphimc.audiomixer.util.AudioFormatModifier;
+import net.raphimc.audiomixer.util.GrowableArray;
+
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
@@ -25,44 +28,40 @@ import java.io.*;
 
 public class SoundIO {
 
-    public static int[] readSamples(final InputStream is, final AudioFormat targetFormat) throws IOException, UnsupportedAudioFileException {
-        return readSamples(new BufferedInputStream(is), targetFormat);
+    public static float[] readSamples(final InputStream is, final AudioFormatModifier audioFormatModifier) throws IOException, UnsupportedAudioFileException {
+        return readSamples(new BufferedInputStream(is), audioFormatModifier);
     }
 
-    public static int[] readSamples(final BufferedInputStream is, final AudioFormat targetFormat) throws IOException, UnsupportedAudioFileException {
-        return readSamples(AudioSystem.getAudioInputStream(is), targetFormat);
+    public static float[] readSamples(final BufferedInputStream is, final AudioFormatModifier audioFormatModifier) throws IOException, UnsupportedAudioFileException {
+        return readSamples(AudioSystem.getAudioInputStream(is), audioFormatModifier);
     }
 
-    public static int[] readSamples(AudioInputStream is, final AudioFormat targetFormat) throws IOException {
-        if (!is.getFormat().matches(targetFormat)) is = AudioSystem.getAudioInputStream(targetFormat, is);
-        final byte[] audioBytes = is.readAllBytes();
-        final SampleInputStream sis = new SampleInputStream(new ByteArrayInputStream(audioBytes), targetFormat);
-
-        final int sampleSize = targetFormat.getSampleSizeInBits() / 8;
-        final int[] samples = new int[audioBytes.length / sampleSize];
-        for (int i = 0; i < samples.length; i++) {
-            samples[i] = sis.readSample();
+    public static float[] readSamples(final AudioInputStream is, final AudioFormatModifier audioFormatModifier) throws IOException {
+        final SampleInputStream sis = new SampleInputStream(is, audioFormatModifier);
+        final GrowableArray samples = new GrowableArray(1024 * 256);
+        float sample;
+        while (!Float.isNaN((sample = sis.readSample()))) {
+            samples.add(sample);
         }
-
         sis.close();
-        return samples;
+        return samples.getArray();
     }
 
-    public static void writeSamples(final int[] samples, final OutputStream os, final AudioFormat targetFormat) throws IOException {
+    public static void writeSamples(final float[] samples, final OutputStream os, final AudioFormat targetFormat) throws IOException {
         final SampleOutputStream sos = new SampleOutputStream(os, targetFormat);
-        for (int sample : samples) {
+        for (float sample : samples) {
             sos.writeSample(sample);
         }
         sos.close();
     }
 
-    public static byte[] writeSamples(final int[] samples, final AudioFormat targetFormat) throws IOException {
+    public static byte[] writeSamples(final float[] samples, final AudioFormat targetFormat) throws IOException {
         final ByteArrayOutputStream baos = new ByteArrayOutputStream();
         writeSamples(samples, baos, targetFormat);
         return baos.toByteArray();
     }
 
-    public static AudioInputStream createAudioInputStream(final int[] samples, final AudioFormat targetFormat) throws IOException {
+    public static AudioInputStream createAudioInputStream(final float[] samples, final AudioFormat targetFormat) throws IOException {
         return new AudioInputStream(new ByteArrayInputStream(writeSamples(samples, targetFormat)), targetFormat, samples.length);
     }
 

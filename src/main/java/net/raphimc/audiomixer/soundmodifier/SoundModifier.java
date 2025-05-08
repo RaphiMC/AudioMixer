@@ -21,6 +21,6 @@ import javax.sound.sampled.AudioFormat;
 
 public interface SoundModifier {
 
-    void modify(final AudioFormat audioFormat, final int[] renderedSamples);
+    void modify(final AudioFormat audioFormat, final float[] renderedSamples);
 
 }

@@ -25,7 +25,7 @@ public abstract class Sound {
 
     protected final SoundModifiers soundModifiers = new SoundModifiers();
 
-    public abstract void render(final AudioFormat audioFormat, final int[] renderedSamples);
+    public abstract void render(final AudioFormat audioFormat, final float[] renderedSamples);
 
     public abstract boolean isFinished();
 

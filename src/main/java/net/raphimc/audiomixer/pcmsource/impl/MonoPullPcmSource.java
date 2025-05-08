@@ -23,18 +23,18 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.Arrays;
 
-public class MonoPullIntPcmSource extends MonoPushIntPcmSource implements Closeable {
+public class MonoPullPcmSource extends MonoPushPcmSource implements Closeable {
 
     private final SampleInputStream sampleInputStream;
     private final int bufferSize;
     private final Thread readThread;
     private volatile boolean reachedEnd;
 
-    public MonoPullIntPcmSource(final SampleInputStream sampleInputStream) {
-        this(sampleInputStream, 1024 * 1024);
+    public MonoPullPcmSource(final SampleInputStream sampleInputStream) {
+        this(sampleInputStream, 1024 * 256);
     }
 
-    public MonoPullIntPcmSource(final SampleInputStream sampleInputStream, final int bufferSize) {
+    public MonoPullPcmSource(final SampleInputStream sampleInputStream, final int bufferSize) {
         if (bufferSize <= 0) {
             throw new IllegalArgumentException("Buffer size must be greater than 0");
         }
@@ -45,12 +45,18 @@ public class MonoPullIntPcmSource extends MonoPushIntPcmSource implements Closea
             try {
                 while (!this.reachedEnd) {
                     while (!this.reachedEnd && this.getQueuedSampleCount() < this.bufferSize) {
-                        int[] buffer = new int[0];
+                        float[] buffer = new float[0];
                         int bufferLen = 0;
                         try {
-                            buffer = new int[this.bufferSize];
+                            buffer = new float[this.bufferSize];
                             for (bufferLen = 0; bufferLen < buffer.length; bufferLen++) {
-                                buffer[bufferLen] = this.sampleInputStream.readSample();
+                                final float sample = this.sampleInputStream.readSample();
+                                if (!Float.isNaN(sample)) {
+                                    buffer[bufferLen] = sample;
+                                } else {
+                                    this.reachedEnd = true;
+                                    break;
+                                }
                             }
                         } catch (IOException ignored) {
                             this.reachedEnd = true;
@@ -72,7 +78,7 @@ public class MonoPullIntPcmSource extends MonoPushIntPcmSource implements Closea
                 e.printStackTrace();
                 this.reachedEnd = true;
             }
-        }, "MonoPullIntPcmSource-ReadThread");
+        }, "MonoPullPcmSource-ReadThread");
         this.readThread.setDaemon(true);
         this.readThread.start();
     }

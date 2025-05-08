@@ -32,7 +32,7 @@ public class VolumeModifier implements SoundModifier {
     }
 
     @Override
-    public void modify(final AudioFormat audioFormat, final int[] renderedSamples) {
+    public void modify(final AudioFormat audioFormat, final float[] renderedSamples) {
         final boolean hasVolumeModifier = this.volumeModifier != null;
         for (int i = 0; i < renderedSamples.length; i++) {
             final float volume;
@@ -42,7 +42,7 @@ public class VolumeModifier implements SoundModifier {
                 volume = Math.min(Math.max(this.volumeModifier.modify(this.volume, audioFormat.getSampleRate()), 0F), 1F);
             }
 
-            renderedSamples[i] = (int) (renderedSamples[i] * volume);
+            renderedSamples[i] = renderedSamples[i] * volume;
         }
     }
 

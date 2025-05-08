@@ -17,9 +17,9 @@
  */
 
 import net.raphimc.audiomixer.AudioMixer;
-import net.raphimc.audiomixer.pcmsource.impl.MonoIntPcmSource;
+import net.raphimc.audiomixer.pcmsource.impl.MonoStaticPcmSource;
 import net.raphimc.audiomixer.sound.impl.pcm.OptimizedMonoSound;
-import net.raphimc.audiomixer.util.AudioFormats;
+import net.raphimc.audiomixer.util.AudioFormatModifier;
 import net.raphimc.audiomixer.util.GrowableArray;
 import net.raphimc.audiomixer.util.SoundSampleUtil;
 import net.raphimc.audiomixer.util.io.SoundIO;
@@ -38,19 +38,19 @@ public class FileTest {
         AudioFormat format = new AudioFormat(48000, 16, 2, true, false);
 
         // Load the input audio samples
-        int[] samples = SoundIO.readSamples(new FileInputStream(input), AudioFormats.withChannels(format, 1));
+        float[] samples = SoundIO.readSamples(new FileInputStream(input), AudioFormatModifier.ofSampleRateAndChannels(format.getSampleRate(), 1));
         // Create an audio mixer
         AudioMixer mixer = new AudioMixer(format);
         // Play the audio samples
-        mixer.playSound(new OptimizedMonoSound(new MonoIntPcmSource(samples), 2F, 1, 0));
+        mixer.playSound(new OptimizedMonoSound(new MonoStaticPcmSource(samples), 0.5F, 1, 0));
         // Create the output buffer
         GrowableArray outputSamples = new GrowableArray(0);
         // Mix 1 second of audio until there are no more active sounds (The mixer will automatically stop finished sounds)
         while (mixer.getMasterMixSound().getActiveSounds() > 0) {
             outputSamples.add(mixer.mixMillis(1000));
         }
-        // Normalize the audio samples, so that they are in the range of a short (16 bit)
-        SoundSampleUtil.normalize(outputSamples.getArrayDirect(), Short.MAX_VALUE);
+        // Normalize the audio samples to [-1, 1]
+        SoundSampleUtil.normalize(outputSamples.getArrayDirect());
         // Write the audio samples to a file
         AudioSystem.write(SoundIO.createAudioInputStream(outputSamples.getArray(), format), AudioFileFormat.Type.WAVE, output);
     }
