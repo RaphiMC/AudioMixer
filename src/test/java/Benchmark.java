@@ -19,20 +19,20 @@
 import net.raphimc.audiomixer.AudioMixer;
 import net.raphimc.audiomixer.pcmsource.impl.MonoStaticPcmSource;
 import net.raphimc.audiomixer.sound.impl.pcm.OptimizedMonoSound;
+import net.raphimc.audiomixer.util.PcmFloatAudioFormat;
 
-import javax.sound.sampled.AudioFormat;
 import java.util.Random;
 
 public class Benchmark {
 
     public static void main(String[] args) {
-        AudioFormat format = new AudioFormat(48000, 16, 2, true, false);
+        PcmFloatAudioFormat audioFormat = new PcmFloatAudioFormat(48000, 2);
         float[] samples = new float[48000 * 10];
         Random random = new Random();
         for (int i = 0; i < samples.length; i++) {
             samples[i] = random.nextFloat(-1, 1);
         }
-        AudioMixer mixer = new AudioMixer(format);
+        AudioMixer mixer = new AudioMixer(audioFormat);
         mixer.getMasterMixSound().setMaxSounds(65535);
 
         // Play 5000 concurrent sounds

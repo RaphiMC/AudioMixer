@@ -17,7 +17,7 @@
  */
 package net.raphimc.audiomixer.util.io;
 
-import net.raphimc.audiomixer.util.AudioFormatModifier;
+import net.raphimc.audiomixer.util.PcmFloatAudioFormat;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
@@ -34,17 +34,16 @@ public class SampleInputStream extends InputStream {
     private int bufferIndex;
     private int bufferLength;
 
-    public SampleInputStream(final InputStream is, final AudioFormatModifier audioFormatModifier) throws UnsupportedAudioFileException, IOException {
-        this(new BufferedInputStream(is), audioFormatModifier);
+    public SampleInputStream(final InputStream is, final PcmFloatAudioFormat targetAudioFormat) throws UnsupportedAudioFileException, IOException {
+        this(new BufferedInputStream(is), targetAudioFormat);
     }
 
-    public SampleInputStream(final BufferedInputStream is, final AudioFormatModifier audioFormatModifier) throws UnsupportedAudioFileException, IOException {
-        this(AudioSystem.getAudioInputStream(is), audioFormatModifier);
+    public SampleInputStream(final BufferedInputStream is, final PcmFloatAudioFormat targetAudioFormat) throws UnsupportedAudioFileException, IOException {
+        this(AudioSystem.getAudioInputStream(is), targetAudioFormat);
     }
 
-    public SampleInputStream(AudioInputStream is, final AudioFormatModifier audioFormatModifier) {
+    public SampleInputStream(AudioInputStream is, final PcmFloatAudioFormat targetAudioFormat) {
         final AudioFormat sourceAudioFormat = is.getFormat();
-        final AudioFormat targetAudioFormat = audioFormatModifier.getFloatAudioFormat(sourceAudioFormat);
         if (!sourceAudioFormat.matches(targetAudioFormat)) {
             is = AudioSystem.getAudioInputStream(targetAudioFormat, is);
         }

@@ -18,8 +18,8 @@
 package net.raphimc.audiomixer.sound.impl;
 
 import net.raphimc.audiomixer.sound.Sound;
+import net.raphimc.audiomixer.util.PcmFloatAudioFormat;
 
-import javax.sound.sampled.AudioFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,7 +39,7 @@ public class SubMixSound extends Sound {
     }
 
     @Override
-    public synchronized void render(final AudioFormat audioFormat, final float[] finalMixBuffer) {
+    public synchronized void render(final PcmFloatAudioFormat audioFormat, final float[] finalMixBuffer) {
         final long start = System.nanoTime();
         this.mixedSounds = this.sounds.size();
 

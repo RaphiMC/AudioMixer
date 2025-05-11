@@ -19,8 +19,10 @@ package net.raphimc.audiomixer;
 
 import net.raphimc.audiomixer.soundmodifier.impl.NormalizationModifier;
 import net.raphimc.audiomixer.soundmodifier.impl.VolumeModifier;
+import net.raphimc.audiomixer.util.PcmFloatAudioFormat;
 import net.raphimc.audiomixer.util.io.SampleOutputStream;
 
+import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
 import java.io.ByteArrayOutputStream;
@@ -40,14 +42,14 @@ public class SourceDataLineAudioMixer extends AudioMixer {
     }
 
     public SourceDataLineAudioMixer(final SourceDataLine sourceDataLine, final int mixSliceMillis, final int bufferMillis) throws LineUnavailableException {
-        super(sourceDataLine.getFormat());
+        super(new PcmFloatAudioFormat(sourceDataLine.getFormat()));
         this.sourceDataLine = sourceDataLine;
-        this.sampleByteSize = this.getAudioFormat().getSampleSizeInBits() / 8;
-        this.mixSliceSampleCount = (int) Math.ceil(this.getAudioFormat().getSampleRate() / 1000F * mixSliceMillis) * this.getAudioFormat().getChannels();
+        this.sampleByteSize = sourceDataLine.getFormat().getSampleSizeInBits() / 8;
+        this.mixSliceSampleCount = (int) Math.ceil(sourceDataLine.getFormat().getSampleRate() / 1000F * mixSliceMillis) * sourceDataLine.getFormat().getChannels();
 
         if (!sourceDataLine.isOpen()) {
-            final int bufferSampleCount = (int) Math.ceil(this.getAudioFormat().getSampleRate() / 1000F * bufferMillis) * this.getAudioFormat().getChannels();
-            sourceDataLine.open(this.getAudioFormat(), bufferSampleCount * this.sampleByteSize);
+            final int bufferSampleCount = (int) Math.ceil(sourceDataLine.getFormat().getSampleRate() / 1000F * bufferMillis) * sourceDataLine.getFormat().getChannels();
+            sourceDataLine.open(sourceDataLine.getFormat(), bufferSampleCount * this.sampleByteSize);
         }
         if (sourceDataLine.getBufferSize() < this.mixSliceSampleCount * 2 * this.sampleByteSize) {
             throw new IllegalArgumentException("SourceDataLine buffer has to be at least twice the size of the mix slice size");
@@ -64,6 +66,11 @@ public class SourceDataLineAudioMixer extends AudioMixer {
         this.normalizationModifier.reset();
     }
 
+    @Override
+    public AudioFormat getAudioFormat() {
+        return this.sourceDataLine.getFormat();
+    }
+
     public void close() {
         this.sourceDataLine.close();
     }
@@ -76,7 +83,7 @@ public class SourceDataLineAudioMixer extends AudioMixer {
         final float[] samples = this.mix(this.mixSliceSampleCount);
 
         final ByteArrayOutputStream baos = new ByteArrayOutputStream(samplesSize);
-        final SampleOutputStream sos = new SampleOutputStream(baos, this.getAudioFormat());
+        final SampleOutputStream sos = new SampleOutputStream(baos, this.sourceDataLine.getFormat());
         try {
             for (float sample : samples) {
                 sos.writeSample(sample);

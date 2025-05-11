@@ -18,8 +18,8 @@
 package net.raphimc.audiomixer.soundmodifier.impl;
 
 import net.raphimc.audiomixer.soundmodifier.SoundModifier;
+import net.raphimc.audiomixer.util.PcmFloatAudioFormat;
 
-import javax.sound.sampled.AudioFormat;
 import java.util.Arrays;
 
 public class BassBoostModifier implements SoundModifier {
@@ -38,7 +38,7 @@ public class BassBoostModifier implements SoundModifier {
     }
 
     @Override
-    public void modify(final AudioFormat audioFormat, final float[] renderedSamples) {
+    public void modify(final PcmFloatAudioFormat audioFormat, final float[] renderedSamples) {
         final int channels = audioFormat.getChannels();
         if (this.previousResult.length < channels) {
             this.previousResult = Arrays.copyOf(this.previousResult, channels);

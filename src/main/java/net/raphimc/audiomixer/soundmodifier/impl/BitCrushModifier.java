@@ -18,8 +18,8 @@
 package net.raphimc.audiomixer.soundmodifier.impl;
 
 import net.raphimc.audiomixer.soundmodifier.SoundModifier;
+import net.raphimc.audiomixer.util.PcmFloatAudioFormat;
 
-import javax.sound.sampled.AudioFormat;
 import java.util.Arrays;
 
 public class BitCrushModifier implements SoundModifier {
@@ -38,7 +38,7 @@ public class BitCrushModifier implements SoundModifier {
     }
 
     @Override
-    public void modify(final AudioFormat audioFormat, final float[] renderedSamples) {
+    public void modify(final PcmFloatAudioFormat audioFormat, final float[] renderedSamples) {
         final int channels = audioFormat.getChannels();
         if (this.lastSample.length < channels) {
             this.lastSample = Arrays.copyOf(this.lastSample, channels);

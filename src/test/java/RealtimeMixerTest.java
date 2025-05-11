@@ -19,7 +19,7 @@
 import net.raphimc.audiomixer.BackgroundSourceDataLineAudioMixer;
 import net.raphimc.audiomixer.pcmsource.impl.MonoStaticPcmSource;
 import net.raphimc.audiomixer.sound.impl.pcm.OptimizedMonoSound;
-import net.raphimc.audiomixer.util.AudioFormatModifier;
+import net.raphimc.audiomixer.util.PcmFloatAudioFormat;
 import net.raphimc.audiomixer.util.io.SoundIO;
 
 import javax.sound.sampled.AudioFormat;
@@ -33,7 +33,7 @@ public class RealtimeMixerTest {
     public static void main(String[] args) throws Throwable {
         AudioFormat format = new AudioFormat(48000, 16, 2, true, false);
         BackgroundSourceDataLineAudioMixer audioMixer = new BackgroundSourceDataLineAudioMixer(AudioSystem.getSourceDataLine(format));
-        float[] pianoSamples = SoundIO.readSamples(RealtimeMixerTest.class.getResourceAsStream("/piano.wav"), AudioFormatModifier.ofSampleRateAndChannels(format.getSampleRate(), 1));
+        float[] pianoSamples = SoundIO.readSamples(RealtimeMixerTest.class.getResourceAsStream("/piano.wav"), new PcmFloatAudioFormat(format.getSampleRate(), 1));
 
         JFrame frame = new JFrame("AudioMixer Test");
         frame.setLayout(new BoxLayout(frame.getContentPane(), BoxLayout.Y_AXIS));

@@ -17,7 +17,8 @@
  */
 package net.raphimc.audiomixer.soundmodifier;
 
-import javax.sound.sampled.AudioFormat;
+import net.raphimc.audiomixer.util.PcmFloatAudioFormat;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -35,7 +36,7 @@ public class SoundModifiers implements SoundModifier {
     }
 
     @Override
-    public synchronized void modify(final AudioFormat audioFormat, final float[] renderedSamples) {
+    public synchronized void modify(final PcmFloatAudioFormat audioFormat, final float[] renderedSamples) {
         if (this.soundModifiers.isEmpty()) {
             return;
         }

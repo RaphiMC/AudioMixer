@@ -18,8 +18,7 @@
 package net.raphimc.audiomixer.soundmodifier.impl;
 
 import net.raphimc.audiomixer.soundmodifier.SoundModifier;
-
-import javax.sound.sampled.AudioFormat;
+import net.raphimc.audiomixer.util.PcmFloatAudioFormat;
 
 public class SpatialModifier implements SoundModifier {
 
@@ -41,7 +40,7 @@ public class SpatialModifier implements SoundModifier {
     }
 
     @Override
-    public void modify(final AudioFormat audioFormat, final float[] renderedSamples) {
+    public void modify(final PcmFloatAudioFormat audioFormat, final float[] renderedSamples) {
         if (audioFormat.getChannels() != 2) {
             throw new UnsupportedOperationException("Target audio format must have 2 channels");
         }

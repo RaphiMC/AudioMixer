@@ -18,9 +18,8 @@
 package net.raphimc.audiomixer.soundmodifier.impl;
 
 import net.raphimc.audiomixer.soundmodifier.SoundModifier;
+import net.raphimc.audiomixer.util.PcmFloatAudioFormat;
 import net.raphimc.audiomixer.valuemodifier.ValueModifier;
-
-import javax.sound.sampled.AudioFormat;
 
 public class VolumeModifier implements SoundModifier {
 
@@ -32,7 +31,7 @@ public class VolumeModifier implements SoundModifier {
     }
 
     @Override
-    public void modify(final AudioFormat audioFormat, final float[] renderedSamples) {
+    public void modify(final PcmFloatAudioFormat audioFormat, final float[] renderedSamples) {
         final boolean hasVolumeModifier = this.volumeModifier != null;
         for (int i = 0; i < renderedSamples.length; i++) {
             final float volume;

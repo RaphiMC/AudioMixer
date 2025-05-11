@@ -19,8 +19,7 @@ package net.raphimc.audiomixer.sound.impl;
 
 import net.raphimc.audiomixer.oscillator.Oscillator;
 import net.raphimc.audiomixer.sound.Sound;
-
-import javax.sound.sampled.AudioFormat;
+import net.raphimc.audiomixer.util.PcmFloatAudioFormat;
 
 public class OscillatorSound extends Sound {
 
@@ -31,7 +30,7 @@ public class OscillatorSound extends Sound {
     }
 
     @Override
-    public void render(final AudioFormat audioFormat, final float[] renderedSamples) {
+    public void render(final PcmFloatAudioFormat audioFormat, final float[] renderedSamples) {
         final int numChannels = audioFormat.getChannels();
         final float sampleRate = audioFormat.getSampleRate();
 

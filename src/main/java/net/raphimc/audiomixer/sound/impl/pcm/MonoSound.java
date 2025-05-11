@@ -20,9 +20,9 @@ package net.raphimc.audiomixer.sound.impl.pcm;
 import net.raphimc.audiomixer.pcmsource.MonoPcmSource;
 import net.raphimc.audiomixer.sound.Sound;
 import net.raphimc.audiomixer.util.ArrayUtil;
+import net.raphimc.audiomixer.util.PcmFloatAudioFormat;
 import net.raphimc.audiomixer.valuemodifier.ValueModifier;
 
-import javax.sound.sampled.AudioFormat;
 import java.util.Arrays;
 
 public class MonoSound extends Sound {
@@ -41,7 +41,7 @@ public class MonoSound extends Sound {
     }
 
     @Override
-    public void render(final AudioFormat audioFormat, final float[] renderedSamples) {
+    public void render(final PcmFloatAudioFormat audioFormat, final float[] renderedSamples) {
         int renderedIndex = 0;
         if (this.pitch == 1F && audioFormat.getChannels() == 1 && this.pitchModifier == null) {
             renderedIndex += this.pcmSource.consumeSamples(renderedSamples);

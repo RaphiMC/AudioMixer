@@ -20,19 +20,16 @@ package net.raphimc.audiomixer;
 import net.raphimc.audiomixer.sound.Sound;
 import net.raphimc.audiomixer.sound.impl.SubMixSound;
 import net.raphimc.audiomixer.soundmodifier.SoundModifiers;
+import net.raphimc.audiomixer.util.PcmFloatAudioFormat;
 
 import javax.sound.sampled.AudioFormat;
 
 public class AudioMixer {
 
-    private final AudioFormat audioFormat;
+    private final PcmFloatAudioFormat audioFormat;
     private final SubMixSound masterMixSound = new SubMixSound();
 
-    public AudioMixer(final AudioFormat audioFormat) {
-        if (audioFormat.getEncoding() != AudioFormat.Encoding.PCM_SIGNED) {
-            throw new IllegalArgumentException("Unsupported audio format: " + audioFormat);
-        }
-
+    public AudioMixer(final PcmFloatAudioFormat audioFormat) {
         this.audioFormat = audioFormat;
     }
 

@@ -17,10 +17,10 @@
  */
 package net.raphimc.audiomixer.soundmodifier;
 
-import javax.sound.sampled.AudioFormat;
+import net.raphimc.audiomixer.util.PcmFloatAudioFormat;
 
 public interface SoundModifier {
 
-    void modify(final AudioFormat audioFormat, final float[] renderedSamples);
+    void modify(final PcmFloatAudioFormat audioFormat, final float[] renderedSamples);
 
 }

@@ -15,21 +15,18 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.raphimc.audiomixer.sound;
+package net.raphimc.audiomixer.util;
 
-import net.raphimc.audiomixer.soundmodifier.SoundModifiers;
-import net.raphimc.audiomixer.util.PcmFloatAudioFormat;
+import javax.sound.sampled.AudioFormat;
 
-public abstract class Sound {
+public class PcmFloatAudioFormat extends AudioFormat {
 
-    protected final SoundModifiers soundModifiers = new SoundModifiers();
+    public PcmFloatAudioFormat(final AudioFormat audioFormat) {
+        this(audioFormat.getSampleRate(), audioFormat.getChannels());
+    }
 
-    public abstract void render(final PcmFloatAudioFormat audioFormat, final float[] renderedSamples);
-
-    public abstract boolean isFinished();
-
-    public SoundModifiers getSoundModifiers() {
-        return this.soundModifiers;
+    public PcmFloatAudioFormat(final float sampleRate, final int channels) {
+        super(Encoding.PCM_FLOAT, sampleRate, Float.SIZE, channels, channels * Float.BYTES, sampleRate, true);
     }
 
 }
