@@ -17,8 +17,9 @@
  */
 package net.raphimc.audiomixer.pcmsource.impl;
 
+import net.raphimc.audiomixer.interpolator.Interpolator;
+import net.raphimc.audiomixer.interpolator.impl.LinearInterpolator;
 import net.raphimc.audiomixer.pcmsource.StereoPcmSource;
-import net.raphimc.audiomixer.util.InterpolationUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +28,19 @@ public class StereoPushPcmSource implements StereoPcmSource {
 
     private final List<float[]> samplesQueue = new ArrayList<>();
     private final float[] buffer = new float[2];
+    private final Interpolator interpolator;
     private double position;
+
+    public StereoPushPcmSource() {
+        this(LinearInterpolator.INSTANCE);
+    }
+
+    public StereoPushPcmSource(final Interpolator interpolator) {
+        if (interpolator == null) {
+            throw new IllegalArgumentException("Interpolator must not be null");
+        }
+        this.interpolator = interpolator;
+    }
 
     @Override
     public synchronized float[] consumeSample(final float increment) {
@@ -43,8 +56,8 @@ public class StereoPushPcmSource implements StereoPcmSource {
             return this.consumeSample(increment);
         }
 
-        this.buffer[0] = InterpolationUtil.interpolateLinear(samples, this.position, 0, 2);
-        this.buffer[1] = InterpolationUtil.interpolateLinear(samples, this.position, 1, 2);
+        this.buffer[0] = this.interpolator.interpolate(samples, this.position, 0, 2);
+        this.buffer[1] = this.interpolator.interpolate(samples, this.position, 1, 2);
         this.position += increment;
         return this.buffer;
     }

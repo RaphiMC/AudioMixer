@@ -17,8 +17,9 @@
  */
 package net.raphimc.audiomixer.pcmsource.impl;
 
+import net.raphimc.audiomixer.interpolator.Interpolator;
+import net.raphimc.audiomixer.interpolator.impl.LinearInterpolator;
 import net.raphimc.audiomixer.pcmsource.MonoPcmSource;
-import net.raphimc.audiomixer.util.InterpolationUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +27,19 @@ import java.util.List;
 public class MonoPushPcmSource implements MonoPcmSource {
 
     private final List<float[]> samplesQueue = new ArrayList<>();
+    private final Interpolator interpolator;
     private double position;
+
+    public MonoPushPcmSource() {
+        this(LinearInterpolator.INSTANCE);
+    }
+
+    public MonoPushPcmSource(final Interpolator interpolator) {
+        if (interpolator == null) {
+            throw new IllegalArgumentException("Interpolator must not be null");
+        }
+        this.interpolator = interpolator;
+    }
 
     @Override
     public synchronized float consumeSample(final float increment) {
@@ -40,7 +53,7 @@ public class MonoPushPcmSource implements MonoPcmSource {
             return this.consumeSample(increment);
         }
 
-        final float sample = InterpolationUtil.interpolateLinear(samples, this.position);
+        final float sample = this.interpolator.interpolate(samples, this.position, 0, 1);
         this.position += increment;
         return sample;
     }

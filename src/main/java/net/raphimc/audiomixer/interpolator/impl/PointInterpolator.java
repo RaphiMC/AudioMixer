@@ -15,26 +15,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.raphimc.audiomixer.util;
+package net.raphimc.audiomixer.interpolator.impl;
 
-public class InterpolationUtil {
+import net.raphimc.audiomixer.interpolator.Interpolator;
 
-    public static float interpolateLinear(final float[] arr, final double index) {
-        return interpolateLinear(arr, index, 0, 1);
-    }
+public class PointInterpolator implements Interpolator {
 
-    public static float interpolateLinear(final float[] arr, final double index, final int offset, final int channels) {
-        final int floorIndex = (int) index * channels + offset;
-        final int ceilIndex = floorIndex + channels;
+    public static final PointInterpolator INSTANCE = new PointInterpolator();
 
-        if (ceilIndex >= arr.length) {
-            return arr[floorIndex];
-        }
-
-        final double fraction = index * channels + offset - floorIndex;
-        final float floorValue = arr[floorIndex];
-        final float ceilValue = arr[ceilIndex];
-        return floorValue + (float) ((ceilValue - floorValue) * fraction);
+    @Override
+    public float interpolate(final float[] arr, final double position, final int offset, final int channels) {
+        return arr[(int) position * channels + offset];
     }
 
 }

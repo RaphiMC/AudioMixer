@@ -34,6 +34,16 @@ public class SoundSampleUtil {
         }
     }
 
+    public static void clip(final float[] samples) {
+        for (int i = 0; i < samples.length; i++) {
+            if (samples[i] > 1F) {
+                samples[i] = 1F;
+            } else if (samples[i] < -1F) {
+                samples[i] = -1F;
+            }
+        }
+    }
+
     public static float getMax(final float[] samples) {
         float max = 0F;
         for (float sample : samples) {

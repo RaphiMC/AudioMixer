@@ -17,6 +17,8 @@
  */
 package net.raphimc.audiomixer.pcmsource.impl;
 
+import net.raphimc.audiomixer.interpolator.Interpolator;
+import net.raphimc.audiomixer.interpolator.impl.LinearInterpolator;
 import net.raphimc.audiomixer.util.io.SampleInputStream;
 
 import java.io.Closeable;
@@ -35,6 +37,11 @@ public class StereoPullPcmSource extends StereoPushPcmSource implements Closeabl
     }
 
     public StereoPullPcmSource(final SampleInputStream sampleInputStream, final int bufferSize) {
+        this(sampleInputStream, bufferSize, LinearInterpolator.INSTANCE);
+    }
+
+    public StereoPullPcmSource(final SampleInputStream sampleInputStream, final int bufferSize, final Interpolator interpolator) {
+        super(interpolator);
         if (bufferSize <= 0) {
             throw new IllegalArgumentException("Buffer size must be greater than 0");
         }

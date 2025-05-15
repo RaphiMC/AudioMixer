@@ -17,26 +17,36 @@
  */
 package net.raphimc.audiomixer.pcmsource.impl;
 
+import net.raphimc.audiomixer.interpolator.Interpolator;
+import net.raphimc.audiomixer.interpolator.impl.LinearInterpolator;
 import net.raphimc.audiomixer.pcmsource.MonoPcmSource;
 import net.raphimc.audiomixer.pcmsource.StaticPcmSource;
-import net.raphimc.audiomixer.util.InterpolationUtil;
 
 public class MonoStaticPcmSource implements MonoPcmSource, StaticPcmSource {
 
     private final float[] samples;
+    private final Interpolator interpolator;
     private double position;
 
     public MonoStaticPcmSource(final float[] samples) {
+        this(samples, LinearInterpolator.INSTANCE);
+    }
+
+    public MonoStaticPcmSource(final float[] samples, final Interpolator interpolator) {
         if (samples == null || samples.length == 0) {
             throw new IllegalArgumentException("Samples must not be null or empty");
         }
+        if (interpolator == null) {
+            throw new IllegalArgumentException("Interpolator must not be null");
+        }
 
         this.samples = samples;
+        this.interpolator = interpolator;
     }
 
     @Override
     public float consumeSample(final float increment) {
-        final float sample = InterpolationUtil.interpolateLinear(this.samples, this.position);
+        final float sample = this.interpolator.interpolate(this.samples, this.position, 0, 1);
         this.position += increment;
         return sample;
     }

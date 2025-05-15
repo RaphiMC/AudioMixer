@@ -17,18 +17,24 @@
  */
 package net.raphimc.audiomixer.pcmsource.impl;
 
+import net.raphimc.audiomixer.interpolator.Interpolator;
+import net.raphimc.audiomixer.interpolator.impl.LinearInterpolator;
 import net.raphimc.audiomixer.pcmsource.StaticPcmSource;
 import net.raphimc.audiomixer.pcmsource.StereoPcmSource;
-import net.raphimc.audiomixer.util.InterpolationUtil;
 
 public class StereoStaticPcmSource implements StereoPcmSource, StaticPcmSource {
 
     private final float[] samples;
     private final int sampleCount;
     private final float[] buffer = new float[2];
+    private final Interpolator interpolator;
     private double position;
 
     public StereoStaticPcmSource(final float[] samples) {
+        this(samples, LinearInterpolator.INSTANCE);
+    }
+
+    public StereoStaticPcmSource(final float[] samples, final Interpolator interpolator) {
         if (samples == null || samples.length == 0) {
             throw new IllegalArgumentException("Samples must not be null or empty");
         }
@@ -38,12 +44,13 @@ public class StereoStaticPcmSource implements StereoPcmSource, StaticPcmSource {
 
         this.samples = samples;
         this.sampleCount = samples.length / 2;
+        this.interpolator = interpolator;
     }
 
     @Override
     public float[] consumeSample(final float increment) {
-        this.buffer[0] = InterpolationUtil.interpolateLinear(this.samples, this.position, 0, 2);
-        this.buffer[1] = InterpolationUtil.interpolateLinear(this.samples, this.position, 1, 2);
+        this.buffer[0] = this.interpolator.interpolate(this.samples, this.position, 0, 2);
+        this.buffer[1] = this.interpolator.interpolate(this.samples, this.position, 1, 2);
         this.position += increment;
         return this.buffer;
     }
