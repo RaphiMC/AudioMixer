@@ -27,7 +27,7 @@ public class LinearInterpolator implements Interpolator {
     public float interpolate(final float[] arr, final double position, final int offset, final int channels) {
         final int floorPosition = (int) position;
         if ((floorPosition + 1) * channels + offset >= arr.length) {
-            return PointInterpolator.INSTANCE.interpolate(arr, position, offset, channels);
+            return arr[(int) position * channels + offset]; // PointInterpolator#interpolate
         }
 
         final float floorValue = arr[floorPosition * channels + offset];
