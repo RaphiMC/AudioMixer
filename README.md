@@ -42,7 +42,7 @@ AudioMixer provides multiple ``AudioMixer`` implementations to choose from.
 After creating an ``AudioMixer`` instance you can play ``Sound`` instances with it using the ``playSound`` method.
 
 ## Examples
-Examples can be found in the [src/test](/src/test) directory.
+Examples can be found in the [src/example](/src/example) directory.
 
 ## Contact
 If you encounter any issues, please report them on the
