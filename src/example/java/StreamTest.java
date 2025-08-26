@@ -33,9 +33,7 @@ public class StreamTest {
         AudioFormat format = new AudioFormat(48000, 16, 2, true, false);
         BackgroundSourceDataLineAudioMixer audioMixer = new BackgroundSourceDataLineAudioMixer(AudioSystem.getSourceDataLine(format));
 
-        AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new URL("https://example.com/sound.wav"));
-        if (!audioInputStream.getFormat().matches(format)) audioInputStream = AudioSystem.getAudioInputStream(format, audioInputStream);
-
+        final AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new URL("https://example.com/sound.wav"));
         audioMixer.playSound(new StereoSound(new StereoPullPcmSource(new SampleInputStream(audioInputStream, new PcmFloatAudioFormat(format.getSampleRate(), 2)), 48000 * 4)));
 
         Thread.sleep(Integer.MAX_VALUE);
