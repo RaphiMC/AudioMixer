@@ -30,7 +30,7 @@ import javax.sound.sampled.AudioSystem;
 import java.io.File;
 import java.io.FileInputStream;
 
-public class FileTest {
+public class FileExample {
 
     public static void main(String[] args) throws Throwable {
         File input = new File("input.wav");

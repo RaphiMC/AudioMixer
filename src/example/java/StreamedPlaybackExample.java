@@ -27,7 +27,7 @@ import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import java.net.URL;
 
-public class StreamTest {
+public class StreamedPlaybackExample {
 
     public static void main(String[] args) throws Throwable {
         AudioFormat format = new AudioFormat(48000, 16, 2, true, false);

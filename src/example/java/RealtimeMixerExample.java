@@ -28,12 +28,12 @@ import javax.swing.*;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
-public class RealtimeMixerTest {
+public class RealtimeMixerExample {
 
     public static void main(String[] args) throws Throwable {
         AudioFormat format = new AudioFormat(48000, 16, 2, true, false);
         BackgroundSourceDataLineAudioMixer audioMixer = new BackgroundSourceDataLineAudioMixer(AudioSystem.getSourceDataLine(format));
-        float[] pianoSamples = SoundIO.readSamples(RealtimeMixerTest.class.getResourceAsStream("/piano.wav"), new PcmFloatAudioFormat(format.getSampleRate(), 1));
+        float[] pianoSamples = SoundIO.readSamples(RealtimeMixerExample.class.getResourceAsStream("/piano.wav"), new PcmFloatAudioFormat(format.getSampleRate(), 1));
 
         JFrame frame = new JFrame("AudioMixer Test");
         frame.setLayout(new BoxLayout(frame.getContentPane(), BoxLayout.Y_AXIS));
