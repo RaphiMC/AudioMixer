@@ -17,12 +17,12 @@
  */
 
 import net.raphimc.audiomixer.AudioMixer;
+import net.raphimc.audiomixer.io.AudioIO;
 import net.raphimc.audiomixer.pcmsource.impl.MonoStaticPcmSource;
 import net.raphimc.audiomixer.sound.impl.pcm.OptimizedMonoSound;
 import net.raphimc.audiomixer.util.GrowableArray;
 import net.raphimc.audiomixer.util.PcmFloatAudioFormat;
 import net.raphimc.audiomixer.util.SoundSampleUtil;
-import net.raphimc.audiomixer.util.io.SoundIO;
 
 import javax.sound.sampled.AudioFileFormat;
 import javax.sound.sampled.AudioFormat;
@@ -38,7 +38,7 @@ public class FileExample {
         AudioFormat format = new AudioFormat(48000, 16, 2, true, false);
 
         // Load the input audio samples
-        float[] samples = SoundIO.readSamples(new FileInputStream(input), new PcmFloatAudioFormat(format.getSampleRate(), 1));
+        float[] samples = AudioIO.readSamples(new FileInputStream(input), new PcmFloatAudioFormat(format.getSampleRate(), 1));
         // Create an audio mixer
         AudioMixer mixer = new AudioMixer(new PcmFloatAudioFormat(format));
         // Play the audio samples
@@ -52,7 +52,7 @@ public class FileExample {
         // Normalize the audio samples to [-1, 1]
         SoundSampleUtil.normalize(outputSamples.getArrayDirect());
         // Write the audio samples to a file
-        AudioSystem.write(SoundIO.createAudioInputStream(outputSamples.getArray(), format), AudioFileFormat.Type.WAVE, output);
+        AudioSystem.write(AudioIO.createAudioInputStream(outputSamples.getArray(), format), AudioFileFormat.Type.WAVE, output);
     }
 
 }

@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.raphimc.audiomixer.util.io;
+package net.raphimc.audiomixer.io.raw;
 
 import net.raphimc.audiomixer.util.PcmFloatAudioFormat;
 

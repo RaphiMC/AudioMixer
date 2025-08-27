@@ -19,7 +19,7 @@ package net.raphimc.audiomixer.pcmsource.impl;
 
 import net.raphimc.audiomixer.interpolator.Interpolator;
 import net.raphimc.audiomixer.interpolator.impl.LinearInterpolator;
-import net.raphimc.audiomixer.util.io.SampleInputStream;
+import net.raphimc.audiomixer.io.raw.SampleInputStream;
 
 import java.io.Closeable;
 import java.io.IOException;

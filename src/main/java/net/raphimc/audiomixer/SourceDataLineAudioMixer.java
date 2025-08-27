@@ -17,10 +17,10 @@
  */
 package net.raphimc.audiomixer;
 
+import net.raphimc.audiomixer.io.raw.SampleOutputStream;
 import net.raphimc.audiomixer.soundmodifier.impl.NormalizationModifier;
 import net.raphimc.audiomixer.soundmodifier.impl.VolumeModifier;
 import net.raphimc.audiomixer.util.PcmFloatAudioFormat;
-import net.raphimc.audiomixer.util.io.SampleOutputStream;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.LineUnavailableException;

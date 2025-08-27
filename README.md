@@ -1,5 +1,5 @@
 # AudioMixer
-High performance Java audio mixing library.
+High performance Java audio library.
 
 ## Features
 - Realtime audio mixing to a playback device

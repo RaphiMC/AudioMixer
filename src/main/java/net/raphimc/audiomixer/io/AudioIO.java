@@ -15,8 +15,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.raphimc.audiomixer.util.io;
+package net.raphimc.audiomixer.io;
 
+import net.raphimc.audiomixer.io.raw.SampleInputStream;
+import net.raphimc.audiomixer.io.raw.SampleOutputStream;
 import net.raphimc.audiomixer.util.GrowableArray;
 import net.raphimc.audiomixer.util.PcmFloatAudioFormat;
 
@@ -26,7 +28,7 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.*;
 
-public class SoundIO {
+public class AudioIO {
 
     public static float[] readSamples(final InputStream is, final PcmFloatAudioFormat targetAudioFormat) throws IOException, UnsupportedAudioFileException {
         return readSamples(new BufferedInputStream(is), targetAudioFormat);

@@ -17,10 +17,10 @@
  */
 
 import net.raphimc.audiomixer.BackgroundSourceDataLineAudioMixer;
+import net.raphimc.audiomixer.io.raw.SampleInputStream;
 import net.raphimc.audiomixer.pcmsource.impl.StereoPullPcmSource;
 import net.raphimc.audiomixer.sound.impl.pcm.StereoSound;
 import net.raphimc.audiomixer.util.PcmFloatAudioFormat;
-import net.raphimc.audiomixer.util.io.SampleInputStream;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
