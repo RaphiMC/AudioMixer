@@ -21,6 +21,7 @@ import net.raphimc.audiomixer.sound.Sound;
 import net.raphimc.audiomixer.util.PcmFloatAudioFormat;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -44,6 +45,7 @@ public class MixSound extends Sound {
         final long start = System.nanoTime();
         this.mixedSounds = this.sounds.size();
 
+        Arrays.fill(finalMixBuffer, 0F);
         final float[] renderedSamples = new float[finalMixBuffer.length];
         for (Sound sound : this.sounds) {
             sound.render(audioFormat, renderedSamples);

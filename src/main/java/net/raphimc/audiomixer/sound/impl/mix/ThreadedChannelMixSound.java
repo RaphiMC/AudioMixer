@@ -20,6 +20,7 @@ package net.raphimc.audiomixer.sound.impl.mix;
 import net.raphimc.audiomixer.util.PcmFloatAudioFormat;
 
 import java.io.Closeable;
+import java.util.Arrays;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.Executors;
@@ -75,6 +76,7 @@ public class ThreadedChannelMixSound extends ChannelMixSound implements Closeabl
         } catch (InterruptedException | BrokenBarrierException e) {
             throw new RuntimeException(e);
         }
+        Arrays.fill(finalMixBuffer, 0F);
         for (float[] threadSamples : this.threadSamples) {
             for (int i = 0; i < finalMixBuffer.length; i++) {
                 finalMixBuffer[i] += threadSamples[i];
