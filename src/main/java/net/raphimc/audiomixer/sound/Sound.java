@@ -22,7 +22,7 @@ import net.raphimc.audiomixer.util.PcmFloatAudioFormat;
 
 public abstract class Sound {
 
-    protected final SoundModifiers soundModifiers = new SoundModifiers();
+    private final SoundModifiers soundModifiers = new SoundModifiers();
 
     public abstract void render(final PcmFloatAudioFormat audioFormat, final float[] renderedSamples);
 

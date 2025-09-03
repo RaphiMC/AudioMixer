@@ -15,26 +15,27 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.raphimc.audiomixer.sound.impl;
+package net.raphimc.audiomixer.sound.impl.mix;
 
 import net.raphimc.audiomixer.sound.Sound;
 import net.raphimc.audiomixer.util.PcmFloatAudioFormat;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
-public class SubMixSound extends Sound {
+public class MixSound extends Sound {
 
     protected final List<Sound> sounds = new ArrayList<>();
     private int maxSounds;
     private int mixedSounds;
-    private long mixRenderTime;
+    protected long mixRenderTime;
 
-    public SubMixSound() {
+    public MixSound() {
         this(512);
     }
 
-    public SubMixSound(final int maxSounds) {
+    public MixSound(final int maxSounds) {
         this.setMaxSounds(maxSounds);
     }
 
@@ -50,7 +51,7 @@ public class SubMixSound extends Sound {
                 finalMixBuffer[i] += renderedSamples[i];
             }
         }
-        this.soundModifiers.modify(audioFormat, finalMixBuffer);
+        this.getSoundModifiers().modify(audioFormat, finalMixBuffer);
 
         this.sounds.removeIf(Sound::isFinished);
         this.mixRenderTime = System.nanoTime() - start;
@@ -76,11 +77,15 @@ public class SubMixSound extends Sound {
         this.sounds.clear();
     }
 
+    public synchronized void forEachSound(final Consumer<Sound> action) {
+        this.sounds.forEach(action);
+    }
+
     public int getMaxSounds() {
         return this.maxSounds;
     }
 
-    public SubMixSound setMaxSounds(final int maxSounds) {
+    public MixSound setMaxSounds(final int maxSounds) {
         if (maxSounds < 1) {
             throw new IllegalArgumentException("Max sounds must be at least 1");
         }

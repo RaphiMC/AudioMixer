@@ -41,7 +41,7 @@ public class OscillatorSound extends Sound {
             }
         }
 
-        this.soundModifiers.modify(audioFormat, renderedSamples);
+        this.getSoundModifiers().modify(audioFormat, renderedSamples);
     }
 
     @Override

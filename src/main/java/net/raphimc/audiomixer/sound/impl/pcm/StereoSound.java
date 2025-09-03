@@ -71,7 +71,7 @@ public class StereoSound extends Sound {
         }
         Arrays.fill(renderedSamples, renderedIndex, renderedSamples.length, 0F);
 
-        this.soundModifiers.modify(audioFormat, renderedSamples);
+        this.getSoundModifiers().modify(audioFormat, renderedSamples);
     }
 
     @Override

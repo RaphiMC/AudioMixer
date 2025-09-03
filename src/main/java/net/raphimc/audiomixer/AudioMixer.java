@@ -18,7 +18,7 @@
 package net.raphimc.audiomixer;
 
 import net.raphimc.audiomixer.sound.Sound;
-import net.raphimc.audiomixer.sound.impl.SubMixSound;
+import net.raphimc.audiomixer.sound.impl.mix.MixSound;
 import net.raphimc.audiomixer.soundmodifier.SoundModifiers;
 import net.raphimc.audiomixer.util.PcmFloatAudioFormat;
 
@@ -27,7 +27,7 @@ import javax.sound.sampled.AudioFormat;
 public class AudioMixer {
 
     private final PcmFloatAudioFormat audioFormat;
-    private final SubMixSound masterMixSound = new SubMixSound();
+    private final MixSound masterMixSound = new MixSound();
 
     public AudioMixer(final PcmFloatAudioFormat audioFormat) {
         this.audioFormat = audioFormat;
@@ -66,7 +66,7 @@ public class AudioMixer {
         return this.audioFormat;
     }
 
-    public SubMixSound getMasterMixSound() {
+    public MixSound getMasterMixSound() {
         return this.masterMixSound;
     }
 

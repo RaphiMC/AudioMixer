@@ -26,7 +26,7 @@ import java.util.function.Predicate;
 
 public class SoundModifiers implements SoundModifier {
 
-    protected final List<SoundModifier> soundModifiers = new ArrayList<>();
+    private final List<SoundModifier> soundModifiers = new ArrayList<>();
 
     public SoundModifiers() {
     }
