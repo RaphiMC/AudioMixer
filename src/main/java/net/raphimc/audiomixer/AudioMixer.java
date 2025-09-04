@@ -20,6 +20,7 @@ package net.raphimc.audiomixer;
 import net.raphimc.audiomixer.sound.Sound;
 import net.raphimc.audiomixer.sound.impl.mix.MixSound;
 import net.raphimc.audiomixer.soundmodifier.SoundModifiers;
+import net.raphimc.audiomixer.util.MathUtil;
 import net.raphimc.audiomixer.util.PcmFloatAudioFormat;
 
 import javax.sound.sampled.AudioFormat;
@@ -49,8 +50,8 @@ public class AudioMixer {
         return this.masterMixSound.getSoundModifiers();
     }
 
-    public float[] mixMillis(final int millis) {
-        return this.mix((int) Math.ceil(this.audioFormat.getSampleRate() / 1000F * millis) * this.audioFormat.getChannels());
+    public float[] mixMillis(final float millis) {
+        return this.mix(MathUtil.millisToSampleCount(this.audioFormat, millis));
     }
 
     public float[] mix(final int sampleCount) {

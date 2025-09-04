@@ -17,7 +17,9 @@
  */
 package net.raphimc.audiomixer.util;
 
-public class FastMath {
+import javax.sound.sampled.AudioFormat;
+
+public class MathUtil {
 
     private static final double ONE_OVER_PI = 1D / Math.PI;
     private static final double k1 = Double.longBitsToDouble(-4628199217061079959L);
@@ -47,6 +49,34 @@ public class FastMath {
         r = r * x2 + k2;
         r = r * x2 + k1;
         return x + x * x2 * r;
+    }
+
+    public static int millisToFrameCount(final AudioFormat audioFormat, final float millis) {
+        return (int) Math.ceil(audioFormat.getSampleRate() / 1000F * millis);
+    }
+
+    public static int millisToSampleCount(final AudioFormat audioFormat, final float millis) {
+        return millisToFrameCount(audioFormat, millis) * audioFormat.getChannels();
+    }
+
+    public static int millisToByteCount(final AudioFormat audioFormat, final float millis) {
+        return millisToFrameCount(audioFormat, millis) * audioFormat.getFrameSize();
+    }
+
+    public static float frameCountToMillis(final AudioFormat audioFormat, final int frameCount) {
+        return (frameCount / audioFormat.getSampleRate()) * 1000F;
+    }
+
+    public static float sampleCountToMillis(final AudioFormat audioFormat, final int sampleCount) {
+        return (sampleCount / (audioFormat.getSampleRate() * audioFormat.getChannels())) * 1000F;
+    }
+
+    public static int sampleCountToByteCount(final AudioFormat audioFormat, final int sampleCount) {
+        return sampleCount * (audioFormat.getSampleSizeInBits() / Byte.SIZE);
+    }
+
+    public static float byteCountToMillis(final AudioFormat audioFormat, final int byteCount) {
+        return (byteCount / (audioFormat.getSampleRate() * audioFormat.getFrameSize())) * 1000F;
     }
 
 }

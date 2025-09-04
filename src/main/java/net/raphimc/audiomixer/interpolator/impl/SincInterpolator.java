@@ -18,7 +18,7 @@
 package net.raphimc.audiomixer.interpolator.impl;
 
 import net.raphimc.audiomixer.interpolator.Interpolator;
-import net.raphimc.audiomixer.util.FastMath;
+import net.raphimc.audiomixer.util.MathUtil;
 
 public class SincInterpolator implements Interpolator {
 
@@ -62,7 +62,7 @@ public class SincInterpolator implements Interpolator {
             return 1F;
         }
         final double pix = Math.PI * x;
-        return (float) (FastMath.sin_roquen_newk(pix) / pix);
+        return (float) (MathUtil.sin_roquen_newk(pix) / pix);
     }
 
 }

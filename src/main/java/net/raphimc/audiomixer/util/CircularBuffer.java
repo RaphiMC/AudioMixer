@@ -30,7 +30,7 @@ public class CircularBuffer {
         this.buffer = new byte[capacity];
     }
 
-    public void write(final byte value) {
+    public synchronized void write(final byte value) {
         this.ensureHasEnoughSpace(1);
         this.buffer[this.tail] = value;
         this.tail = (this.tail + 1) % this.buffer.length;
@@ -41,7 +41,7 @@ public class CircularBuffer {
         this.writeAll(values, values.length);
     }
 
-    public void writeAll(final byte[] values, final int valuesLength) {
+    public synchronized void writeAll(final byte[] values, final int valuesLength) {
         this.ensureHasEnoughSpace(valuesLength);
 
         final int firstPartLength = Math.min(valuesLength, this.buffer.length - this.tail);
@@ -66,7 +66,7 @@ public class CircularBuffer {
         return this.readSafe((byte) 0);
     }
 
-    public byte readSafe(final byte defaultValue) {
+    public synchronized byte readSafe(final byte defaultValue) {
         if (this.isEmpty()) {
             return defaultValue;
         }
@@ -98,7 +98,7 @@ public class CircularBuffer {
         this.readAllSafe(values, valuesLength, (byte) 0);
     }
 
-    public void readAllSafe(final byte[] values, final int valuesLength, final byte defaultValue) {
+    public synchronized void readAllSafe(final byte[] values, final int valuesLength, final byte defaultValue) {
         final int elementsToRemove = Math.min(valuesLength, this.size);
         final int firstPartLength = Math.min(elementsToRemove, this.buffer.length - this.head);
         System.arraycopy(this.buffer, this.head, values, 0, firstPartLength);
@@ -112,19 +112,25 @@ public class CircularBuffer {
         this.size -= elementsToRemove;
     }
 
-    public boolean hasSpaceFor(final int bytes) {
+    public synchronized void clear() {
+        this.head = 0;
+        this.tail = 0;
+        this.size = 0;
+    }
+
+    public synchronized boolean hasSpaceFor(final int bytes) {
         return this.size + bytes <= this.buffer.length;
     }
 
-    public boolean isEmpty() {
+    public synchronized boolean isEmpty() {
         return this.size == 0;
     }
 
-    public boolean isFull() {
+    public synchronized boolean isFull() {
         return this.size == this.buffer.length;
     }
 
-    public int getSize() {
+    public synchronized int getSize() {
         return this.size;
     }
 

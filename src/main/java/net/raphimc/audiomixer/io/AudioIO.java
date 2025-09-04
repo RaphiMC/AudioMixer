@@ -20,6 +20,7 @@ package net.raphimc.audiomixer.io;
 import net.raphimc.audiomixer.io.raw.SampleInputStream;
 import net.raphimc.audiomixer.io.raw.SampleOutputStream;
 import net.raphimc.audiomixer.util.GrowableArray;
+import net.raphimc.audiomixer.util.MathUtil;
 import net.raphimc.audiomixer.util.PcmFloatAudioFormat;
 
 import javax.sound.sampled.AudioFormat;
@@ -58,7 +59,7 @@ public class AudioIO {
     }
 
     public static byte[] writeSamples(final float[] samples, final AudioFormat targetAudioFormat) throws IOException {
-        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream(MathUtil.sampleCountToByteCount(targetAudioFormat, samples.length));
         writeSamples(samples, baos, targetAudioFormat);
         return baos.toByteArray();
     }

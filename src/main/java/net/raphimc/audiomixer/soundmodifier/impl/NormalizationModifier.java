@@ -18,6 +18,7 @@
 package net.raphimc.audiomixer.soundmodifier.impl;
 
 import net.raphimc.audiomixer.soundmodifier.SoundModifier;
+import net.raphimc.audiomixer.util.MathUtil;
 import net.raphimc.audiomixer.util.PcmFloatAudioFormat;
 import net.raphimc.audiomixer.util.SoundSampleUtil;
 
@@ -36,7 +37,7 @@ public class NormalizationModifier implements SoundModifier {
 
     @Override
     public void modify(final PcmFloatAudioFormat audioFormat, final float[] renderedSamples) {
-        final float timeElapsedMillis = (((float) renderedSamples.length / audioFormat.getChannels()) * 1000F) / audioFormat.getSampleRate();
+        final float timeElapsedMillis = MathUtil.sampleCountToMillis(audioFormat, renderedSamples.length);
         final float decayFactor = (float) Math.exp(-timeElapsedMillis / this.decayPeriodMillis);
         this.runningMaxSampleValue *= decayFactor;
         final float max = SoundSampleUtil.getMax(renderedSamples);

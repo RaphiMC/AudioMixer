@@ -17,44 +17,31 @@
  */
 package net.raphimc.audiomixer;
 
-import net.raphimc.audiomixer.io.raw.SampleOutputStream;
 import net.raphimc.audiomixer.soundmodifier.impl.NormalizationModifier;
 import net.raphimc.audiomixer.soundmodifier.impl.VolumeModifier;
 import net.raphimc.audiomixer.util.PcmFloatAudioFormat;
+import net.raphimc.audiomixer.util.SourceDataLineWriter;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
+import java.io.Closeable;
 
-public class SourceDataLineAudioMixer extends AudioMixer {
+public class SourceDataLineAudioMixer extends AudioMixer implements Closeable {
 
-    private final SourceDataLine sourceDataLine;
-    private final int sampleByteSize;
-    private int mixSliceSampleCount;
+    private final SourceDataLineWriter sourceDataLineWriter;
     private BufferOverrunStrategy bufferOverrunStrategy = BufferOverrunStrategy.DO_NOTHING;
     private final NormalizationModifier normalizationModifier = new NormalizationModifier();
     private final VolumeModifier volumeModifier = new VolumeModifier(1F);
 
-    public SourceDataLineAudioMixer(final SourceDataLine sourceDataLine, final int mixSliceMillis) throws LineUnavailableException {
-        this(sourceDataLine, mixSliceMillis, Math.max(mixSliceMillis * 3, 50));
+    public SourceDataLineAudioMixer(final SourceDataLine sourceDataLine) throws LineUnavailableException {
+        this(sourceDataLine, 20, 100);
     }
 
-    public SourceDataLineAudioMixer(final SourceDataLine sourceDataLine, final int mixSliceMillis, final int bufferMillis) throws LineUnavailableException {
+    public SourceDataLineAudioMixer(final SourceDataLine sourceDataLine, final int minBufferMillis, final int maxBufferMillis) throws LineUnavailableException {
         super(new PcmFloatAudioFormat(sourceDataLine.getFormat()));
-        this.sourceDataLine = sourceDataLine;
-        this.sampleByteSize = sourceDataLine.getFormat().getSampleSizeInBits() / 8;
-        this.mixSliceSampleCount = (int) Math.ceil(sourceDataLine.getFormat().getSampleRate() / 1000F * mixSliceMillis) * sourceDataLine.getFormat().getChannels();
-
-        if (!sourceDataLine.isOpen()) {
-            final int bufferSampleCount = (int) Math.ceil(sourceDataLine.getFormat().getSampleRate() / 1000F * bufferMillis) * sourceDataLine.getFormat().getChannels();
-            sourceDataLine.open(sourceDataLine.getFormat(), bufferSampleCount * this.sampleByteSize);
-        }
-        if (sourceDataLine.getBufferSize() < this.mixSliceSampleCount * 2 * this.sampleByteSize) {
-            throw new IllegalArgumentException("SourceDataLine buffer has to be at least twice the size of the mix slice size");
-        }
-        sourceDataLine.start();
+        this.sourceDataLineWriter = new SourceDataLineWriter(sourceDataLine, minBufferMillis, maxBufferMillis);
+        this.sourceDataLineWriter.start();
 
         this.getSoundModifiers().append(this.normalizationModifier);
         this.getSoundModifiers().append(this.volumeModifier);
@@ -63,59 +50,44 @@ public class SourceDataLineAudioMixer extends AudioMixer {
     @Override
     public void stopAllSounds() {
         super.stopAllSounds();
+        this.sourceDataLineWriter.flush();
         this.normalizationModifier.reset();
     }
 
     @Override
     public AudioFormat getAudioFormat() {
-        return this.sourceDataLine.getFormat();
+        return this.sourceDataLineWriter.getSourceDataLine().getFormat();
     }
 
-    public void close() {
-        this.sourceDataLine.close();
-    }
-
-    public void mixSlice() {
-        final int samplesSize = this.mixSliceSampleCount * this.sampleByteSize;
-        if (this.bufferOverrunStrategy == BufferOverrunStrategy.DO_NOTHING && this.sourceDataLine.available() < samplesSize) {
+    public void mixAndWriteMillis(final float millis) {
+        if (this.bufferOverrunStrategy == BufferOverrunStrategy.DO_NOTHING && !this.sourceDataLineWriter.canWriteMillisWithoutBlocking(millis)) {
             return;
         }
-        final float[] samples = this.mix(this.mixSliceSampleCount);
-
-        final ByteArrayOutputStream baos = new ByteArrayOutputStream(samplesSize);
-        final SampleOutputStream sos = new SampleOutputStream(baos, this.sourceDataLine.getFormat());
-        try {
-            for (float sample : samples) {
-                sos.writeSample(sample);
-            }
-        } catch (IOException ignored) {
+        final float[] samples = this.mixMillis(millis);
+        if (this.bufferOverrunStrategy == BufferOverrunStrategy.FLUSH && !this.sourceDataLineWriter.canWriteSamplesWithoutBlocking(samples.length)) {
+            this.sourceDataLineWriter.flush();
         }
-        final byte[] sampleData = baos.toByteArray();
+        this.sourceDataLineWriter.write(samples);
+    }
 
-        if (this.bufferOverrunStrategy == BufferOverrunStrategy.FLUSH && this.sourceDataLine.available() < sampleData.length) {
-            this.sourceDataLine.flush();
+    public void mixAndWrite(final int sampleCount) {
+        if (this.bufferOverrunStrategy == BufferOverrunStrategy.DO_NOTHING && !this.sourceDataLineWriter.canWriteSamplesWithoutBlocking(sampleCount)) {
+            return;
         }
-        this.sourceDataLine.write(sampleData, 0, sampleData.length);
-    }
-
-    public SourceDataLine getSourceDataLine() {
-        return this.sourceDataLine;
-    }
-
-    public int getMixSliceSampleCount() {
-        return this.mixSliceSampleCount;
-    }
-
-    public SourceDataLineAudioMixer setMixSliceSampleCount(final int mixSliceSampleCount) {
-        if (this.sourceDataLine.getBufferSize() < mixSliceSampleCount * 2 * this.sampleByteSize) {
-            throw new IllegalArgumentException("SourceDataLine buffer is too small for the new mix slice size. Increase the SourceDataLine buffer size or reduce the mix slice size");
+        final float[] samples = this.mix(sampleCount);
+        if (this.bufferOverrunStrategy == BufferOverrunStrategy.FLUSH && !this.sourceDataLineWriter.canWriteSamplesWithoutBlocking(samples.length)) {
+            this.sourceDataLineWriter.flush();
         }
-        this.mixSliceSampleCount = mixSliceSampleCount;
-        return this;
+        this.sourceDataLineWriter.write(samples);
     }
 
-    public SourceDataLineAudioMixer setMixSliceMillis(final int mixSliceMillis) {
-        return this.setMixSliceSampleCount((int) Math.ceil(this.getAudioFormat().getSampleRate() / 1000F * mixSliceMillis) * this.getAudioFormat().getChannels());
+    @Override
+    public void close() {
+        this.sourceDataLineWriter.close();
+    }
+
+    public SourceDataLineWriter getSourceDataLineWriter() {
+        return this.sourceDataLineWriter;
     }
 
     public BufferOverrunStrategy getBufferOverrunStrategy() {
@@ -146,14 +118,6 @@ public class SourceDataLineAudioMixer extends AudioMixer {
 
     public float getMasterVolume() {
         return this.volumeModifier.getVolume();
-    }
-
-    public int getBufferedSampleCount() {
-        return (this.sourceDataLine.getBufferSize() - this.sourceDataLine.available()) / this.sampleByteSize;
-    }
-
-    public int getBufferedMillis() {
-        return (int) ((float) this.getBufferedSampleCount() / this.getAudioFormat().getChannels() / this.getAudioFormat().getSampleRate() * 1000F);
     }
 
     public enum BufferOverrunStrategy {

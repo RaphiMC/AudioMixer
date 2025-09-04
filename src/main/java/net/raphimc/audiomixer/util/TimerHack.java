@@ -37,7 +37,7 @@ public class TimerHack {
                     } catch (InterruptedException ignored) {
                     }
                 }
-            }, "AudioMixer-TimerHack");
+            }, "AudioMixer TimerHack");
             THREAD.setDaemon(true);
             THREAD.start();
         }

@@ -34,27 +34,23 @@ public class BackgroundSourceDataLineAudioMixer extends SourceDataLineAudioMixer
     }
 
     public BackgroundSourceDataLineAudioMixer(final SourceDataLine sourceDataLine, final int updatePeriodMillis) throws LineUnavailableException {
-        super(sourceDataLine, updatePeriodMillis);
+        super(sourceDataLine);
 
         TimerHack.ensureRunning();
         this.mixingScheduler = Executors.newSingleThreadScheduledExecutor(r -> {
-            final Thread thread = new Thread(r, "AudioMixer-MixingThread");
+            final Thread thread = new Thread(r, "AudioMixer Mixer");
             thread.setPriority(Thread.NORM_PRIORITY + 1);
             thread.setDaemon(true);
             return thread;
         });
-        this.mixingScheduler.scheduleAtFixedRate(this::mixSlice, updatePeriodMillis, updatePeriodMillis, TimeUnit.MILLISECONDS);
-    }
-
-    @Override
-    public SourceDataLineAudioMixer setMixSliceSampleCount(final int mixSliceSampleCount) {
-        throw new UnsupportedOperationException("Cannot change mix slice size for auto-mixing audio mixer");
+        this.mixingScheduler.scheduleAtFixedRate(() -> this.mixAndWriteMillis(updatePeriodMillis), updatePeriodMillis, updatePeriodMillis, TimeUnit.MILLISECONDS);
     }
 
     public boolean isRunning() {
         return !this.mixingScheduler.isTerminated();
     }
 
+    @Override
     public void close() {
         this.mixingScheduler.shutdownNow();
         try {
