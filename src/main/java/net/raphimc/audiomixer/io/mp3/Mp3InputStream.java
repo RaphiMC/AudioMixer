@@ -61,26 +61,24 @@ public class Mp3InputStream extends InputStream {
 
     @Override
     public int read() throws IOException {
-        this.ensureSamplesBufferFilled();
-
-        if (this.samplesBuffer.isEmpty()) {
-            return -1;
-        } else {
-            return this.samplesBuffer.readSafe() & 0xFF;
+        while (this.samplesBuffer.isEmpty()) {
+            if (!this.fillSamplesBuffer()) {
+                return -1;
+            }
         }
+        return this.samplesBuffer.readSafe() & 0xFF;
     }
 
     @Override
     public int read(final byte[] b, final int off, final int len) throws IOException {
-        this.ensureSamplesBufferFilled();
-
-        if (this.samplesBuffer.isEmpty()) {
-            return -1;
-        } else {
-            final byte[] data = this.samplesBuffer.readAllSafe(Math.min(len, this.samplesBuffer.getSize()));
-            System.arraycopy(data, 0, b, off, data.length);
-            return data.length;
+        while (this.samplesBuffer.isEmpty()) {
+            if (!this.fillSamplesBuffer()) {
+                return -1;
+            }
         }
+        final byte[] data = this.samplesBuffer.readAllSafe(Math.min(len, this.samplesBuffer.getSize()));
+        System.arraycopy(data, 0, b, off, data.length);
+        return data.length;
     }
 
     @Override
@@ -92,14 +90,11 @@ public class Mp3InputStream extends InputStream {
         return new AudioFormat(this.outputBuffer.getSampleFrequency(), Short.SIZE, this.outputBuffer.getChannelCount(), true, false);
     }
 
-    private void ensureSamplesBufferFilled() throws IOException {
-        if (!this.samplesBuffer.isEmpty()) {
-            return;
-        }
+    private boolean fillSamplesBuffer() throws IOException {
         try {
             final Header frame = this.mp3BitStream.readFrame();
             if (frame == null) {
-                return;
+                return false;
             }
 
             this.decoder.decodeFrame(frame, this.mp3BitStream);
@@ -111,6 +106,7 @@ public class Mp3InputStream extends InputStream {
                 this.samplesBuffer.write((byte) (sample & 0xFF));
                 this.samplesBuffer.write((byte) ((sample >> 8) & 0xFF));
             }
+            return true;
         } catch (BitstreamException e) {
             throw new IOException("Error reading mp3 frame", e);
         } catch (DecoderException e) {

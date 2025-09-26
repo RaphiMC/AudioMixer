@@ -92,26 +92,24 @@ public class OggVorbisInputStream extends InputStream {
 
     @Override
     public int read() throws IOException {
-        this.ensureSamplesBufferFilled();
-
-        if (this.samplesBuffer.isEmpty()) {
-            return -1;
-        } else {
-            return this.samplesBuffer.readSafe() & 0xFF;
+        while (this.samplesBuffer.isEmpty()) {
+            if (!this.fillSamplesBuffer()) {
+                return -1;
+            }
         }
+        return this.samplesBuffer.readSafe() & 0xFF;
     }
 
     @Override
     public int read(final byte[] b, final int off, final int len) throws IOException {
-        this.ensureSamplesBufferFilled();
-
-        if (this.samplesBuffer.isEmpty()) {
-            return -1;
-        } else {
-            final byte[] data = this.samplesBuffer.readAllSafe(Math.min(len, this.samplesBuffer.getSize()));
-            System.arraycopy(data, 0, b, off, data.length);
-            return data.length;
+        while (this.samplesBuffer.isEmpty()) {
+            if (!this.fillSamplesBuffer()) {
+                return -1;
+            }
         }
+        final byte[] data = this.samplesBuffer.readAllSafe(Math.min(len, this.samplesBuffer.getSize()));
+        System.arraycopy(data, 0, b, off, data.length);
+        return data.length;
     }
 
     @Override
@@ -123,13 +121,10 @@ public class OggVorbisInputStream extends InputStream {
         return new AudioFormat(this.info.rate, Short.SIZE, this.info.channels, true, false);
     }
 
-    private void ensureSamplesBufferFilled() throws IOException {
-        if (!this.samplesBuffer.isEmpty()) {
-            return;
-        }
+    private boolean fillSamplesBuffer() throws IOException {
         final Packet packet = this.readPacket();
         if (packet == null) {
-            return;
+            return false;
         }
         if (this.block.synthesis(packet) < 0) {
             throw new IOException("Failed to decode audio packet");
@@ -157,10 +152,7 @@ public class OggVorbisInputStream extends InputStream {
             this.writtenSamples += actualSampleCount;
             this.dspState.synthesis_read(sampleCount);
         }
-
-        if (this.samplesBuffer.isEmpty()) {
-            this.ensureSamplesBufferFilled();
-        }
+        return true;
     }
 
     private Packet readIdentificationPacket(final Page page) throws IOException {
