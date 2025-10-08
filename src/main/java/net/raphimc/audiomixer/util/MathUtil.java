@@ -79,4 +79,8 @@ public class MathUtil {
         return (byteCount / (audioFormat.getSampleRate() * audioFormat.getFrameSize())) * 1000F;
     }
 
+    public static int byteCountToSampleCount(final AudioFormat audioFormat, final int byteCount) {
+        return byteCount / (audioFormat.getSampleSizeInBits() / Byte.SIZE);
+    }
+
 }

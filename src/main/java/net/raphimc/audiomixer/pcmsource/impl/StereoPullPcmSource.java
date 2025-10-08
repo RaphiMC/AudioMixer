@@ -20,6 +20,7 @@ package net.raphimc.audiomixer.pcmsource.impl;
 import net.raphimc.audiomixer.interpolator.Interpolator;
 import net.raphimc.audiomixer.interpolator.impl.LinearInterpolator;
 import net.raphimc.audiomixer.io.raw.SampleInputStream;
+import net.raphimc.audiomixer.util.MathUtil;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -28,48 +29,37 @@ import java.util.Arrays;
 public class StereoPullPcmSource extends StereoPushPcmSource implements Closeable {
 
     private final SampleInputStream sampleInputStream;
-    private final int bufferSize;
     private final Thread readThread;
-    private volatile boolean reachedEnd;
 
     public StereoPullPcmSource(final SampleInputStream sampleInputStream) {
-        this(sampleInputStream, 1024 * 256);
+        this(sampleInputStream, 1000);
     }
 
-    public StereoPullPcmSource(final SampleInputStream sampleInputStream, final int bufferSize) {
-        this(sampleInputStream, bufferSize, LinearInterpolator.INSTANCE);
+    public StereoPullPcmSource(final SampleInputStream sampleInputStream, final int bufferMillis) {
+        this(sampleInputStream, bufferMillis, LinearInterpolator.INSTANCE);
     }
 
-    public StereoPullPcmSource(final SampleInputStream sampleInputStream, final int bufferSize, final Interpolator interpolator) {
+    public StereoPullPcmSource(final SampleInputStream sampleInputStream, final int bufferMillis, final Interpolator interpolator) {
         super(interpolator);
-        if (bufferSize <= 0) {
-            throw new IllegalArgumentException("Buffer size must be greater than 0");
-        }
-        if (bufferSize % 2 != 0) {
-            throw new IllegalArgumentException("Buffer size must be a multiple of 2");
+        if (bufferMillis <= 0) {
+            throw new IllegalArgumentException("Buffer millis must be greater than 0");
         }
 
+        final int bufferSampleCount = MathUtil.millisToSampleCount(sampleInputStream.getFormat(), bufferMillis);
         this.sampleInputStream = sampleInputStream;
-        this.bufferSize = bufferSize;
         this.readThread = new Thread(() -> {
             try {
-                while (!this.reachedEnd) {
-                    while (!this.reachedEnd && this.getQueuedSampleCount() < this.bufferSize) {
+                while (!Thread.currentThread().isInterrupted()) {
+                    while (!Thread.currentThread().isInterrupted() && this.getQueuedSampleCount() < bufferSampleCount) {
                         float[] buffer = new float[0];
                         int bufferLen = 0;
                         try {
-                            buffer = new float[this.bufferSize];
+                            buffer = new float[bufferSampleCount];
                             for (bufferLen = 0; bufferLen < buffer.length; bufferLen++) {
-                                final float sample = this.sampleInputStream.readSample();
-                                if (!Float.isNaN(sample)) {
-                                    buffer[bufferLen] = sample;
-                                } else {
-                                    this.reachedEnd = true;
-                                    break;
-                                }
+                                buffer[bufferLen] = this.sampleInputStream.readSample();
                             }
-                        } catch (IOException ignored) {
-                            this.reachedEnd = true;
+                        } catch (IOException e) {
+                            Thread.currentThread().interrupt();
                         }
                         if (bufferLen > 0) {
                             if (buffer.length != bufferLen) {
@@ -79,28 +69,29 @@ public class StereoPullPcmSource extends StereoPushPcmSource implements Closeabl
                             }
                         }
                     }
-
                     Thread.sleep(100);
                 }
+            } catch (InterruptedException ignored) {
             } catch (Throwable e) {
-                if (e.getCause() instanceof InterruptedException) return;
-
                 e.printStackTrace();
-                this.reachedEnd = true;
+            } finally {
+                try {
+                    this.close();
+                } catch (IOException ignored) {
+                }
             }
-        }, "StereoPullPcmSource-ReadThread");
+        }, "AudioMixer StereoPullPcmSource Reader");
         this.readThread.setDaemon(true);
         this.readThread.start();
     }
 
     @Override
     public boolean hasReachedEnd() {
-        return this.reachedEnd && this.getQueuedSampleCount() == 0;
+        return !this.readThread.isAlive() && this.getQueuedSampleCount() == 0;
     }
 
     @Override
     public void close() throws IOException {
-        this.reachedEnd = true;
         this.readThread.interrupt();
         this.sampleInputStream.close();
     }

@@ -29,7 +29,7 @@ import java.io.OutputStream;
 public class SampleOutputStream extends OutputStream {
 
     private final OutputStream os;
-    private final InputStream is;
+    private final AudioInputStream is;
     private final byte[] writeBuffer;
     private final byte[] readBuffer;
     private int bufferIndex;
@@ -72,6 +72,10 @@ public class SampleOutputStream extends OutputStream {
             this.bufferIndex = 0;
             this.os.write(this.readBuffer);
         }
+    }
+
+    public AudioFormat getFormat() {
+        return this.is.getFormat();
     }
 
     private class BufferInputStream extends InputStream {

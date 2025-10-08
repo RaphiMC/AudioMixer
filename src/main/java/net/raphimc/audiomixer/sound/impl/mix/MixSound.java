@@ -18,6 +18,7 @@
 package net.raphimc.audiomixer.sound.impl.mix;
 
 import net.raphimc.audiomixer.sound.Sound;
+import net.raphimc.audiomixer.util.MathUtil;
 import net.raphimc.audiomixer.util.PcmFloatAudioFormat;
 
 import java.util.ArrayList;
@@ -30,7 +31,7 @@ public class MixSound extends Sound {
     protected final List<Sound> sounds = new ArrayList<>();
     private int maxSounds;
     private int mixedSounds;
-    protected long mixRenderTime;
+    protected float cpuLoad;
 
     public MixSound() {
         this(512);
@@ -42,7 +43,7 @@ public class MixSound extends Sound {
 
     @Override
     public synchronized void render(final PcmFloatAudioFormat audioFormat, final float[] finalMixBuffer) {
-        final long start = System.nanoTime();
+        final long startTime = System.nanoTime();
         this.mixedSounds = this.sounds.size();
 
         Arrays.fill(finalMixBuffer, 0F);
@@ -54,9 +55,11 @@ public class MixSound extends Sound {
             }
         }
         this.getSoundModifiers().modify(audioFormat, finalMixBuffer);
-
         this.sounds.removeIf(Sound::isFinished);
-        this.mixRenderTime = System.nanoTime() - start;
+
+        final float neededMillis = (System.nanoTime() - startTime) / 1_000_000F;
+        final float availableMillis = MathUtil.sampleCountToMillis(audioFormat, finalMixBuffer.length);
+        this.cpuLoad = (neededMillis / availableMillis) * 100F;
     }
 
     @Override
@@ -100,8 +103,8 @@ public class MixSound extends Sound {
         return this.mixedSounds;
     }
 
-    public long getMixRenderTime() {
-        return this.mixRenderTime;
+    public float getCpuLoad() {
+        return this.cpuLoad;
     }
 
     public synchronized int getActiveSounds() {

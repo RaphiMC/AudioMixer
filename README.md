@@ -35,8 +35,7 @@ If you just want the latest jar file you can download it from [GitHub Actions](h
 
 ## Usage
 AudioMixer provides multiple ``AudioMixer`` implementations to choose from.
-* ``BackgroundSourceDataLineAudioMixer``: Easiest to use implementation for realtime audio mixing. It mixes audio in the background and sends it to a SourceDataLine.
-* ``SourceDataLineAudioMixer``: Similar to ``BackgroundSourceDataLineAudioMixer`` but you have to call ``mixSlice`` manually. This allows you to mix audio in sync with the rest of your application.
+* ``SourceDataLineAudioMixer``: Easiest to use implementation for realtime audio mixing. It mixes audio in the background and sends it to a SourceDataLine.
 * ``AudioMixer``: Base mixer class. Intended for rendering audio to a file.
 
 After creating an ``AudioMixer`` instance you can play ``Sound`` instances with it using the ``playSound`` method.

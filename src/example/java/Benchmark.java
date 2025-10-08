@@ -40,15 +40,15 @@ public class Benchmark {
             mixer.playSound(new OptimizedMonoSound(new MonoStaticPcmSource(samples), 1.33F, 1, 0));
         }
 
-        // Warmup (Mix 1 second of audio)
+        // Warmup (Render 1 second of audio)
         for (int i = 0; i < 100; i++) {
-            mixer.mixMillis(10);
+            mixer.renderMillis(10);
         }
 
-        // Benchmark (Mix 2 seconds of audio)
+        // Benchmark (Render 2 seconds of audio)
         long start = System.currentTimeMillis();
         for (int i = 0; i < 200; i++) {
-            mixer.mixMillis(10);
+            mixer.renderMillis(10);
         }
         long end = System.currentTimeMillis();
         System.out.println("Time: " + (end - start) + "ms");

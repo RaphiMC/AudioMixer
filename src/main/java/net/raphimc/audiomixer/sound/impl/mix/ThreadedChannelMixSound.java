@@ -17,16 +17,16 @@
  */
 package net.raphimc.audiomixer.sound.impl.mix;
 
+import net.raphimc.audiomixer.util.MathUtil;
 import net.raphimc.audiomixer.util.PcmFloatAudioFormat;
 
-import java.io.Closeable;
 import java.util.Arrays;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 
-public class ThreadedChannelMixSound extends ChannelMixSound implements Closeable {
+public class ThreadedChannelMixSound extends ChannelMixSound implements AutoCloseable {
 
     private final ThreadPoolExecutor threadPool;
     private final CyclicBarrier startBarrier;
@@ -66,7 +66,7 @@ public class ThreadedChannelMixSound extends ChannelMixSound implements Closeabl
 
     @Override
     public void render(final PcmFloatAudioFormat audioFormat, final float[] finalMixBuffer) {
-        final long start = System.nanoTime();
+        final long startTime = System.nanoTime();
         this.currentAudioFormat = audioFormat;
         this.currentRenderSampleCount = finalMixBuffer.length;
 
@@ -84,7 +84,9 @@ public class ThreadedChannelMixSound extends ChannelMixSound implements Closeabl
         }
         this.getSoundModifiers().modify(audioFormat, finalMixBuffer);
 
-        this.mixRenderTime = System.nanoTime() - start;
+        final float neededMillis = (System.nanoTime() - startTime) / 1_000_000F;
+        final float availableMillis = MathUtil.sampleCountToMillis(audioFormat, finalMixBuffer.length);
+        this.cpuLoad = (neededMillis / availableMillis) * 100F;
     }
 
     @Override

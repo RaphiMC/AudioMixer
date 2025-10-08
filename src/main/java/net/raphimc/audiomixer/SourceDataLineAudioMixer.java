@@ -17,68 +17,28 @@
  */
 package net.raphimc.audiomixer;
 
-import net.raphimc.audiomixer.soundmodifier.impl.NormalizationModifier;
-import net.raphimc.audiomixer.soundmodifier.impl.VolumeModifier;
 import net.raphimc.audiomixer.util.PcmFloatAudioFormat;
 import net.raphimc.audiomixer.util.SourceDataLineWriter;
 
-import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
-import java.io.Closeable;
 
-public class SourceDataLineAudioMixer extends AudioMixer implements Closeable {
+public class SourceDataLineAudioMixer extends NormalizedAudioMixer implements AutoCloseable {
 
     private final SourceDataLineWriter sourceDataLineWriter;
-    private BufferOverrunStrategy bufferOverrunStrategy = BufferOverrunStrategy.DO_NOTHING;
-    private final NormalizationModifier normalizationModifier = new NormalizationModifier();
-    private final VolumeModifier volumeModifier = new VolumeModifier(1F);
 
     public SourceDataLineAudioMixer(final SourceDataLine sourceDataLine) throws LineUnavailableException {
-        this(sourceDataLine, 20, 100);
+        this(sourceDataLine, 50);
     }
 
-    public SourceDataLineAudioMixer(final SourceDataLine sourceDataLine, final int minBufferMillis, final int maxBufferMillis) throws LineUnavailableException {
+    public SourceDataLineAudioMixer(final SourceDataLine sourceDataLine, final int bufferMillis) throws LineUnavailableException {
+        this(sourceDataLine, bufferMillis, 10);
+    }
+
+    public SourceDataLineAudioMixer(final SourceDataLine sourceDataLine, final int bufferMillis, final int mixSliceMillis) throws LineUnavailableException {
         super(new PcmFloatAudioFormat(sourceDataLine.getFormat()));
-        this.sourceDataLineWriter = new SourceDataLineWriter(sourceDataLine, minBufferMillis, maxBufferMillis);
+        this.sourceDataLineWriter = new SourceDataLineWriter(sourceDataLine, bufferMillis, () -> this.renderMillis(mixSliceMillis));
         this.sourceDataLineWriter.start();
-
-        this.getSoundModifiers().append(this.normalizationModifier);
-        this.getSoundModifiers().append(this.volumeModifier);
-    }
-
-    @Override
-    public void stopAllSounds() {
-        super.stopAllSounds();
-        this.sourceDataLineWriter.flush();
-        this.normalizationModifier.reset();
-    }
-
-    @Override
-    public AudioFormat getAudioFormat() {
-        return this.sourceDataLineWriter.getSourceDataLine().getFormat();
-    }
-
-    public void mixAndWriteMillis(final float millis) {
-        if (this.bufferOverrunStrategy == BufferOverrunStrategy.DO_NOTHING && !this.sourceDataLineWriter.canWriteMillisWithoutBlocking(millis)) {
-            return;
-        }
-        final float[] samples = this.mixMillis(millis);
-        if (this.bufferOverrunStrategy == BufferOverrunStrategy.FLUSH && !this.sourceDataLineWriter.canWriteSamplesWithoutBlocking(samples.length)) {
-            this.sourceDataLineWriter.flush();
-        }
-        this.sourceDataLineWriter.write(samples);
-    }
-
-    public void mixAndWrite(final int sampleCount) {
-        if (this.bufferOverrunStrategy == BufferOverrunStrategy.DO_NOTHING && !this.sourceDataLineWriter.canWriteSamplesWithoutBlocking(sampleCount)) {
-            return;
-        }
-        final float[] samples = this.mix(sampleCount);
-        if (this.bufferOverrunStrategy == BufferOverrunStrategy.FLUSH && !this.sourceDataLineWriter.canWriteSamplesWithoutBlocking(samples.length)) {
-            this.sourceDataLineWriter.flush();
-        }
-        this.sourceDataLineWriter.write(samples);
     }
 
     @Override
@@ -88,51 +48,6 @@ public class SourceDataLineAudioMixer extends AudioMixer implements Closeable {
 
     public SourceDataLineWriter getSourceDataLineWriter() {
         return this.sourceDataLineWriter;
-    }
-
-    public BufferOverrunStrategy getBufferOverrunStrategy() {
-        return this.bufferOverrunStrategy;
-    }
-
-    public SourceDataLineAudioMixer setBufferOverrunStrategy(final BufferOverrunStrategy bufferOverrunStrategy) {
-        this.bufferOverrunStrategy = bufferOverrunStrategy;
-        return this;
-    }
-
-    public VolumeModifier getVolumeModifier() {
-        return this.volumeModifier;
-    }
-
-    public NormalizationModifier getNormalizationModifier() {
-        return this.normalizationModifier;
-    }
-
-    public SourceDataLineAudioMixer setMasterVolume(final int masterVolume) {
-        return this.setMasterVolume(masterVolume / 100F);
-    }
-
-    public SourceDataLineAudioMixer setMasterVolume(final float masterVolume) {
-        this.volumeModifier.setVolume(masterVolume);
-        return this;
-    }
-
-    public float getMasterVolume() {
-        return this.volumeModifier.getVolume();
-    }
-
-    public enum BufferOverrunStrategy {
-        /**
-         * Don't mix if the buffer would overrun. Causes new sounds to be started at the next mixSlice() call.
-         */
-        DO_NOTHING,
-        /**
-         * Flushes the buffer if it would overrun. Causes new sounds to be started immediately, but may cause audio pops.
-         */
-        FLUSH,
-        /**
-         * Blocks until the buffer has enough space.
-         */
-        BLOCK
     }
 
 }

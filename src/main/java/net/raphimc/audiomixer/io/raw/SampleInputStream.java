@@ -24,12 +24,13 @@ import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.BufferedInputStream;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 
 public class SampleInputStream extends InputStream {
 
-    private final InputStream is;
+    private final AudioInputStream is;
     private final byte[] buffer;
     private int bufferIndex;
     private int bufferLength;
@@ -76,10 +77,14 @@ public class SampleInputStream extends InputStream {
         final int b3 = this.read();
         final int b4 = this.read();
         if (b1 == -1 || b2 == -1 || b3 == -1 || b4 == -1) {
-            return Float.NaN;
+            throw new EOFException();
         } else {
             return Float.intBitsToFloat((b1 << 24) | (b2 << 16) | (b3 << 8) | b4);
         }
+    }
+
+    public AudioFormat getFormat() {
+        return this.is.getFormat();
     }
 
 }

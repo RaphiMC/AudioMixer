@@ -42,9 +42,11 @@ public class AudioIO {
     public static float[] readSamples(final AudioInputStream is, final PcmFloatAudioFormat targetAudioFormat) throws IOException {
         final SampleInputStream sis = new SampleInputStream(is, targetAudioFormat);
         final GrowableArray samples = new GrowableArray(1024 * 256);
-        float sample;
-        while (!Float.isNaN((sample = sis.readSample()))) {
-            samples.add(sample);
+        try {
+            while (true) {
+                samples.add(sis.readSample());
+            }
+        } catch (EOFException ignored) {
         }
         sis.close();
         return samples.getArray();

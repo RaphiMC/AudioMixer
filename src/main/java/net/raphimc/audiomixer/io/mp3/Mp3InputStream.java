@@ -18,7 +18,7 @@
 package net.raphimc.audiomixer.io.mp3;
 
 import javazoom.jl.decoder.*;
-import net.raphimc.audiomixer.util.CircularBuffer;
+import net.raphimc.audiomixer.util.CircularByteBuffer;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
@@ -32,7 +32,7 @@ public class Mp3InputStream extends InputStream {
     private final Decoder decoder = new Decoder(null);
     private final SampleBuffer outputBuffer;
     private final InputStream mp3Stream;
-    private final CircularBuffer samplesBuffer;
+    private final CircularByteBuffer samplesBuffer;
 
     public static AudioInputStream createAudioInputStream(final InputStream mp3Stream) throws IOException {
         final Mp3InputStream mp3InputStream = new Mp3InputStream(mp3Stream);
@@ -56,7 +56,7 @@ public class Mp3InputStream extends InputStream {
         final int channels = frame.mode() == Header.SINGLE_CHANNEL ? 1 : 2;
         this.outputBuffer = new SampleBuffer(frame.frequency(), channels);
         this.decoder.setOutputBuffer(this.outputBuffer);
-        this.samplesBuffer = new CircularBuffer(this.outputBuffer.getBuffer().length * Short.BYTES);
+        this.samplesBuffer = new CircularByteBuffer(this.outputBuffer.getBuffer().length * Short.BYTES);
     }
 
     @Override

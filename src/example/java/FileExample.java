@@ -45,9 +45,9 @@ public class FileExample {
         mixer.playSound(new OptimizedMonoSound(new MonoStaticPcmSource(samples), 0.5F, 1, 0));
         // Create the output buffer
         GrowableArray outputSamples = new GrowableArray(0);
-        // Mix 1 second of audio until there are no more active sounds (The mixer will automatically stop finished sounds)
+        // Render 1 second of audio until there are no more active sounds (The mixer will automatically stop finished sounds)
         while (mixer.getMasterMixSound().getActiveSounds() > 0) {
-            outputSamples.add(mixer.mixMillis(1000));
+            outputSamples.add(mixer.renderMillis(1000));
         }
         // Normalize the audio samples to [-1, 1]
         SoundSampleUtil.normalize(outputSamples.getArrayDirect());

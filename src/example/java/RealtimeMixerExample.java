@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import net.raphimc.audiomixer.BackgroundSourceDataLineAudioMixer;
+import net.raphimc.audiomixer.SourceDataLineAudioMixer;
 import net.raphimc.audiomixer.io.AudioIO;
 import net.raphimc.audiomixer.pcmsource.impl.MonoStaticPcmSource;
 import net.raphimc.audiomixer.sound.impl.pcm.OptimizedMonoSound;
@@ -32,7 +32,7 @@ public class RealtimeMixerExample {
 
     public static void main(String[] args) throws Throwable {
         AudioFormat format = new AudioFormat(48000, 16, 2, true, false);
-        BackgroundSourceDataLineAudioMixer audioMixer = new BackgroundSourceDataLineAudioMixer(AudioSystem.getSourceDataLine(format));
+        SourceDataLineAudioMixer audioMixer = new SourceDataLineAudioMixer(AudioSystem.getSourceDataLine(format));
         float[] pianoSamples = AudioIO.readSamples(RealtimeMixerExample.class.getResourceAsStream("/piano.wav"), new PcmFloatAudioFormat(format.getSampleRate(), 1));
 
         JFrame frame = new JFrame("AudioMixer Test");

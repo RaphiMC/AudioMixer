@@ -22,66 +22,58 @@ import net.raphimc.audiomixer.io.raw.SampleOutputStream;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
 import java.io.ByteArrayOutputStream;
-import java.io.Closeable;
-import java.io.IOException;
 
-public class SourceDataLineWriter implements Closeable {
+public class SourceDataLineWriter implements AutoCloseable {
 
     private final SourceDataLine sourceDataLine;
-    private final int minBufferMillis;
-    private final CircularBuffer buffer;
+    private final Callback callback;
     private Thread writerThread;
+    private boolean interrupted; // Java clears the interrupt flag in SourceDataLine#write() and doesn't rethrow InterruptedException
+    private float cpuLoad;
 
-    public SourceDataLineWriter(final SourceDataLine sourceDataLine, final int minBufferMillis, final int maxBufferMillis) {
-        if (minBufferMillis <= 0) {
-            throw new IllegalArgumentException("Min buffer millis must be greater than 0");
-        }
-        if (maxBufferMillis < minBufferMillis * 2) {
-            throw new IllegalArgumentException("Max buffer millis must be at least double the min buffer millis");
+    public SourceDataLineWriter(final SourceDataLine sourceDataLine, final int bufferMillis, final Callback callback) throws LineUnavailableException {
+        if (bufferMillis <= 0) {
+            throw new IllegalArgumentException("Buffer millis must be greater than 0");
         }
 
         this.sourceDataLine = sourceDataLine;
-        this.minBufferMillis = minBufferMillis;
-        this.buffer = new CircularBuffer(MathUtil.millisToByteCount(sourceDataLine.getFormat(), maxBufferMillis));
+        this.sourceDataLine.open(this.sourceDataLine.getFormat(), MathUtil.millisToByteCount(this.sourceDataLine.getFormat(), bufferMillis));
+        this.callback = callback;
     }
 
-    public void start() throws LineUnavailableException {
+    public void start() {
         if (this.isRunning()) {
-            this.close();
-        }
-
-        if (!this.sourceDataLine.isOpen()) {
-            this.sourceDataLine.open(this.sourceDataLine.getFormat(), MathUtil.millisToByteCount(this.sourceDataLine.getFormat(), this.minBufferMillis));
+            this.stop();
         }
 
         TimerHack.ensureRunning();
+        this.interrupted = false;
         this.writerThread = new Thread(() -> {
             try {
-                while (!Thread.currentThread().isInterrupted()) {
-                    if (this.sourceDataLine.isActive()) {
-                        if (this.sourceDataLine.available() >= this.sourceDataLine.getBufferSize()) { // Stop the line if it has completely drained, will be started again when enough data is available
-                            this.sourceDataLine.stop();
-                        } else { // Line is active and has space available
-                            if (this.sourceDataLine.available() > 0 && !this.buffer.isEmpty()) { // Write data if there's space available and data to write
-                                final byte[] data = this.buffer.readAllSafe(Math.min(this.buffer.getSize(), this.sourceDataLine.available()));
-                                this.sourceDataLine.write(data, 0, data.length);
-                            } else { // Nothing to write or no space available, wait a bit
-                                Thread.sleep(1);
-                            }
+                while (!Thread.currentThread().isInterrupted() && !this.interrupted) {
+                    while (this.sourceDataLine.available() > 0 && !Thread.currentThread().isInterrupted() && !this.interrupted) {
+                        final long startTime = System.nanoTime();
+                        final float[] samples = this.callback.provideSamples(MathUtil.byteCountToSampleCount(this.sourceDataLine.getFormat(), this.sourceDataLine.available()));
+                        final ByteArrayOutputStream baos = new ByteArrayOutputStream(MathUtil.sampleCountToByteCount(this.sourceDataLine.getFormat(), samples.length));
+                        final SampleOutputStream sos = new SampleOutputStream(baos, this.sourceDataLine.getFormat());
+                        for (float sample : samples) {
+                            sos.writeSample(sample);
                         }
-                    } else { // Line is not active
-                        if (this.buffer.getSize() >= this.sourceDataLine.getBufferSize()) { // Start the line when at least one buffer worth of data is available
+                        final byte[] sampleData = baos.toByteArray();
+                        if (!this.sourceDataLine.isActive()) {
                             this.sourceDataLine.start();
-                            final byte[] data = this.buffer.readAllSafe(Math.min(this.buffer.getSize(), this.sourceDataLine.available()));
-                            this.sourceDataLine.write(data, 0, data.length);
-                        } else { // Not enough data yet, wait a bit
-                            Thread.sleep(1);
                         }
+                        final float neededMillis = (System.nanoTime() - startTime) / 1_000_000F;
+                        final float availableMillis = MathUtil.sampleCountToMillis(this.sourceDataLine.getFormat(), samples.length);
+                        this.cpuLoad = (neededMillis / availableMillis) * 100F;
+                        this.sourceDataLine.write(sampleData, 0, sampleData.length);
                     }
+                    Thread.sleep(1);
                 }
             } catch (InterruptedException ignored) {
             } catch (Throwable e) {
                 e.printStackTrace();
+                this.close();
             }
         }, "AudioMixer SourceDataLine Writer");
         this.writerThread.setPriority(Thread.NORM_PRIORITY + 1);
@@ -89,91 +81,51 @@ public class SourceDataLineWriter implements Closeable {
         this.writerThread.start();
     }
 
-    public void write(final float[] samples) {
-        if (!this.isRunning()) {
-            return;
-        }
-
-        final ByteArrayOutputStream baos = new ByteArrayOutputStream(MathUtil.sampleCountToByteCount(this.sourceDataLine.getFormat(), samples.length));
-        final SampleOutputStream sos = new SampleOutputStream(baos, this.sourceDataLine.getFormat());
-        try {
-            for (float sample : samples) {
-                sos.writeSample(sample);
-            }
-        } catch (IOException ignored) {
-        }
-        final byte[] sampleData = baos.toByteArray();
-        if (sampleData.length > this.buffer.getCapacity()) {
-            throw new IllegalArgumentException("Sample data is larger than buffer capacity (" + sampleData.length + " > " + this.buffer.getCapacity() + ")");
-        }
-
-        while (this.isRunning() && !this.buffer.hasSpaceFor(sampleData.length)) {
-            try {
-                Thread.sleep(1);
-            } catch (InterruptedException e) {
-                return;
-            }
-        }
-        this.buffer.writeAll(sampleData);
-    }
-
     public void flush() {
-        this.buffer.clear();
-        this.sourceDataLine.stop(); // Will be started again in the writer thread when data is written
+        this.sourceDataLine.stop(); // Will be started again in the writer thread
         this.sourceDataLine.flush();
     }
 
-    @Override
-    public void close() {
+    public void stop() {
         if (this.isRunning()) {
             this.writerThread.interrupt();
+            this.interrupted = true;
             try {
                 this.writerThread.join(1000);
             } catch (InterruptedException ignored) {
             }
             this.writerThread = null;
         }
+        this.sourceDataLine.stop();
+    }
+
+    @Override
+    public void close() {
+        this.stop();
         this.sourceDataLine.close();
-    }
-
-    public boolean canWriteSamplesWithoutBlocking(final int sampleCount) {
-        return this.buffer.hasSpaceFor(MathUtil.sampleCountToByteCount(this.sourceDataLine.getFormat(), sampleCount));
-    }
-
-    public boolean canWriteMillisWithoutBlocking(final float millis) {
-        return this.canWriteSamplesWithoutBlocking(MathUtil.millisToSampleCount(this.sourceDataLine.getFormat(), millis));
     }
 
     public boolean isRunning() {
         return this.writerThread != null && this.writerThread.isAlive();
     }
 
-    public float getBufferFillMillis() {
-        return MathUtil.byteCountToMillis(this.sourceDataLine.getFormat(), this.buffer.getSize());
-    }
-
-    public float getSourceDataLineFillMillis() {
-        return MathUtil.byteCountToMillis(this.sourceDataLine.getFormat(), this.sourceDataLine.getBufferSize() - this.sourceDataLine.available());
-    }
-
-    public float getTotalFillMillis() {
-        return this.getBufferFillMillis() + this.getSourceDataLineFillMillis();
-    }
-
-    public float getBufferFillPercentage() {
-        return (this.buffer.getSize() / (float) this.buffer.getCapacity()) * 100F;
-    }
-
-    public float getSourceDataLineFillPercentage() {
-        return ((this.sourceDataLine.getBufferSize() - this.sourceDataLine.available()) / (float) this.sourceDataLine.getBufferSize()) * 100F;
-    }
-
     public SourceDataLine getSourceDataLine() {
         return this.sourceDataLine;
     }
 
-    public CircularBuffer getBuffer() {
-        return this.buffer;
+    public float getCpuLoad() {
+        return this.cpuLoad;
+    }
+
+    @FunctionalInterface
+    public interface Callback {
+
+        default float[] provideSamples(final int availableSampleCount) {
+            return this.provideSamples();
+        }
+
+        float[] provideSamples();
+
     }
 
 }

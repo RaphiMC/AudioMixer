@@ -19,29 +19,29 @@ package net.raphimc.audiomixer.util;
 
 import java.util.Arrays;
 
-public class CircularBuffer {
+public class CircularFloatBuffer {
 
-    private final byte[] buffer;
+    private final float[] buffer;
     private int head;
     private int tail;
     private int size;
 
-    public CircularBuffer(final int capacity) {
-        this.buffer = new byte[capacity];
+    public CircularFloatBuffer(final int capacity) {
+        this.buffer = new float[capacity];
     }
 
-    public synchronized void write(final byte value) {
+    public synchronized void write(final float value) {
         this.ensureHasEnoughSpace(1);
         this.buffer[this.tail] = value;
         this.tail = (this.tail + 1) % this.buffer.length;
         this.size++;
     }
 
-    public void writeAll(final byte[] values) {
+    public void writeAll(final float[] values) {
         this.writeAll(values, values.length);
     }
 
-    public synchronized void writeAll(final byte[] values, final int valuesLength) {
+    public synchronized void writeAll(final float[] values, final int valuesLength) {
         this.ensureHasEnoughSpace(valuesLength);
 
         final int firstPartLength = Math.min(valuesLength, this.buffer.length - this.tail);
@@ -55,50 +55,50 @@ public class CircularBuffer {
         this.size += valuesLength;
     }
 
-    public byte read() {
+    public float read() {
         if (this.isEmpty()) {
             throw new IllegalStateException("Buffer is empty");
         }
         return this.readSafe();
     }
 
-    public byte readSafe() {
-        return this.readSafe((byte) 0);
+    public float readSafe() {
+        return this.readSafe(0F);
     }
 
-    public synchronized byte readSafe(final byte defaultValue) {
+    public synchronized float readSafe(final float defaultValue) {
         if (this.isEmpty()) {
             return defaultValue;
         }
-        final byte value = this.buffer[this.head];
+        final float value = this.buffer[this.head];
         this.head = (head + 1) % this.buffer.length;
         this.size--;
         return value;
     }
 
-    public byte[] readAllSafe(final int size) {
-        return this.readAllSafe(size, (byte) 0);
+    public float[] readAllSafe(final int size) {
+        return this.readAllSafe(size, 0F);
     }
 
-    public byte[] readAllSafe(final int size, final byte defaultValue) {
-        final byte[] values = new byte[size];
+    public float[] readAllSafe(final int size, final float defaultValue) {
+        final float[] values = new float[size];
         this.readAllSafe(values, defaultValue);
         return values;
     }
 
-    public void readAllSafe(final byte[] values) {
-        this.readAllSafe(values, (byte) 0);
+    public void readAllSafe(final float[] values) {
+        this.readAllSafe(values, 0F);
     }
 
-    public void readAllSafe(final byte[] values, final byte defaultValue) {
+    public void readAllSafe(final float[] values, final float defaultValue) {
         this.readAllSafe(values, values.length, defaultValue);
     }
 
-    public void readAllSafe(final byte[] values, final int valuesLength) {
-        this.readAllSafe(values, valuesLength, (byte) 0);
+    public void readAllSafe(final float[] values, final int valuesLength) {
+        this.readAllSafe(values, valuesLength, 0F);
     }
 
-    public synchronized void readAllSafe(final byte[] values, final int valuesLength, final byte defaultValue) {
+    public synchronized void readAllSafe(final float[] values, final int valuesLength, final float defaultValue) {
         final int elementsToRemove = Math.min(valuesLength, this.size);
         final int firstPartLength = Math.min(elementsToRemove, this.buffer.length - this.head);
         System.arraycopy(this.buffer, this.head, values, 0, firstPartLength);
@@ -118,8 +118,8 @@ public class CircularBuffer {
         this.size = 0;
     }
 
-    public synchronized boolean hasSpaceFor(final int bytes) {
-        return this.size + bytes <= this.buffer.length;
+    public synchronized boolean hasSpaceFor(final int length) {
+        return this.size + length <= this.buffer.length;
     }
 
     public synchronized boolean isEmpty() {
@@ -138,8 +138,8 @@ public class CircularBuffer {
         return this.buffer.length;
     }
 
-    private void ensureHasEnoughSpace(final int bytes) {
-        if (!this.hasSpaceFor(bytes)) {
+    private void ensureHasEnoughSpace(final int length) {
+        if (!this.hasSpaceFor(length)) {
             throw new IllegalStateException("Not enough space in the buffer");
         }
     }

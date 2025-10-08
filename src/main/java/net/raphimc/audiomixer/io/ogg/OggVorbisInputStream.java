@@ -25,7 +25,7 @@ import com.jcraft.jorbis.Block;
 import com.jcraft.jorbis.Comment;
 import com.jcraft.jorbis.DspState;
 import com.jcraft.jorbis.Info;
-import net.raphimc.audiomixer.util.CircularBuffer;
+import net.raphimc.audiomixer.util.CircularByteBuffer;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
@@ -52,7 +52,7 @@ public class OggVorbisInputStream extends InputStream {
     private final DspState dspState = new DspState();
     private final Block block = new Block(this.dspState);
     private final InputStream oggStream;
-    private final CircularBuffer samplesBuffer;
+    private final CircularByteBuffer samplesBuffer;
     private long totalSamples = Long.MAX_VALUE;
     private long writtenSamples;
 
@@ -87,7 +87,7 @@ public class OggVorbisInputStream extends InputStream {
 
         this.dspState.synthesis_init(this.info);
         this.block.init(this.dspState);
-        this.samplesBuffer = new CircularBuffer(BUFFER_SIZE * Short.BYTES * this.info.channels);
+        this.samplesBuffer = new CircularByteBuffer(BUFFER_SIZE * Short.BYTES * this.info.channels);
     }
 
     @Override

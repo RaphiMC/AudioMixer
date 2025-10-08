@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-import net.raphimc.audiomixer.BackgroundSourceDataLineAudioMixer;
+import net.raphimc.audiomixer.SourceDataLineAudioMixer;
 import net.raphimc.audiomixer.oscillator.impl.SineOscillator;
 import net.raphimc.audiomixer.sound.impl.OscillatorSound;
 import net.raphimc.audiomixer.soundmodifier.impl.SpatialModifier;
@@ -32,7 +32,7 @@ public class SpatialAudioExample {
 
     public static void main(String[] args) throws Throwable {
         AudioFormat format = new AudioFormat(48000, 16, 2, true, false);
-        BackgroundSourceDataLineAudioMixer audioMixer = new BackgroundSourceDataLineAudioMixer(AudioSystem.getSourceDataLine(format));
+        SourceDataLineAudioMixer audioMixer = new SourceDataLineAudioMixer(AudioSystem.getSourceDataLine(format));
 
         final OscillatorSound sound = new OscillatorSound(new SineOscillator(440));
         final SpatialModifier spatialModifier = new SpatialModifier(250);
