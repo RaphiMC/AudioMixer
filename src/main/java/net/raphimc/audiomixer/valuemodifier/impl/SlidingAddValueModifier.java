@@ -26,7 +26,6 @@ public class SlidingAddValueModifier extends SlidingValueModifier {
 
     public SlidingAddValueModifier(final float startModifier, final float endModifier, final float durationMillis) {
         super(durationMillis);
-
         this.startModifier = startModifier;
         this.endModifier = endModifier;
     }

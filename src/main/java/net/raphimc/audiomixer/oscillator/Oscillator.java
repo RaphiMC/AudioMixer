@@ -61,7 +61,6 @@ public abstract class Oscillator extends Modulator {
         if (frequency < 0) {
             throw new IllegalArgumentException("Frequency must be greater than or equal to 0");
         }
-
         this.frequency = frequency;
         return this;
     }

@@ -33,7 +33,6 @@ public interface StereoPcmSource extends PcmSource {
             buffer[index] = sample[0];
             buffer[index + 1] = sample[1];
         }
-
         return i;
     }
 

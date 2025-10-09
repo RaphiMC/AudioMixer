@@ -76,18 +76,10 @@ public class MonoStaticPcmSource implements MonoPcmSource, StaticPcmSource {
 
     @Override
     public StaticPcmSource setPosition(final double position) {
+        if (position < 0 || position > this.samples.length) {
+            throw new IllegalArgumentException("Position must be between 0 and " + this.samples.length);
+        }
         this.position = position;
-        return this;
-    }
-
-    @Override
-    public float getProgress() {
-        return (float) (this.position / this.samples.length);
-    }
-
-    @Override
-    public StaticPcmSource setProgress(final float progress) {
-        this.position = (int) ((double) progress * this.samples.length);
         return this;
     }
 

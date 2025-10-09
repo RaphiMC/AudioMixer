@@ -45,7 +45,10 @@ public class PanningModifier implements SoundModifier {
     }
 
     public PanningModifier setPanning(final float panning) {
-        this.panning = (Math.max(-1F, Math.min(1F, panning)) + 1) / 2F;
+        if (panning < -1F || panning > 1F) {
+            throw new IllegalArgumentException("Panning must be between -1 and 1");
+        }
+        this.panning = (panning + 1F) / 2F;
         return this;
     }
 

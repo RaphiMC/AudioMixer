@@ -47,7 +47,7 @@ public class SoundSampleUtil {
     public static float getMax(final float[] samples) {
         float max = 0F;
         for (float sample : samples) {
-            max = Math.max(max, Math.abs(sample));
+            max = Math.max(Math.abs(sample), max);
         }
         return max;
     }

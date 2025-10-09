@@ -30,7 +30,6 @@ public interface MonoPcmSource extends PcmSource {
         for (i = 0; i < length && !this.hasReachedEnd(); i++) {
             buffer[offset + i] = this.consumeSample(1);
         }
-
         return i;
     }
 

@@ -74,7 +74,6 @@ public class StereoPushPcmSource implements StereoPcmSource {
         if (samples.length % 2 != 0) {
             throw new IllegalArgumentException("Sample count must be a multiple of 2");
         }
-
         this.samplesQueue.add(samples);
     }
 

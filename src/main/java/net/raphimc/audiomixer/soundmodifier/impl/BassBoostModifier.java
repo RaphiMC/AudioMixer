@@ -29,7 +29,7 @@ public class BassBoostModifier implements SoundModifier {
     private float[] previousResult = new float[2];
 
     public BassBoostModifier(final float cutoffFrequency) {
-        this(cutoffFrequency, 1);
+        this(cutoffFrequency, 1F);
     }
 
     public BassBoostModifier(final float cutoffFrequency, final float factor) {
@@ -56,6 +56,9 @@ public class BassBoostModifier implements SoundModifier {
     }
 
     public BassBoostModifier setCutoffFrequency(final float cutoffFrequency) {
+        if (cutoffFrequency <= 0) {
+            throw new IllegalArgumentException("Cutoff frequency must be greater than 0");
+        }
         this.rc = (float) (1D / (2 * Math.PI * cutoffFrequency));
         return this;
     }
@@ -68,7 +71,6 @@ public class BassBoostModifier implements SoundModifier {
         if (factor < 0) {
             throw new IllegalArgumentException("Factor must be greater than or equal to 0");
         }
-
         this.factor = factor;
         return this;
     }

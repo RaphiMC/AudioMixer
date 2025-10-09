@@ -85,7 +85,6 @@ public class MonoSound extends Sound {
         if (pitch < 0) {
             throw new IllegalArgumentException("Pitch must be greater than or equal to 0");
         }
-
         this.pitch = pitch;
         return this;
     }

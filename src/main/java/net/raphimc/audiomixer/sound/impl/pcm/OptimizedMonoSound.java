@@ -32,7 +32,15 @@ public class OptimizedMonoSound extends Sound {
     private float panning;
 
     public OptimizedMonoSound(final MonoPcmSource pcmSource) {
-        this(pcmSource, 1F, 1F, 0F);
+        this(pcmSource, 1F);
+    }
+
+    public OptimizedMonoSound(final MonoPcmSource pcmSource, final float pitch) {
+        this(pcmSource, pitch, 1F);
+    }
+
+    public OptimizedMonoSound(final MonoPcmSource pcmSource, final float pitch, final float volume) {
+        this(pcmSource, pitch, volume, 0F);
     }
 
     public OptimizedMonoSound(final MonoPcmSource pcmSource, final float pitch, final float volume, final float panning) {
@@ -80,10 +88,9 @@ public class OptimizedMonoSound extends Sound {
     }
 
     public OptimizedMonoSound setPitch(final float pitch) {
-        if (pitch <= 0) {
-            throw new IllegalArgumentException("Pitch must be greater than 0");
+        if (pitch < 0) {
+            throw new IllegalArgumentException("Pitch must be greater than or equal to 0");
         }
-
         this.pitch = pitch;
         return this;
     }
@@ -93,7 +100,10 @@ public class OptimizedMonoSound extends Sound {
     }
 
     public OptimizedMonoSound setVolume(final float volume) {
-        this.volume = Math.max(0, volume);
+        if (volume < 0F || volume > 1F) {
+            throw new IllegalArgumentException("Volume must be between 0 and 1");
+        }
+        this.volume = volume;
         return this;
     }
 
@@ -102,7 +112,10 @@ public class OptimizedMonoSound extends Sound {
     }
 
     public OptimizedMonoSound setPanning(final float panning) {
-        this.panning = (Math.max(-1F, Math.min(1F, panning)) + 1) / 2F;
+        if (panning < -1F || panning > 1F) {
+            throw new IllegalArgumentException("Panning must be between -1 and 1");
+        }
+        this.panning = (panning + 1F) / 2F;
         return this;
     }
 

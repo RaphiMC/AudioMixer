@@ -25,8 +25,12 @@ public interface StaticPcmSource {
 
     StaticPcmSource setPosition(final double position);
 
-    float getProgress();
+    default float getProgress() {
+        return (float) (this.getPosition() / this.getSampleCount());
+    }
 
-    StaticPcmSource setProgress(final float progress);
+    default StaticPcmSource setProgress(final float progress) {
+        return this.setPosition((int) ((double) progress * this.getSampleCount()));
+    }
 
 }

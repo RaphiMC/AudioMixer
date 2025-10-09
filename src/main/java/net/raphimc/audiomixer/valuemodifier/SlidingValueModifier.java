@@ -27,7 +27,6 @@ public abstract class SlidingValueModifier implements ValueModifier {
         if (durationMillis <= 0) {
             throw new IllegalArgumentException("Duration must be greater than 0");
         }
-
         this.durationMillis = durationMillis;
     }
 

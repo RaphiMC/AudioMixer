@@ -94,7 +94,6 @@ public class MixSound extends Sound {
         if (maxSounds < 1) {
             throw new IllegalArgumentException("Max sounds must be at least 1");
         }
-
         this.maxSounds = maxSounds;
         return this;
     }

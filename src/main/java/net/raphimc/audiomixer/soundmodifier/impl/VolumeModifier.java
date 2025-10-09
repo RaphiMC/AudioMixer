@@ -18,6 +18,7 @@
 package net.raphimc.audiomixer.soundmodifier.impl;
 
 import net.raphimc.audiomixer.soundmodifier.SoundModifier;
+import net.raphimc.audiomixer.util.MathUtil;
 import net.raphimc.audiomixer.util.PcmFloatAudioFormat;
 import net.raphimc.audiomixer.valuemodifier.ValueModifier;
 
@@ -38,7 +39,7 @@ public class VolumeModifier implements SoundModifier {
             if (!hasVolumeModifier) {
                 volume = this.volume;
             } else {
-                volume = Math.min(Math.max(this.volumeModifier.modify(this.volume, audioFormat.getSampleRate()), 0F), 1F);
+                volume = MathUtil.clamp(this.volumeModifier.modify(this.volume, audioFormat.getSampleRate()), 0F, 1F);
             }
 
             renderedSamples[i] = renderedSamples[i] * volume;
@@ -50,10 +51,9 @@ public class VolumeModifier implements SoundModifier {
     }
 
     public VolumeModifier setVolume(final float volume) {
-        if (volume < 0 || volume > 1) {
+        if (volume < 0F || volume > 1F) {
             throw new IllegalArgumentException("Volume must be between 0 and 1");
         }
-
         this.volume = volume;
         return this;
     }

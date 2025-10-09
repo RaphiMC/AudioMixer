@@ -67,7 +67,6 @@ public class BitCrushModifier implements SoundModifier {
         if (decimationRate <= 0) {
             throw new IllegalArgumentException("Decimation rate must be greater than 0");
         }
-
         this.decimationRate = decimationRate;
         return this;
     }

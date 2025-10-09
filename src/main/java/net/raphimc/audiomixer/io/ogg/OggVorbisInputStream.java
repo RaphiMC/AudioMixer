@@ -26,6 +26,7 @@ import com.jcraft.jorbis.Comment;
 import com.jcraft.jorbis.DspState;
 import com.jcraft.jorbis.Info;
 import net.raphimc.audiomixer.util.CircularByteBuffer;
+import net.raphimc.audiomixer.util.MathUtil;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
@@ -142,7 +143,7 @@ public class OggVorbisInputStream extends InputStream {
                 for (int channel = 0; channel < this.info.channels; channel++) {
                     final int offset = offsets[channel];
                     final float[] samples = allSamples[0][channel];
-                    final float floatSample = Math.max(Math.min(samples[offset + i], 1F), -1F); // jorbis seems to return out of range samples sometimes
+                    final float floatSample = MathUtil.clamp(samples[offset + i], -1F, 1F); // jorbis seems to return out of range samples sometimes
                     final short sample = (short) (floatSample > 0 ? (floatSample * Short.MAX_VALUE) : (floatSample * (-Short.MIN_VALUE)));
                     this.samplesBuffer.write((byte) (sample & 0xFF));
                     this.samplesBuffer.write((byte) ((sample >> 8) & 0xFF));

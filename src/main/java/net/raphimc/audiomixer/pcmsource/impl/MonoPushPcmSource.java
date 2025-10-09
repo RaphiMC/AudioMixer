@@ -67,7 +67,6 @@ public class MonoPushPcmSource implements MonoPcmSource {
         if (samples == null || samples.length == 0) {
             throw new IllegalArgumentException("Samples must not be null or empty");
         }
-
         this.samplesQueue.add(samples);
     }
 

@@ -56,6 +56,9 @@ public class NormalizationModifier implements SoundModifier {
     }
 
     public NormalizationModifier setDecayPeriodMillis(final int decayPeriodMillis) {
+        if (decayPeriodMillis <= 0) {
+            throw new IllegalArgumentException("Decay period must be greater than 0");
+        }
         this.decayPeriodMillis = decayPeriodMillis;
         return this;
     }

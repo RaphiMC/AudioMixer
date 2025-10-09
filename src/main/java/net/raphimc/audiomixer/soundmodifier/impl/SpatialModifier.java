@@ -64,7 +64,6 @@ public class SpatialModifier implements SoundModifier {
         if (maxDistance <= 0) {
             throw new IllegalArgumentException("Max distance must be greater than zero");
         }
-
         this.maxDistance = maxDistance;
         this.recalculate = true;
         return this;

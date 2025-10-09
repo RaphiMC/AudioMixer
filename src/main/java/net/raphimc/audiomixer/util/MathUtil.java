@@ -30,6 +30,10 @@ public class MathUtil {
     private static final double k6 = Double.longBitsToDouble(4460268259291226124L);
     private static final double k7 = Double.longBitsToDouble(-4798040743777455072L);
 
+    public static float clamp(final float value, final float min, final float max) {
+        return Math.max(min, Math.min(value, max));
+    }
+
     /**
      * Copyright <a href="https://github.com/JOML-CI/JOML/blob/c8f2ec39d9f138f9708bc7ac27a23e9603f14751/src/main/java/org/joml/Math.java#L176">JOML</a>.<br>
      * Licensed under the <a href="https://github.com/JOML-CI/JOML/blob/c8f2ec39d9f138f9708bc7ac27a23e9603f14751/LICENSE">MIT</a> license.
