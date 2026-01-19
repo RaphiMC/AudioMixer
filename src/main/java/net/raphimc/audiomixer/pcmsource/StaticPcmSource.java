@@ -19,18 +19,23 @@ package net.raphimc.audiomixer.pcmsource;
 
 public interface StaticPcmSource {
 
-    int getSampleCount();
+    int getFrameCount();
 
     double getPosition();
 
     StaticPcmSource setPosition(final double position);
 
     default float getProgress() {
-        return (float) (this.getPosition() / this.getSampleCount());
+        return (float) (this.getPosition() / this.getFrameCount());
     }
 
     default StaticPcmSource setProgress(final float progress) {
-        return this.setPosition((int) ((double) progress * this.getSampleCount()));
+        return this.setPosition((int) ((double) progress * this.getFrameCount()));
+    }
+
+    @Deprecated(forRemoval = true)
+    default int getSampleCount() {
+        return this.getFrameCount();
     }
 
 }

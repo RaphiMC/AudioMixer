@@ -52,21 +52,21 @@ public class OptimizedMonoSound extends Sound {
 
     @Override
     public void render(final PcmFloatAudioFormat audioFormat, final float[] renderedSamples) {
-        final int numChannels = audioFormat.getChannels();
-        final int numSamples = renderedSamples.length / numChannels;
+        final int channelCount = audioFormat.getChannels();
+        final int frameCount = renderedSamples.length / channelCount;
 
-        final float leftVolume = numChannels == 2 ? (1F - this.panning) * this.volume : 0F;
-        final float rightVolume = numChannels == 2 ? this.panning * this.volume : 0F;
+        final float leftVolume = channelCount == 2 ? (1F - this.panning) * this.volume : 0F;
+        final float rightVolume = channelCount == 2 ? this.panning * this.volume : 0F;
 
         int renderedIndex = 0;
-        for (int i = 0; i < numSamples && !this.isFinished(); i++) {
-            final float sample = this.pcmSource.consumeSample(this.pitch);
-            if (numChannels == 2) {
+        for (int i = 0; i < frameCount && !this.isFinished(); i++) {
+            final float sample = this.pcmSource.consumeFrame(this.pitch);
+            if (channelCount == 2) {
                 renderedSamples[renderedIndex++] = sample * leftVolume;
                 renderedSamples[renderedIndex++] = sample * rightVolume;
             } else {
-                ArrayUtil.fillFast(renderedSamples, renderedIndex, numChannels, sample * this.volume);
-                renderedIndex += numChannels;
+                ArrayUtil.fillFast(renderedSamples, renderedIndex, channelCount, sample * this.volume);
+                renderedIndex += channelCount;
             }
         }
         Arrays.fill(renderedSamples, renderedIndex, renderedSamples.length, 0F);

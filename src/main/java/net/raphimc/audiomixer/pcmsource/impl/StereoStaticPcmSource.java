@@ -25,8 +25,8 @@ import net.raphimc.audiomixer.pcmsource.StereoPcmSource;
 public class StereoStaticPcmSource implements StereoPcmSource, StaticPcmSource {
 
     private final float[] samples;
-    private final int sampleCount;
-    private final float[] buffer = new float[2];
+    private final int frameCount;
+    private final float[] frameBuffer = new float[2];
     private final Interpolator interpolator;
     private double position;
 
@@ -43,34 +43,34 @@ public class StereoStaticPcmSource implements StereoPcmSource, StaticPcmSource {
         }
 
         this.samples = samples;
-        this.sampleCount = samples.length / 2;
+        this.frameCount = samples.length / 2;
         this.interpolator = interpolator;
     }
 
     @Override
-    public float[] consumeSample(final float increment) {
-        this.buffer[0] = this.interpolator.interpolate(this.samples, this.position, 0, 2);
-        this.buffer[1] = this.interpolator.interpolate(this.samples, this.position, 1, 2);
+    public float[] consumeFrame(final float increment) {
+        this.frameBuffer[0] = this.interpolator.interpolate(this.samples, this.position, 0, 2);
+        this.frameBuffer[1] = this.interpolator.interpolate(this.samples, this.position, 1, 2);
         this.position += increment;
-        return this.buffer;
+        return this.frameBuffer;
     }
 
     @Override
     public int consumeSamples(final float[] buffer, final int offset, final int length) {
-        final int numSamples = Math.min(length / 2, this.sampleCount - (int) this.position);
-        System.arraycopy(this.samples, (int) this.position * 2, buffer, offset * 2, numSamples * 2);
-        this.position += numSamples;
-        return numSamples * 2;
+        final int sampleCount = Math.min(length / 2, this.frameCount - (int) this.position);
+        System.arraycopy(this.samples, (int) this.position * 2, buffer, offset * 2, sampleCount * 2);
+        this.position += sampleCount;
+        return sampleCount * 2;
     }
 
     @Override
     public boolean hasReachedEnd() {
-        return (int) this.position >= this.sampleCount;
+        return (int) this.position >= this.frameCount;
     }
 
     @Override
-    public int getSampleCount() {
-        return this.sampleCount;
+    public int getFrameCount() {
+        return this.frameCount;
     }
 
     @Override
@@ -80,8 +80,8 @@ public class StereoStaticPcmSource implements StereoPcmSource, StaticPcmSource {
 
     @Override
     public StaticPcmSource setPosition(final double position) {
-        if (position < 0 || position > this.samples.length) {
-            throw new IllegalArgumentException("Position must be between 0 and " + this.samples.length);
+        if (position < 0 || position > this.frameCount) {
+            throw new IllegalArgumentException("Position must be between 0 and frame count (" + this.frameCount + ")");
         }
         this.position = position;
         return this;

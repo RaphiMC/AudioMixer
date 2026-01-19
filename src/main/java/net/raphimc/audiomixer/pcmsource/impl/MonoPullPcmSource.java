@@ -45,25 +45,25 @@ public class MonoPullPcmSource extends MonoPushPcmSource implements Closeable {
             throw new IllegalArgumentException("Buffer millis must be greater than 0");
         }
 
-        final int bufferSampleCount = MathUtil.millisToSampleCount(sampleInputStream.getFormat(), bufferMillis);
+        final int bufferFrameCount = MathUtil.millisToFrameCount(sampleInputStream.getFormat(), bufferMillis);
         this.sampleInputStream = sampleInputStream;
         this.readThread = new Thread(() -> {
             try {
                 while (!Thread.currentThread().isInterrupted()) {
-                    while (!Thread.currentThread().isInterrupted() && this.getQueuedSampleCount() < bufferSampleCount) {
+                    while (!Thread.currentThread().isInterrupted() && this.getQueuedFrameCount() < bufferFrameCount) {
                         float[] buffer = new float[0];
-                        int bufferLen = 0;
+                        int bufferLength = 0;
                         try {
-                            buffer = new float[bufferSampleCount];
-                            for (bufferLen = 0; bufferLen < buffer.length; bufferLen++) {
-                                buffer[bufferLen] = this.sampleInputStream.readSample();
+                            buffer = new float[bufferFrameCount];
+                            for (bufferLength = 0; bufferLength < buffer.length; bufferLength++) {
+                                buffer[bufferLength] = this.sampleInputStream.readSample();
                             }
                         } catch (IOException e) {
                             Thread.currentThread().interrupt();
                         }
-                        if (bufferLen > 0) {
-                            if (buffer.length != bufferLen) {
-                                this.enqueueSamples(Arrays.copyOf(buffer, bufferLen));
+                        if (bufferLength > 0) {
+                            if (buffer.length != bufferLength) {
+                                this.enqueueSamples(Arrays.copyOf(buffer, bufferLength));
                             } else {
                                 this.enqueueSamples(buffer);
                             }
@@ -87,7 +87,7 @@ public class MonoPullPcmSource extends MonoPushPcmSource implements Closeable {
 
     @Override
     public boolean hasReachedEnd() {
-        return !this.readThread.isAlive() && this.getQueuedSampleCount() == 0;
+        return !this.readThread.isAlive() && this.getQueuedFrameCount() == 0;
     }
 
     @Override

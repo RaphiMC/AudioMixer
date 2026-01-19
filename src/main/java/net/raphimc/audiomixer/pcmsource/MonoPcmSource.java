@@ -19,7 +19,7 @@ package net.raphimc.audiomixer.pcmsource;
 
 public interface MonoPcmSource extends PcmSource {
 
-    float consumeSample(final float increment);
+    float consumeFrame(final float increment);
 
     default int consumeSamples(final float[] buffer) {
         return this.consumeSamples(buffer, 0, buffer.length);
@@ -28,9 +28,14 @@ public interface MonoPcmSource extends PcmSource {
     default int consumeSamples(final float[] buffer, final int offset, final int length) {
         int i;
         for (i = 0; i < length && !this.hasReachedEnd(); i++) {
-            buffer[offset + i] = this.consumeSample(1);
+            buffer[offset + i] = this.consumeFrame(1);
         }
         return i;
+    }
+
+    @Deprecated(forRemoval = true)
+    default float consumeSample(final float increment) {
+        return this.consumeFrame(increment);
     }
 
 }

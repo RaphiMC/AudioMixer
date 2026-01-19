@@ -27,7 +27,7 @@ import java.util.List;
 public class StereoPushPcmSource implements StereoPcmSource {
 
     private final List<float[]> samplesQueue = new ArrayList<>();
-    private final float[] buffer = new float[2];
+    private final float[] frameBuffer = new float[2];
     private final Interpolator interpolator;
     private double position;
 
@@ -43,23 +43,23 @@ public class StereoPushPcmSource implements StereoPcmSource {
     }
 
     @Override
-    public synchronized float[] consumeSample(final float increment) {
+    public synchronized float[] consumeFrame(final float increment) {
         if (this.samplesQueue.isEmpty()) {
-            this.buffer[0] = 0F;
-            this.buffer[1] = 0F;
-            return this.buffer;
+            this.frameBuffer[0] = 0F;
+            this.frameBuffer[1] = 0F;
+            return this.frameBuffer;
         }
         final float[] samples = this.samplesQueue.get(0);
         if ((int) this.position * 2 >= samples.length) {
             this.samplesQueue.remove(0);
             this.position = 0;
-            return this.consumeSample(increment);
+            return this.consumeFrame(increment);
         }
 
-        this.buffer[0] = this.interpolator.interpolate(samples, this.position, 0, 2);
-        this.buffer[1] = this.interpolator.interpolate(samples, this.position, 1, 2);
+        this.frameBuffer[0] = this.interpolator.interpolate(samples, this.position, 0, 2);
+        this.frameBuffer[1] = this.interpolator.interpolate(samples, this.position, 1, 2);
         this.position += increment;
-        return this.buffer;
+        return this.frameBuffer;
     }
 
     @Override
@@ -86,12 +86,17 @@ public class StereoPushPcmSource implements StereoPcmSource {
         return this.samplesQueue.size();
     }
 
-    public synchronized int getQueuedSampleCount() {
+    public synchronized int getQueuedFrameCount() {
         int total = -(int) this.position * 2;
         for (float[] samples : this.samplesQueue) {
             total += samples.length;
         }
         return total / 2;
+    }
+
+    @Deprecated(forRemoval = true)
+    public int getQueuedSampleCount() {
+        return this.getQueuedFrameCount();
     }
 
 }

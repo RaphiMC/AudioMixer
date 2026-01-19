@@ -45,7 +45,7 @@ public class MonoStaticPcmSource implements MonoPcmSource, StaticPcmSource {
     }
 
     @Override
-    public float consumeSample(final float increment) {
+    public float consumeFrame(final float increment) {
         final float sample = this.interpolator.interpolate(this.samples, this.position, 0, 1);
         this.position += increment;
         return sample;
@@ -53,10 +53,10 @@ public class MonoStaticPcmSource implements MonoPcmSource, StaticPcmSource {
 
     @Override
     public int consumeSamples(final float[] buffer, final int offset, final int length) {
-        final int numSamples = Math.min(length, this.samples.length - (int) this.position);
-        System.arraycopy(this.samples, (int) this.position, buffer, offset, numSamples);
-        this.position += numSamples;
-        return numSamples;
+        final int sampleCount = Math.min(length, this.samples.length - (int) this.position);
+        System.arraycopy(this.samples, (int) this.position, buffer, offset, sampleCount);
+        this.position += sampleCount;
+        return sampleCount;
     }
 
     @Override
@@ -65,7 +65,7 @@ public class MonoStaticPcmSource implements MonoPcmSource, StaticPcmSource {
     }
 
     @Override
-    public int getSampleCount() {
+    public int getFrameCount() {
         return this.samples.length;
     }
 
@@ -77,7 +77,7 @@ public class MonoStaticPcmSource implements MonoPcmSource, StaticPcmSource {
     @Override
     public StaticPcmSource setPosition(final double position) {
         if (position < 0 || position > this.samples.length) {
-            throw new IllegalArgumentException("Position must be between 0 and " + this.samples.length);
+            throw new IllegalArgumentException("Position must be between 0 and frame count (" + this.samples.length + ")");
         }
         this.position = position;
         return this;

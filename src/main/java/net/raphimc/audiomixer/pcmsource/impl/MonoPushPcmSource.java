@@ -42,7 +42,7 @@ public class MonoPushPcmSource implements MonoPcmSource {
     }
 
     @Override
-    public synchronized float consumeSample(final float increment) {
+    public synchronized float consumeFrame(final float increment) {
         if (this.samplesQueue.isEmpty()) {
             return 0;
         }
@@ -50,7 +50,7 @@ public class MonoPushPcmSource implements MonoPcmSource {
         if ((int) this.position >= samples.length) {
             this.samplesQueue.remove(0);
             this.position = 0;
-            return this.consumeSample(increment);
+            return this.consumeFrame(increment);
         }
 
         final float sample = this.interpolator.interpolate(samples, this.position, 0, 1);
@@ -79,12 +79,17 @@ public class MonoPushPcmSource implements MonoPcmSource {
         return this.samplesQueue.size();
     }
 
-    public synchronized int getQueuedSampleCount() {
+    public synchronized int getQueuedFrameCount() {
         int total = -(int) this.position;
         for (float[] samples : this.samplesQueue) {
             total += samples.length;
         }
         return total;
+    }
+
+    @Deprecated(forRemoval = true)
+    public int getQueuedSampleCount() {
+        return this.getQueuedFrameCount();
     }
 
 }

@@ -46,11 +46,11 @@ public class StereoSound extends Sound {
         if (this.pitch == 1F && audioFormat.getChannels() == 2 && this.pitchModifier == null) {
             renderedIndex += this.pcmSource.consumeSamples(renderedSamples);
         } else {
-            final int numChannels = audioFormat.getChannels();
-            final int numSamples = renderedSamples.length / numChannels;
+            final int channelCount = audioFormat.getChannels();
+            final int frameCount = renderedSamples.length / channelCount;
             final boolean hasPitchModifier = this.pitchModifier != null;
 
-            for (int i = 0; i < numSamples && !this.isFinished(); i++) {
+            for (int i = 0; i < frameCount && !this.isFinished(); i++) {
                 final float pitch;
                 if (!hasPitchModifier) {
                     pitch = this.pitch;
@@ -58,14 +58,14 @@ public class StereoSound extends Sound {
                     pitch = Math.max(this.pitchModifier.modify(this.pitch, audioFormat.getSampleRate()), 0F);
                 }
 
-                final float[] sample = this.pcmSource.consumeSample(pitch);
-                if (numChannels == 2) {
-                    renderedSamples[renderedIndex++] = sample[0];
-                    renderedSamples[renderedIndex++] = sample[1];
+                final float[] frame = this.pcmSource.consumeFrame(pitch);
+                if (channelCount == 2) {
+                    renderedSamples[renderedIndex++] = frame[0];
+                    renderedSamples[renderedIndex++] = frame[1];
                 } else {
-                    final float monoSample = (sample[0] + sample[1]) / 2F;
-                    ArrayUtil.fillFast(renderedSamples, renderedIndex, numChannels, monoSample);
-                    renderedIndex += numChannels;
+                    final float monoSample = (frame[0] + frame[1]) / 2F;
+                    ArrayUtil.fillFast(renderedSamples, renderedIndex, channelCount, monoSample);
+                    renderedIndex += channelCount;
                 }
             }
         }
