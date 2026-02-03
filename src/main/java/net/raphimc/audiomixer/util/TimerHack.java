@@ -17,12 +17,14 @@
  */
 package net.raphimc.audiomixer.util;
 
+import java.util.Locale;
+
 public class TimerHack {
 
     /**
      * Set this to false (Before using the AudioMixer API) to disable the timer hack (Useful if you have your own way of enabling high resolution timers)
      */
-    public static boolean ENABLED = true;
+    public static boolean ENABLED = System.getProperty("os.name").toLowerCase(Locale.ROOT).startsWith("windows");
     private static Thread THREAD;
 
     /**
