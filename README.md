@@ -47,4 +47,4 @@ Examples can be found in the [src/example](/src/example) directory.
 If you encounter any issues, please report them on the
 [issue tracker](https://github.com/RaphiMC/AudioMixer/issues).  
 If you just want to talk or need help implementing AudioMixer feel free to join my
-[Discord](https://discord.gg/dCzT9XHEWu).
+[Discord](https://raphimc.net/discord).
