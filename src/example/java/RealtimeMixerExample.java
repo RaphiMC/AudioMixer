@@ -54,7 +54,7 @@ public class RealtimeMixerExample {
                 } else if (e.getKeyCode() == KeyEvent.VK_E) {
                     audioMixer.playSound(new OptimizedMonoSound(new MonoStaticPcmSource(pianoSamples), 1, 0.75F, 0));
                 } else if (e.getKeyCode() == KeyEvent.VK_R) {
-                    audioMixer.playSound(new OptimizedMonoSound(new MonoStaticPcmSource(pianoSamples), 1, 1.25F, 0));
+                    audioMixer.playSound(new OptimizedMonoSound(new MonoStaticPcmSource(pianoSamples), 1, 1, 0));
                 } else if (e.getKeyCode() == KeyEvent.VK_SPACE) {
                     audioMixer.stopAllSounds();
                 }
