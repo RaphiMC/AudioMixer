@@ -22,34 +22,22 @@ import java.util.Arrays;
 public class SoundSampleUtil {
 
     public static void normalize(final float[] samples) {
-        normalize(samples, getMax(samples));
-    }
-
-    public static void normalize(final float[] samples, final float max) {
-        if (max <= 1F) return;
-
-        final float factor = 1F / max;
-        for (int i = 0; i < samples.length; i++) {
-            samples[i] *= factor;
+        float max = 0F;
+        for (float sample : samples) {
+            max = Math.max(Math.abs(sample), max);
+        }
+        if (max > 1F) {
+            final float factor = 1F / max;
+            for (int i = 0; i < samples.length; i++) {
+                samples[i] *= factor;
+            }
         }
     }
 
     public static void clip(final float[] samples) {
         for (int i = 0; i < samples.length; i++) {
-            if (samples[i] > 1F) {
-                samples[i] = 1F;
-            } else if (samples[i] < -1F) {
-                samples[i] = -1F;
-            }
+            samples[i] = MathUtil.clamp(samples[i], -1F, 1F);
         }
-    }
-
-    public static float getMax(final float[] samples) {
-        float max = 0F;
-        for (float sample : samples) {
-            max = Math.max(Math.abs(sample), max);
-        }
-        return max;
     }
 
     public static float[] trimZeroesAtStart(final float[] samples) {

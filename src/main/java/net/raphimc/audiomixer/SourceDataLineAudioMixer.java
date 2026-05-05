@@ -23,7 +23,7 @@ import net.raphimc.audiomixer.util.SourceDataLineWriter;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
 
-public class SourceDataLineAudioMixer extends NormalizedAudioMixer implements AutoCloseable {
+public class SourceDataLineAudioMixer extends LimitingAudioMixer implements AutoCloseable {
 
     private final SourceDataLineWriter sourceDataLineWriter;
 

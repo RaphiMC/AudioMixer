@@ -17,40 +17,42 @@
  */
 package net.raphimc.audiomixer;
 
-import net.raphimc.audiomixer.soundmodifier.impl.NormalizationModifier;
+import net.raphimc.audiomixer.soundmodifier.impl.ClippingModifier;
+import net.raphimc.audiomixer.soundmodifier.impl.LimiterModifier;
 import net.raphimc.audiomixer.soundmodifier.impl.VolumeModifier;
 import net.raphimc.audiomixer.util.PcmFloatAudioFormat;
 
-public class NormalizedAudioMixer extends AudioMixer {
+public class LimitingAudioMixer extends AudioMixer {
 
-    private final NormalizationModifier normalizationModifier = new NormalizationModifier();
+    private final LimiterModifier limiterModifier = new LimiterModifier();
     private final VolumeModifier volumeModifier = new VolumeModifier(1F);
 
-    public NormalizedAudioMixer(final PcmFloatAudioFormat audioFormat) {
+    public LimitingAudioMixer(final PcmFloatAudioFormat audioFormat) {
         super(audioFormat);
-        this.getSoundModifiers().append(this.normalizationModifier);
+        this.getSoundModifiers().append(this.limiterModifier);
         this.getSoundModifiers().append(this.volumeModifier);
+        this.getSoundModifiers().append(new ClippingModifier());
     }
 
     @Override
     public void stopAllSounds() {
         super.stopAllSounds();
-        this.normalizationModifier.reset();
+        this.limiterModifier.reset();
     }
 
     public VolumeModifier getVolumeModifier() {
         return this.volumeModifier;
     }
 
-    public NormalizationModifier getNormalizationModifier() {
-        return this.normalizationModifier;
+    public LimiterModifier getLimiterModifier() {
+        return this.limiterModifier;
     }
 
-    public NormalizedAudioMixer setMasterVolume(final int masterVolume) {
+    public LimitingAudioMixer setMasterVolume(final int masterVolume) {
         return this.setMasterVolume(masterVolume / 100F);
     }
 
-    public NormalizedAudioMixer setMasterVolume(final float masterVolume) {
+    public LimitingAudioMixer setMasterVolume(final float masterVolume) {
         this.volumeModifier.setVolume(masterVolume);
         return this;
     }
