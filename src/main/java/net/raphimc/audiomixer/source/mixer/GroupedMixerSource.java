@@ -116,6 +116,15 @@ public class GroupedMixerSource extends MixerSource {
         return activeSources;
     }
 
+    @Override
+    public int getMixedSources() {
+        int mixedSources = 0;
+        for (MixerSource mixer : this.groups) {
+            mixedSources += mixer.getMixedSources();
+        }
+        return mixedSources;
+    }
+
     public int getGroupCount() {
         return this.groups.length;
     }

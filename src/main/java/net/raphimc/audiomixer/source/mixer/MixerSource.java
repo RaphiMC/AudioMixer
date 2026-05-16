@@ -30,6 +30,7 @@ public class MixerSource extends Source {
     private final List<Source> sources = new ArrayList<>();
     private int maxSources;
 
+    private int mixedSources;
     private float processingLoad;
 
     public MixerSource() {
@@ -51,6 +52,7 @@ public class MixerSource extends Source {
 
     @Override
     protected synchronized void renderDry(final AudioBuffer buffer) {
+        this.mixedSources = this.sources.size();
         final AudioBuffer sourceBuffer = new AudioBuffer(buffer.format(), buffer.samples().length);
         for (Source source : this.sources) {
             sourceBuffer.clear();
@@ -96,6 +98,10 @@ public class MixerSource extends Source {
 
     public int getActiveSources() {
         return this.sources.size();
+    }
+
+    public int getMixedSources() {
+        return this.mixedSources;
     }
 
     public float getProcessingLoad() {
