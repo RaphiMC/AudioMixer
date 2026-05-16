@@ -21,54 +21,28 @@ import javax.sound.sampled.AudioFormat;
 
 public class MathUtil {
 
-    private static final double ONE_OVER_PI = 1D / Math.PI;
-    private static final double k1 = Double.longBitsToDouble(-4628199217061079959L);
-    private static final double k2 = Double.longBitsToDouble(4575957461383549981L);
-    private static final double k3 = Double.longBitsToDouble(-4671919876307284301L);
-    private static final double k4 = Double.longBitsToDouble(4523617213632129738L);
-    private static final double k5 = Double.longBitsToDouble(-4730215344060517252L);
-    private static final double k6 = Double.longBitsToDouble(4460268259291226124L);
-    private static final double k7 = Double.longBitsToDouble(-4798040743777455072L);
+    public static final float PI = (float) Math.PI;
+    public static final float HALF_PI = (float) (Math.PI / 2D);
+    public static final float TWO_PI = (float) (Math.PI * 2D);
 
     public static float clamp(final float value, final float min, final float max) {
         return Math.max(min, Math.min(value, max));
     }
 
-    /**
-     * Copyright <a href="https://github.com/JOML-CI/JOML/blob/c8f2ec39d9f138f9708bc7ac27a23e9603f14751/src/main/java/org/joml/Math.java#L176">JOML</a>.<br>
-     * Licensed under the <a href="https://github.com/JOML-CI/JOML/blob/c8f2ec39d9f138f9708bc7ac27a23e9603f14751/LICENSE">MIT</a> license.
-     */
-    public static double sin_roquen_newk(final double v) {
-        double i = Math.rint(v * ONE_OVER_PI);
-        double x = v - i * Math.PI;
-        double qs = 1 - 2 * ((int) i & 1);
-        double x2 = x * x;
-        double r;
-        x = qs * x;
-        r = k7;
-        r = r * x2 + k6;
-        r = r * x2 + k5;
-        r = r * x2 + k4;
-        r = r * x2 + k3;
-        r = r * x2 + k2;
-        r = r * x2 + k1;
-        return x + x * x2 * r;
+    public static int roundDownToMultiple(final int value, final int multiple) {
+        return (value / multiple) * multiple;
+    }
+
+    public static int roundUpToMultiple(final int value, final int multiple) {
+        return (int) (Math.ceil((double) value / multiple) * multiple);
     }
 
     public static int millisToFrameCount(final AudioFormat audioFormat, final float millis) {
         return (int) Math.ceil(audioFormat.getSampleRate() / 1000F * millis);
     }
 
-    public static int millisToSampleCount(final AudioFormat audioFormat, final float millis) {
-        return millisToFrameCount(audioFormat, millis) * audioFormat.getChannels();
-    }
-
     public static int millisToByteCount(final AudioFormat audioFormat, final float millis) {
         return millisToFrameCount(audioFormat, millis) * audioFormat.getFrameSize();
-    }
-
-    public static float frameCountToMillis(final AudioFormat audioFormat, final int frameCount) {
-        return (frameCount / audioFormat.getSampleRate()) * 1000F;
     }
 
     public static float sampleCountToMillis(final AudioFormat audioFormat, final int sampleCount) {
@@ -79,12 +53,8 @@ public class MathUtil {
         return sampleCount * (audioFormat.getSampleSizeInBits() / Byte.SIZE);
     }
 
-    public static float byteCountToMillis(final AudioFormat audioFormat, final int byteCount) {
-        return (byteCount / (audioFormat.getSampleRate() * audioFormat.getFrameSize())) * 1000F;
-    }
-
-    public static int byteCountToSampleCount(final AudioFormat audioFormat, final int byteCount) {
-        return byteCount / (audioFormat.getSampleSizeInBits() / Byte.SIZE);
+    public static int byteCountToFrameCount(final AudioFormat audioFormat, final int byteCount) {
+        return byteCount / audioFormat.getFrameSize();
     }
 
 }

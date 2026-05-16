@@ -15,30 +15,37 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.raphimc.audiomixer;
+package net.raphimc.audiomixer.dsp.processor.dynamics;
 
-import net.raphimc.audiomixer.source.mixer.MixerSource;
-import net.raphimc.audiomixer.util.FloatAudioFormat;
+import net.raphimc.audiomixer.dsp.processor.Processor;
 import net.raphimc.audiomixer.util.buffer.AudioBuffer;
 
-public class AudioMixer extends MixerSource {
+public class GainProcessor implements Processor {
 
-    private final FloatAudioFormat audioFormat;
+    private float gain;
 
-    public AudioMixer(final FloatAudioFormat audioFormat) {
-        this.audioFormat = audioFormat;
+    public GainProcessor(final float gain) {
+        this.setGain(gain);
     }
 
-    public AudioBuffer renderMillis(final float millis) {
-        return this.renderMillis(this.audioFormat, millis);
+    @Override
+    public void process(final AudioBuffer buffer) {
+        buffer.scale(this.gain);
     }
 
-    public AudioBuffer render(final int frameCount) {
-        return this.render(this.audioFormat, frameCount);
+    public float getGain() {
+        return this.gain;
     }
 
-    public FloatAudioFormat getAudioFormat() {
-        return this.audioFormat;
+    public void setGain(final float gain) {
+        if (gain < 0F) {
+            throw new IllegalArgumentException("Gain must be >= 0");
+        }
+        this.gain = gain;
+    }
+
+    public void setGainPercent(final float gainPercent) {
+        this.setGain(gainPercent / 100F);
     }
 
 }

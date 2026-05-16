@@ -15,30 +15,27 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.raphimc.audiomixer;
+package net.raphimc.audiomixer.source.oscillator;
 
-import net.raphimc.audiomixer.source.mixer.MixerSource;
-import net.raphimc.audiomixer.util.FloatAudioFormat;
-import net.raphimc.audiomixer.util.buffer.AudioBuffer;
+import net.raphimc.audiomixer.source.Source;
 
-public class AudioMixer extends MixerSource {
+public abstract class OscillatorSource extends Source {
 
-    private final FloatAudioFormat audioFormat;
+    private float frequency;
 
-    public AudioMixer(final FloatAudioFormat audioFormat) {
-        this.audioFormat = audioFormat;
+    public OscillatorSource(final float frequency) {
+        this.setFrequency(frequency);
     }
 
-    public AudioBuffer renderMillis(final float millis) {
-        return this.renderMillis(this.audioFormat, millis);
+    public float getFrequency() {
+        return this.frequency;
     }
 
-    public AudioBuffer render(final int frameCount) {
-        return this.render(this.audioFormat, frameCount);
-    }
-
-    public FloatAudioFormat getAudioFormat() {
-        return this.audioFormat;
+    public void setFrequency(final float frequency) {
+        if (frequency <= 0) {
+            throw new IllegalArgumentException("Frequency must be > 0");
+        }
+        this.frequency = frequency;
     }
 
 }

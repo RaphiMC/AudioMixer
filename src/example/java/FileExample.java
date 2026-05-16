@@ -18,14 +18,11 @@
 
 import net.raphimc.audiomixer.AudioMixer;
 import net.raphimc.audiomixer.io.AudioIO;
-import net.raphimc.audiomixer.pcmsource.impl.MonoStaticPcmSource;
-import net.raphimc.audiomixer.sound.impl.pcm.OptimizedMonoSound;
-import net.raphimc.audiomixer.util.GrowableArray;
-import net.raphimc.audiomixer.util.PcmFloatAudioFormat;
-import net.raphimc.audiomixer.util.SoundSampleUtil;
+import net.raphimc.audiomixer.source.audio.impl.BufferedAudioSource;
+import net.raphimc.audiomixer.util.buffer.AudioBuffer;
+import net.raphimc.audiomixer.util.buffer.AudioBufferBuilder;
 
 import javax.sound.sampled.AudioFileFormat;
-import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
 import java.io.File;
 import java.io.FileInputStream;
@@ -35,24 +32,28 @@ public class FileExample {
     public static void main(String[] args) throws Throwable {
         File input = new File("input.wav");
         File output = new File("output.wav");
-        AudioFormat format = new AudioFormat(48000, 16, 2, true, false);
 
-        // Load the input audio samples
-        float[] samples = AudioIO.readSamples(new FileInputStream(input), new PcmFloatAudioFormat(format.getSampleRate(), 1));
+        // Load the input audio buffer
+        AudioBuffer inputAudioBuffer = AudioIO.read(new FileInputStream(input));
         // Create an audio mixer
-        AudioMixer mixer = new AudioMixer(new PcmFloatAudioFormat(format));
-        // Play the audio samples
-        mixer.playSound(new OptimizedMonoSound(new MonoStaticPcmSource(samples), 0.5F, 1, 0));
+        AudioMixer mixer = new AudioMixer(inputAudioBuffer.format());
+        // Play the audio buffer with half the original pitch
+        BufferedAudioSource source = new BufferedAudioSource(inputAudioBuffer);
+        source.setPitch(0.5F);
+        mixer.add(source);
         // Create the output buffer
-        GrowableArray outputSamples = new GrowableArray(0);
-        // Render 1 second of audio until there are no more active sounds (The mixer will automatically stop finished sounds)
-        while (mixer.getMasterMixSound().getActiveSounds() > 0) {
-            outputSamples.add(mixer.renderMillis(1000));
+        AudioBufferBuilder outputBufferBuilder = new AudioBufferBuilder(mixer.getAudioFormat());
+        // Render 1 second of audio until there are no more active sources (The mixer will automatically remove finished sources)
+        while (mixer.getActiveSources() > 0) {
+            outputBufferBuilder.put(mixer.renderMillis(1000));
         }
-        // Normalize the audio samples to [-1, 1]
-        SoundSampleUtil.normalize(outputSamples.getArrayDirect());
-        // Write the audio samples to a file
-        AudioSystem.write(AudioIO.createAudioInputStream(outputSamples.getArray(), format), AudioFileFormat.Type.WAVE, output);
+        AudioBuffer outputAudioBuffer = outputBufferBuilder.build();
+        // Limit the audio samples to [-1, 1]
+        outputAudioBuffer.limitToUnitRange();
+        // Trim trailing silence
+        outputAudioBuffer = outputAudioBuffer.trimTrailingSilence();
+        // Write the audio buffer to a file
+        AudioSystem.write(AudioIO.createAudioInputStream(outputAudioBuffer.samples(), outputAudioBuffer.format().toJavaPcmAudioFormat(Short.SIZE)), AudioFileFormat.Type.WAVE, output);
     }
 
 }

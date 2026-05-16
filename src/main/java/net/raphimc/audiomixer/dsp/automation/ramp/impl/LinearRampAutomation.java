@@ -15,30 +15,20 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.raphimc.audiomixer;
+package net.raphimc.audiomixer.dsp.automation.ramp.impl;
 
-import net.raphimc.audiomixer.source.mixer.MixerSource;
-import net.raphimc.audiomixer.util.FloatAudioFormat;
-import net.raphimc.audiomixer.util.buffer.AudioBuffer;
+import net.raphimc.audiomixer.dsp.automation.parameter.Parameter;
+import net.raphimc.audiomixer.dsp.automation.ramp.RampAutomation;
 
-public class AudioMixer extends MixerSource {
+public class LinearRampAutomation extends RampAutomation {
 
-    private final FloatAudioFormat audioFormat;
-
-    public AudioMixer(final FloatAudioFormat audioFormat) {
-        this.audioFormat = audioFormat;
+    public LinearRampAutomation(final Parameter parameter, final float startValue, final float endValue, final float duration) {
+        super(parameter, startValue, endValue, duration);
     }
 
-    public AudioBuffer renderMillis(final float millis) {
-        return this.renderMillis(this.audioFormat, millis);
-    }
-
-    public AudioBuffer render(final int frameCount) {
-        return this.render(this.audioFormat, frameCount);
-    }
-
-    public FloatAudioFormat getAudioFormat() {
-        return this.audioFormat;
+    @Override
+    protected void apply(final float progress) {
+        this.getParameter().set(this.getStartValue() + (this.getEndValue() - this.getStartValue()) * progress);
     }
 
 }

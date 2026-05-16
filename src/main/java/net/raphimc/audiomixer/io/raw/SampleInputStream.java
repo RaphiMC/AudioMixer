@@ -17,9 +17,8 @@
  */
 package net.raphimc.audiomixer.io.raw;
 
-import net.raphimc.audiomixer.util.PcmFloatAudioFormat;
+import net.raphimc.audiomixer.util.FloatAudioFormat;
 
-import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.UnsupportedAudioFileException;
@@ -30,27 +29,36 @@ import java.io.InputStream;
 
 public class SampleInputStream extends InputStream {
 
+    private final FloatAudioFormat format;
     private final AudioInputStream is;
     private final byte[] buffer;
     private int bufferIndex;
     private int bufferLength;
 
-    public SampleInputStream(final InputStream is, final PcmFloatAudioFormat targetAudioFormat) throws UnsupportedAudioFileException, IOException {
-        this(new BufferedInputStream(is), targetAudioFormat);
+    public SampleInputStream(final InputStream is) throws IOException, UnsupportedAudioFileException {
+        this(is, null);
     }
 
-    public SampleInputStream(final BufferedInputStream is, final PcmFloatAudioFormat targetAudioFormat) throws UnsupportedAudioFileException, IOException {
-        this(AudioSystem.getAudioInputStream(is), targetAudioFormat);
+    public SampleInputStream(final InputStream is, final FloatAudioFormat targetFormat) throws IOException, UnsupportedAudioFileException {
+        this(new BufferedInputStream(is), targetFormat);
     }
 
-    public SampleInputStream(AudioInputStream is, final PcmFloatAudioFormat targetAudioFormat) {
-        final AudioFormat sourceAudioFormat = is.getFormat();
-        if (!sourceAudioFormat.matches(targetAudioFormat)) {
-            is = AudioSystem.getAudioInputStream(targetAudioFormat, is);
-        }
+    public SampleInputStream(final BufferedInputStream is) throws IOException, UnsupportedAudioFileException {
+        this(is, null);
+    }
 
-        this.is = is;
-        this.buffer = new byte[targetAudioFormat.getFrameSize()];
+    public SampleInputStream(final BufferedInputStream is, final FloatAudioFormat targetFormat) throws IOException, UnsupportedAudioFileException {
+        this(AudioSystem.getAudioInputStream(is), targetFormat);
+    }
+
+    public SampleInputStream(final AudioInputStream is) {
+        this(is, null);
+    }
+
+    public SampleInputStream(final AudioInputStream is, final FloatAudioFormat targetFormat) {
+        this.format = targetFormat != null ? targetFormat : new FloatAudioFormat(is.getFormat());
+        this.is = AudioSystem.getAudioInputStream(this.format.toJavaAudioFormat(), is);
+        this.buffer = new byte[this.is.getFormat().getFrameSize()];
     }
 
     @Override
@@ -62,7 +70,6 @@ public class SampleInputStream extends InputStream {
             }
             this.bufferIndex = 0;
         }
-
         return this.buffer[this.bufferIndex++] & 0xFF;
     }
 
@@ -83,8 +90,8 @@ public class SampleInputStream extends InputStream {
         }
     }
 
-    public AudioFormat getFormat() {
-        return this.is.getFormat();
+    public FloatAudioFormat getFormat() {
+        return this.format;
     }
 
 }

@@ -17,7 +17,7 @@
  */
 package net.raphimc.audiomixer;
 
-import net.raphimc.audiomixer.util.PcmFloatAudioFormat;
+import net.raphimc.audiomixer.util.FloatAudioFormat;
 import net.raphimc.audiomixer.util.SourceDataLineWriter;
 
 import javax.sound.sampled.LineUnavailableException;
@@ -36,7 +36,7 @@ public class SourceDataLineAudioMixer extends LimitingAudioMixer implements Auto
     }
 
     public SourceDataLineAudioMixer(final SourceDataLine sourceDataLine, final int bufferMillis, final int mixSliceMillis) throws LineUnavailableException {
-        super(new PcmFloatAudioFormat(sourceDataLine.getFormat()));
+        super(new FloatAudioFormat(sourceDataLine.getFormat()));
         this.sourceDataLineWriter = new SourceDataLineWriter(sourceDataLine, bufferMillis, () -> this.renderMillis(mixSliceMillis));
         this.sourceDataLineWriter.start();
     }

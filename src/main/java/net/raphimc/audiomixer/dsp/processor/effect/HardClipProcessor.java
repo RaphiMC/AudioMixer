@@ -15,30 +15,41 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.raphimc.audiomixer;
+package net.raphimc.audiomixer.dsp.processor.effect;
 
-import net.raphimc.audiomixer.source.mixer.MixerSource;
-import net.raphimc.audiomixer.util.FloatAudioFormat;
+import net.raphimc.audiomixer.dsp.processor.Processor;
+import net.raphimc.audiomixer.util.MathUtil;
 import net.raphimc.audiomixer.util.buffer.AudioBuffer;
 
-public class AudioMixer extends MixerSource {
+public class HardClipProcessor implements Processor {
 
-    private final FloatAudioFormat audioFormat;
+    private float drive;
 
-    public AudioMixer(final FloatAudioFormat audioFormat) {
-        this.audioFormat = audioFormat;
+    public HardClipProcessor() {
+        this(1F);
     }
 
-    public AudioBuffer renderMillis(final float millis) {
-        return this.renderMillis(this.audioFormat, millis);
+    public HardClipProcessor(final float drive) {
+        this.setDrive(drive);
     }
 
-    public AudioBuffer render(final int frameCount) {
-        return this.render(this.audioFormat, frameCount);
+    @Override
+    public void process(final AudioBuffer buffer) {
+        final float[] samples = buffer.samples();
+        for (int i = 0; i < samples.length; i++) {
+            samples[i] = MathUtil.clamp(samples[i] * this.drive, -1F, 1F);
+        }
     }
 
-    public FloatAudioFormat getAudioFormat() {
-        return this.audioFormat;
+    public float getDrive() {
+        return this.drive;
+    }
+
+    public void setDrive(final float drive) {
+        if (drive < 1F) {
+            throw new IllegalArgumentException("Drive must be >= 1");
+        }
+        this.drive = drive;
     }
 
 }

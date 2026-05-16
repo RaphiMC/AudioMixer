@@ -9,21 +9,17 @@ High performance Java audio library.
   - Streaming (Pull and Push support)
     - Pull: Audio data is read from an InputStream
     - Push: Audio data is enqueued by the application
-- Basic 3D spatial audio
-  - Position and orientation control
-  - Distance attenuation
-- Audio effects
-  - Volume control
-  - Stereo panning control
-  - Bass Boost
-  - Bit Crusher
-- Modulation effects
-  - Pitch modulation (Vibrato)
-  - Volume modulation (Tremolo)
-- Oscillators
-  - Sine, Square, Triangle, Sawtooth
-  - Random noise
-- High performance (Mixes thousands of simultaneously playing sounds in realtime)
+  - Automatic sample rate and channel conversion
+- DSP
+  - Gain control
+  - Stereo pan control
+  - Bass boost effect
+  - Bit-crush effect
+  - Basic positional 3D audio
+    - Position and orientation control
+    - Distance attenuation
+  - Most parameters support automation to allow for smooth changes over time
+- High performance (Handles thousands of simultaneously playing audio sources in realtime)
 
 ## Releases
 ### Gradle/Maven

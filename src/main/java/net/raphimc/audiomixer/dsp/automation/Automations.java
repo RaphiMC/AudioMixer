@@ -15,30 +15,36 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.raphimc.audiomixer;
+package net.raphimc.audiomixer.dsp.automation;
 
-import net.raphimc.audiomixer.source.mixer.MixerSource;
-import net.raphimc.audiomixer.util.FloatAudioFormat;
 import net.raphimc.audiomixer.util.buffer.AudioBuffer;
 
-public class AudioMixer extends MixerSource {
+import java.util.ArrayList;
+import java.util.List;
 
-    private final FloatAudioFormat audioFormat;
+public class Automations {
 
-    public AudioMixer(final FloatAudioFormat audioFormat) {
-        this.audioFormat = audioFormat;
+    private final List<Automation> automations = new ArrayList<>(2);
+
+    public synchronized void update(final AudioBuffer buffer) {
+        if (!this.automations.isEmpty()) {
+            for (Automation automation : this.automations) {
+                automation.advance(buffer.getMillisecondLength());
+            }
+            this.automations.removeIf(Automation::isFinished);
+        }
     }
 
-    public AudioBuffer renderMillis(final float millis) {
-        return this.renderMillis(this.audioFormat, millis);
+    public synchronized void add(final Automation automation) {
+        this.automations.add(automation);
     }
 
-    public AudioBuffer render(final int frameCount) {
-        return this.render(this.audioFormat, frameCount);
+    public synchronized void remove(final Automation automation) {
+        this.automations.remove(automation);
     }
 
-    public FloatAudioFormat getAudioFormat() {
-        return this.audioFormat;
+    public synchronized void clear() {
+        this.automations.clear();
     }
 
 }

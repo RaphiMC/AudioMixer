@@ -15,30 +15,33 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.raphimc.audiomixer;
+package net.raphimc.audiomixer.dsp.automation;
 
-import net.raphimc.audiomixer.source.mixer.MixerSource;
-import net.raphimc.audiomixer.util.FloatAudioFormat;
-import net.raphimc.audiomixer.util.buffer.AudioBuffer;
+import net.raphimc.audiomixer.dsp.automation.parameter.Parameter;
 
-public class AudioMixer extends MixerSource {
+public abstract class Automation {
 
-    private final FloatAudioFormat audioFormat;
+    private final Parameter parameter;
+    protected double time;
 
-    public AudioMixer(final FloatAudioFormat audioFormat) {
-        this.audioFormat = audioFormat;
+    public Automation(final Parameter parameter) {
+        this.parameter = parameter;
     }
 
-    public AudioBuffer renderMillis(final float millis) {
-        return this.renderMillis(this.audioFormat, millis);
+    public void advance(final float deltaTime) {
+        this.time += deltaTime / 2F;
+        this.apply();
+        this.time += deltaTime / 2F;
     }
 
-    public AudioBuffer render(final int frameCount) {
-        return this.render(this.audioFormat, frameCount);
+    protected abstract void apply();
+
+    protected boolean isFinished() {
+        return false;
     }
 
-    public FloatAudioFormat getAudioFormat() {
-        return this.audioFormat;
+    public Parameter getParameter() {
+        return this.parameter;
     }
 
 }

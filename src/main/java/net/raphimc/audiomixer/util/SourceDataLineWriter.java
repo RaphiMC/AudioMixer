@@ -18,6 +18,7 @@
 package net.raphimc.audiomixer.util;
 
 import net.raphimc.audiomixer.io.raw.SampleOutputStream;
+import net.raphimc.audiomixer.util.buffer.AudioBuffer;
 
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
@@ -29,13 +30,12 @@ public class SourceDataLineWriter implements AutoCloseable {
     private final Callback callback;
     private Thread writerThread;
     private boolean interrupted; // Java clears the interrupt flag in SourceDataLine#write() and doesn't rethrow InterruptedException
-    private float cpuLoad;
+    private float processingLoad;
 
     public SourceDataLineWriter(final SourceDataLine sourceDataLine, final int bufferMillis, final Callback callback) throws LineUnavailableException {
         if (bufferMillis <= 0) {
-            throw new IllegalArgumentException("Buffer millis must be greater than 0");
+            throw new IllegalArgumentException("Buffer millis must be > 0");
         }
-
         this.sourceDataLine = sourceDataLine;
         this.sourceDataLine.open(this.sourceDataLine.getFormat(), MathUtil.millisToByteCount(this.sourceDataLine.getFormat(), bufferMillis));
         this.callback = callback;
@@ -53,7 +53,7 @@ public class SourceDataLineWriter implements AutoCloseable {
                 while (!Thread.currentThread().isInterrupted() && !this.interrupted) {
                     while (this.sourceDataLine.available() > 0 && !Thread.currentThread().isInterrupted() && !this.interrupted) {
                         final long startTime = System.nanoTime();
-                        final float[] samples = this.callback.provideSamples(MathUtil.byteCountToSampleCount(this.sourceDataLine.getFormat(), this.sourceDataLine.available()));
+                        final float[] samples = this.callback.renderAudio(MathUtil.byteCountToFrameCount(this.sourceDataLine.getFormat(), this.sourceDataLine.available())).samples();
                         final ByteArrayOutputStream baos = new ByteArrayOutputStream(MathUtil.sampleCountToByteCount(this.sourceDataLine.getFormat(), samples.length));
                         final SampleOutputStream sos = new SampleOutputStream(baos, this.sourceDataLine.getFormat());
                         for (float sample : samples) {
@@ -65,7 +65,7 @@ public class SourceDataLineWriter implements AutoCloseable {
                         }
                         final float neededMillis = (System.nanoTime() - startTime) / 1_000_000F;
                         final float availableMillis = MathUtil.sampleCountToMillis(this.sourceDataLine.getFormat(), samples.length);
-                        this.cpuLoad = (neededMillis / availableMillis) * 100F;
+                        this.processingLoad = (neededMillis / availableMillis) * 100F;
                         this.sourceDataLine.write(sampleData, 0, sampleData.length);
                     }
                     Thread.sleep(1);
@@ -113,18 +113,18 @@ public class SourceDataLineWriter implements AutoCloseable {
         return this.sourceDataLine;
     }
 
-    public float getCpuLoad() {
-        return this.cpuLoad;
+    public float getProcessingLoad() {
+        return this.processingLoad;
     }
 
     @FunctionalInterface
     public interface Callback {
 
-        default float[] provideSamples(final int availableSampleCount) {
-            return this.provideSamples();
+        default AudioBuffer renderAudio(final int requestedFrameCount) {
+            return this.renderAudio();
         }
 
-        float[] provideSamples();
+        AudioBuffer renderAudio();
 
     }
 

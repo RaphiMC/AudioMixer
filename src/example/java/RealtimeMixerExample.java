@@ -17,10 +17,12 @@
  */
 
 import net.raphimc.audiomixer.SourceDataLineAudioMixer;
+import net.raphimc.audiomixer.dsp.processor.dynamics.GainProcessor;
+import net.raphimc.audiomixer.dsp.processor.spatial.PanProcessor;
 import net.raphimc.audiomixer.io.AudioIO;
-import net.raphimc.audiomixer.pcmsource.impl.MonoStaticPcmSource;
-import net.raphimc.audiomixer.sound.impl.pcm.OptimizedMonoSound;
-import net.raphimc.audiomixer.util.PcmFloatAudioFormat;
+import net.raphimc.audiomixer.source.audio.AudioSource;
+import net.raphimc.audiomixer.source.audio.impl.BufferedAudioSource;
+import net.raphimc.audiomixer.util.buffer.AudioBuffer;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
@@ -33,7 +35,7 @@ public class RealtimeMixerExample {
     public static void main(String[] args) throws Throwable {
         AudioFormat format = new AudioFormat(48000, 16, 2, true, false);
         SourceDataLineAudioMixer audioMixer = new SourceDataLineAudioMixer(AudioSystem.getSourceDataLine(format));
-        float[] pianoSamples = AudioIO.readSamples(RealtimeMixerExample.class.getResourceAsStream("/piano.wav"), new PcmFloatAudioFormat(format.getSampleRate(), 1));
+        AudioBuffer audioBuffer = AudioIO.read(RealtimeMixerExample.class.getResourceAsStream("/piano.wav"), audioMixer.getAudioFormat().withChannels(1));
 
         JFrame frame = new JFrame("AudioMixer Test");
         frame.setLayout(new BoxLayout(frame.getContentPane(), BoxLayout.Y_AXIS));
@@ -44,19 +46,31 @@ public class RealtimeMixerExample {
             @Override
             public void keyPressed(KeyEvent e) {
                 if (e.getKeyCode() >= KeyEvent.VK_1 && e.getKeyCode() <= KeyEvent.VK_9) {
-                    audioMixer.playSound(new OptimizedMonoSound(new MonoStaticPcmSource(pianoSamples), (float) Math.pow(2, ((e.getKeyCode() - KeyEvent.VK_1) - 4) / 4F), 1, 0));
+                    final AudioSource source = new BufferedAudioSource(audioBuffer);
+                    source.setPitch((float) Math.pow(2, ((e.getKeyCode() - KeyEvent.VK_1) - 4) / 4F));
+                    audioMixer.add(source);
                 } else if (e.getKeyCode() == KeyEvent.VK_Q) {
-                    audioMixer.playSound(new OptimizedMonoSound(new MonoStaticPcmSource(pianoSamples), 1, 1, -1));
+                    final AudioSource source = new BufferedAudioSource(audioBuffer);
+                    source.getProcessors().add(new PanProcessor(-1F));
+                    audioMixer.add(source);
                 } else if (e.getKeyCode() == KeyEvent.VK_P) {
-                    audioMixer.playSound(new OptimizedMonoSound(new MonoStaticPcmSource(pianoSamples), 1, 1, 1));
+                    final AudioSource source = new BufferedAudioSource(audioBuffer);
+                    source.getProcessors().add(new PanProcessor(1F));
+                    audioMixer.add(source);
                 } else if (e.getKeyCode() == KeyEvent.VK_W) {
-                    audioMixer.playSound(new OptimizedMonoSound(new MonoStaticPcmSource(pianoSamples), 1, 0.25F, 0));
+                    final AudioSource source = new BufferedAudioSource(audioBuffer);
+                    source.getProcessors().add(new GainProcessor(0.25F));
+                    audioMixer.add(source);
                 } else if (e.getKeyCode() == KeyEvent.VK_E) {
-                    audioMixer.playSound(new OptimizedMonoSound(new MonoStaticPcmSource(pianoSamples), 1, 0.75F, 0));
+                    final AudioSource source = new BufferedAudioSource(audioBuffer);
+                    source.getProcessors().add(new GainProcessor(0.5F));
+                    audioMixer.add(source);
                 } else if (e.getKeyCode() == KeyEvent.VK_R) {
-                    audioMixer.playSound(new OptimizedMonoSound(new MonoStaticPcmSource(pianoSamples), 1, 1, 0));
+                    final AudioSource source = new BufferedAudioSource(audioBuffer);
+                    source.getProcessors().add(new GainProcessor(1F));
+                    audioMixer.add(source);
                 } else if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-                    audioMixer.stopAllSounds();
+                    audioMixer.clear();
                 }
             }
         });
@@ -64,7 +78,7 @@ public class RealtimeMixerExample {
         frame.add(new JLabel("Press 1-9 to play differently pitched piano notes"));
         frame.add(new JLabel("Press q or p to play differently panned piano notes"));
         frame.add(new JLabel("Press w, e, r to play differently loud piano notes"));
-        frame.add(new JLabel("Press space to stop all sounds"));
+        frame.add(new JLabel("Press space to stop all audio sources"));
 
         frame.setVisible(true);
     }

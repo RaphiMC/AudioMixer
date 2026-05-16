@@ -15,30 +15,26 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.raphimc.audiomixer;
+package net.raphimc.audiomixer.source.audio.impl;
 
-import net.raphimc.audiomixer.source.mixer.MixerSource;
+import net.raphimc.audiomixer.dsp.resampler.Resampler;
+import net.raphimc.audiomixer.source.audio.StreamingAudioSource;
 import net.raphimc.audiomixer.util.FloatAudioFormat;
 import net.raphimc.audiomixer.util.buffer.AudioBuffer;
 
-public class AudioMixer extends MixerSource {
+public class PushAudioSource extends StreamingAudioSource {
 
-    private final FloatAudioFormat audioFormat;
-
-    public AudioMixer(final FloatAudioFormat audioFormat) {
-        this.audioFormat = audioFormat;
+    public PushAudioSource(final FloatAudioFormat audioFormat) {
+        super(audioFormat);
     }
 
-    public AudioBuffer renderMillis(final float millis) {
-        return this.renderMillis(this.audioFormat, millis);
+    public PushAudioSource(final FloatAudioFormat audioFormat, final Resampler resampler) {
+        super(audioFormat, resampler);
     }
 
-    public AudioBuffer render(final int frameCount) {
-        return this.render(this.audioFormat, frameCount);
-    }
-
-    public FloatAudioFormat getAudioFormat() {
-        return this.audioFormat;
+    @Override
+    public void enqueueBuffer(final AudioBuffer buffer) {
+        super.enqueueBuffer(buffer);
     }
 
 }

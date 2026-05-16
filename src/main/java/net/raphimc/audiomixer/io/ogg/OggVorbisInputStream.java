@@ -25,8 +25,8 @@ import com.jcraft.jorbis.Block;
 import com.jcraft.jorbis.Comment;
 import com.jcraft.jorbis.DspState;
 import com.jcraft.jorbis.Info;
-import net.raphimc.audiomixer.util.CircularByteBuffer;
 import net.raphimc.audiomixer.util.MathUtil;
+import net.raphimc.audiomixer.util.buffer.RingByteBuffer;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
@@ -53,7 +53,7 @@ public class OggVorbisInputStream extends InputStream {
     private final DspState dspState = new DspState();
     private final Block block = new Block(this.dspState);
     private final InputStream oggStream;
-    private final CircularByteBuffer samplesBuffer;
+    private final RingByteBuffer samplesBuffer;
     private long totalSamples = Long.MAX_VALUE;
     private long writtenSamples;
 
@@ -88,7 +88,7 @@ public class OggVorbisInputStream extends InputStream {
 
         this.dspState.synthesis_init(this.info);
         this.block.init(this.dspState);
-        this.samplesBuffer = new CircularByteBuffer(BUFFER_SIZE * Short.BYTES * this.info.channels);
+        this.samplesBuffer = new RingByteBuffer(BUFFER_SIZE * Short.BYTES * this.info.channels);
     }
 
     @Override
@@ -98,7 +98,7 @@ public class OggVorbisInputStream extends InputStream {
                 return -1;
             }
         }
-        return this.samplesBuffer.readSafe() & 0xFF;
+        return this.samplesBuffer.read() & 0xFF;
     }
 
     @Override
@@ -108,9 +108,7 @@ public class OggVorbisInputStream extends InputStream {
                 return -1;
             }
         }
-        final byte[] data = this.samplesBuffer.readAllSafe(Math.min(len, this.samplesBuffer.getSize()));
-        System.arraycopy(data, 0, b, off, data.length);
-        return data.length;
+        return this.samplesBuffer.read(b, off, len);
     }
 
     @Override

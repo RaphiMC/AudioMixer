@@ -17,7 +17,7 @@
  */
 package net.raphimc.audiomixer.io.raw;
 
-import net.raphimc.audiomixer.util.PcmFloatAudioFormat;
+import net.raphimc.audiomixer.util.FloatAudioFormat;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
@@ -35,16 +35,12 @@ public class SampleOutputStream extends OutputStream {
     private int bufferIndex;
 
     public SampleOutputStream(final OutputStream os, final AudioFormat targetAudioFormat) {
-        final AudioFormat sourceAudioFormat = new PcmFloatAudioFormat(targetAudioFormat.getSampleRate(), targetAudioFormat.getChannels());
-        AudioInputStream audioInputStream = new AudioInputStream(new BufferInputStream(), sourceAudioFormat, AudioSystem.NOT_SPECIFIED);
-        if (!sourceAudioFormat.matches(targetAudioFormat)) {
-            audioInputStream = AudioSystem.getAudioInputStream(targetAudioFormat, audioInputStream);
-        }
+        final AudioInputStream sourceAudioStream = new AudioInputStream(new BufferInputStream(), new FloatAudioFormat(targetAudioFormat).toJavaAudioFormat(), AudioSystem.NOT_SPECIFIED);
 
         this.os = os;
-        this.is = audioInputStream;
-        this.writeBuffer = new byte[sourceAudioFormat.getFrameSize()];
-        this.readBuffer = new byte[targetAudioFormat.getFrameSize()];
+        this.is = AudioSystem.getAudioInputStream(targetAudioFormat, sourceAudioStream);
+        this.writeBuffer = new byte[sourceAudioStream.getFormat().getFrameSize()];
+        this.readBuffer = new byte[this.is.getFormat().getFrameSize()];
     }
 
     @Override
