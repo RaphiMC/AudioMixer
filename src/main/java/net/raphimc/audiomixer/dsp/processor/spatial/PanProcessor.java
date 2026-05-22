@@ -17,42 +17,39 @@
  */
 package net.raphimc.audiomixer.dsp.processor.spatial;
 
+import net.raphimc.audiomixer.dsp.parameter.FloatParameter;
 import net.raphimc.audiomixer.dsp.processor.Processor;
-import net.raphimc.audiomixer.util.MathUtil;
+import net.raphimc.audiomixer.dsp.processor.dynamics.StereoGainProcessor;
 import net.raphimc.audiomixer.util.buffer.AudioBuffer;
+import net.raphimc.audiomixer.util.math.MathUtil;
 
 public class PanProcessor implements Processor {
 
-    private float pan;
+    private final StereoGainProcessor internalProcessor = new StereoGainProcessor();
+    private final FloatParameter pan = FloatParameter.of(0F).withConstraint(FloatParameter.Constraint.SIGNED_NORMALIZED).withChangeListener(this::applyPan);
+
+    public PanProcessor() {
+        this.applyPan();
+    }
 
     public PanProcessor(final float pan) {
-        this.setPan(pan);
+        this.applyPan();
+        this.pan.set(pan);
     }
 
     @Override
     public void process(final AudioBuffer buffer) {
-        if (buffer.format().channels() != 2) {
-            throw new IllegalArgumentException("Target audio format must have 2 channels");
-        }
-        final float normalizedPan = (this.pan + 1F) / 2F;
-        final float leftGain = (float) Math.cos(normalizedPan * MathUtil.HALF_PI);
-        final float rightGain = (float) Math.sin(normalizedPan * MathUtil.HALF_PI);
-        final float[] samples = buffer.samples();
-        for (int i = 0; i < samples.length; i += 2) {
-            samples[i] *= leftGain;
-            samples[i + 1] *= rightGain;
-        }
+        this.internalProcessor.process(buffer);
     }
 
-    public float getPan() {
+    public FloatParameter pan() {
         return this.pan;
     }
 
-    public void setPan(final float pan) {
-        if (pan < -1F || pan > 1F) {
-            throw new IllegalArgumentException("Pan must be >= -1 and <= 1");
-        }
-        this.pan = pan;
+    private void applyPan() {
+        final float normalizedPan = (this.pan.get() + 1F) / 2F;
+        this.internalProcessor.leftGain().set((float) Math.cos(normalizedPan * MathUtil.HALF_PI));
+        this.internalProcessor.rightGain().set((float) Math.sin(normalizedPan * MathUtil.HALF_PI));
     }
 
 }

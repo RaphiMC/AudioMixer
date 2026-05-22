@@ -15,8 +15,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.raphimc.audiomixer.dsp.processor.effect;
+package net.raphimc.audiomixer.dsp.processor.legacy;
 
+import net.raphimc.audiomixer.dsp.parameter.IntParameter;
 import net.raphimc.audiomixer.dsp.processor.Processor;
 import net.raphimc.audiomixer.util.buffer.AudioBuffer;
 
@@ -24,17 +25,16 @@ import java.util.Arrays;
 
 public class BitCrushProcessor implements Processor {
 
-    private int decimationRate;
+    private final IntParameter decimationRate = IntParameter.of(15).withConstraint(IntParameter.Constraint.GREATER_THAN_ZERO);
 
     private int counter;
     private float[] lastSample = new float[2];
 
     public BitCrushProcessor() {
-        this(15);
     }
 
     public BitCrushProcessor(final int decimationRate) {
-        this.setDecimationRate(decimationRate);
+        this.decimationRate.set(decimationRate);
     }
 
     @Override
@@ -44,31 +44,25 @@ public class BitCrushProcessor implements Processor {
             this.lastSample = Arrays.copyOf(this.lastSample, channels);
         }
 
+        final int decimationRate = this.decimationRate.get();
         final float[] samples = buffer.samples();
-        for (int i = 0; i < samples.length; i += channels) {
+        for (int sampleIndex = 0; sampleIndex < samples.length; sampleIndex += channels) {
             if (this.counter == 0) {
-                this.counter = this.decimationRate;
+                this.counter = decimationRate;
                 for (int channel = 0; channel < channels; channel++) {
-                    final int intSample = (int) (samples[i + channel] * Short.MAX_VALUE);
+                    final int intSample = (int) (samples[sampleIndex + channel] * Short.MAX_VALUE);
                     this.lastSample[channel] = (intSample & 0xFFFFFFFC) / (float) Short.MAX_VALUE;
                 }
             } else {
                 this.counter--;
             }
 
-            System.arraycopy(this.lastSample, 0, samples, i, channels);
+            System.arraycopy(this.lastSample, 0, samples, sampleIndex, channels);
         }
     }
 
-    public int getDecimationRate() {
+    public IntParameter decimationRate() {
         return this.decimationRate;
-    }
-
-    public void setDecimationRate(final int decimationRate) {
-        if (decimationRate <= 0) {
-            throw new IllegalArgumentException("Decimation rate must be > 0");
-        }
-        this.decimationRate = decimationRate;
     }
 
 }

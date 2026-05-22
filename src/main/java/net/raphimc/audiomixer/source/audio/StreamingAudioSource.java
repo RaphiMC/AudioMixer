@@ -23,12 +23,12 @@ import net.raphimc.audiomixer.util.buffer.AudioBuffer;
 
 public abstract class StreamingAudioSource extends AudioSource {
 
-    public StreamingAudioSource(final FloatAudioFormat audioFormat) {
-        super(new AudioBuffer(audioFormat, 0));
+    public StreamingAudioSource(final FloatAudioFormat format) {
+        super(new AudioBuffer(format, 0));
     }
 
-    public StreamingAudioSource(final FloatAudioFormat audioFormat, final Resampler resampler) {
-        super(new AudioBuffer(audioFormat, 0), resampler);
+    public StreamingAudioSource(final FloatAudioFormat format, final Resampler resampler) {
+        super(new AudioBuffer(format, 0), resampler);
     }
 
     @Override

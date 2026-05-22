@@ -17,25 +17,19 @@
  */
 package net.raphimc.audiomixer.source.oscillator;
 
+import net.raphimc.audiomixer.dsp.parameter.FloatParameter;
 import net.raphimc.audiomixer.source.Source;
 
 public abstract class OscillatorSource extends Source {
 
-    private float frequency;
+    private final FloatParameter frequency = FloatParameter.of(0F).withConstraint(FloatParameter.Constraint.GREATER_THAN_ZERO);
 
     public OscillatorSource(final float frequency) {
-        this.setFrequency(frequency);
+        this.frequency.set(frequency);
     }
 
-    public float getFrequency() {
+    public FloatParameter frequency() {
         return this.frequency;
-    }
-
-    public void setFrequency(final float frequency) {
-        if (frequency <= 0) {
-            throw new IllegalArgumentException("Frequency must be > 0");
-        }
-        this.frequency = frequency;
     }
 
 }

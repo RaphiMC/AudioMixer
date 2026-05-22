@@ -20,9 +20,9 @@ package net.raphimc.audiomixer.io;
 import net.raphimc.audiomixer.io.raw.SampleInputStream;
 import net.raphimc.audiomixer.io.raw.SampleOutputStream;
 import net.raphimc.audiomixer.util.FloatAudioFormat;
-import net.raphimc.audiomixer.util.MathUtil;
 import net.raphimc.audiomixer.util.buffer.AudioBuffer;
 import net.raphimc.audiomixer.util.buffer.AudioBufferBuilder;
+import net.raphimc.audiomixer.util.math.MathUtil;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;

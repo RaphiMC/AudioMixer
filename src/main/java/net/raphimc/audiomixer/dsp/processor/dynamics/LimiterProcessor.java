@@ -17,35 +17,36 @@
  */
 package net.raphimc.audiomixer.dsp.processor.dynamics;
 
+import net.raphimc.audiomixer.dsp.parameter.FloatParameter;
 import net.raphimc.audiomixer.dsp.processor.Processor;
 import net.raphimc.audiomixer.util.buffer.AudioBuffer;
+import net.raphimc.audiomixer.util.math.MathUtil;
 
 import java.util.ArrayDeque;
 
 public class LimiterProcessor implements Processor {
 
-    private float attackMillis;
-    private float releaseMillis;
-    private float lookaheadMillis;
+    private final FloatParameter attackMillis = FloatParameter.of(1F).withConstraint(FloatParameter.Constraint.GREATER_THAN_ZERO);
+    private final FloatParameter releaseMillis = FloatParameter.of(100F).withConstraint(FloatParameter.Constraint.GREATER_THAN_ZERO);
+    private final FloatParameter lookaheadMillis = FloatParameter.of(5F).withConstraint(FloatParameter.Constraint.GREATER_THAN_ZERO);
 
     private float currentGain = 1F;
 
     public LimiterProcessor() {
-        this(1F, 100F, 5F);
     }
 
     public LimiterProcessor(final float attackMillis, final float releaseMillis, final float lookaheadMillis) {
-        this.setAttackMillis(attackMillis);
-        this.setReleaseMillis(releaseMillis);
-        this.setLookaheadMillis(lookaheadMillis);
+        this.attackMillis.set(attackMillis);
+        this.releaseMillis.set(releaseMillis);
+        this.lookaheadMillis.set(lookaheadMillis);
     }
 
     @Override
     public void process(final AudioBuffer buffer) {
         final float millisPerFrame = buffer.format().frameCountToMillis(1);
-        final float attackCoefficient = computeCoefficient(millisPerFrame, this.attackMillis);
-        final float releaseCoefficient = computeCoefficient(millisPerFrame, this.releaseMillis);
-        final int lookaheadFrameCount = buffer.format().millisToFrameCount(this.lookaheadMillis);
+        final float attackCoefficient = computeCoefficient(millisPerFrame, this.attackMillis.get());
+        final float releaseCoefficient = computeCoefficient(millisPerFrame, this.releaseMillis.get());
+        final int lookaheadFrameCount = buffer.format().millisToFrameCount(this.lookaheadMillis.get());
         final int channels = buffer.format().channels();
         final float[] samples = buffer.samples();
 
@@ -67,41 +68,24 @@ public class LimiterProcessor implements Processor {
         }
     }
 
-    public float getAttackMillis() {
+    public FloatParameter attackMillis() {
         return this.attackMillis;
     }
 
-    public void setAttackMillis(final float attackMillis) {
-        if (attackMillis <= 0) {
-            throw new IllegalArgumentException("Attack millis must be > 0");
-        }
-        this.attackMillis = attackMillis;
-    }
-
-    public float getReleaseMillis() {
+    public FloatParameter releaseMillis() {
         return this.releaseMillis;
     }
 
-    public void setReleaseMillis(final float releaseMillis) {
-        if (releaseMillis <= 0) {
-            throw new IllegalArgumentException("Release millis must be > 0");
-        }
-        this.releaseMillis = releaseMillis;
-    }
-
-    public float getLookaheadMillis() {
+    public FloatParameter lookaheadMillis() {
         return this.lookaheadMillis;
-    }
-
-    public void setLookaheadMillis(final float lookaheadMillis) {
-        if (lookaheadMillis <= 0) {
-            throw new IllegalArgumentException("Lookahead millis must be > 0");
-        }
-        this.lookaheadMillis = lookaheadMillis;
     }
 
     public float getCurrentGain() {
         return this.currentGain;
+    }
+
+    public float getCurrentGainDb() {
+        return MathUtil.gainToDb(this.currentGain);
     }
 
     private static float computeCoefficient(final float millisPerFrame, final float timeConstantMillis) {

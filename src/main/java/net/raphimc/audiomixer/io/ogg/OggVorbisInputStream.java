@@ -25,8 +25,8 @@ import com.jcraft.jorbis.Block;
 import com.jcraft.jorbis.Comment;
 import com.jcraft.jorbis.DspState;
 import com.jcraft.jorbis.Info;
-import net.raphimc.audiomixer.util.MathUtil;
 import net.raphimc.audiomixer.util.buffer.RingByteBuffer;
+import net.raphimc.audiomixer.util.math.MathUtil;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;

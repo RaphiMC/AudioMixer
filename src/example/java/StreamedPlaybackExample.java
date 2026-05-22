@@ -31,7 +31,7 @@ public class StreamedPlaybackExample {
         AudioFormat format = new AudioFormat(48000, 16, 2, true, false);
         SourceDataLineAudioMixer audioMixer = new SourceDataLineAudioMixer(AudioSystem.getSourceDataLine(format));
 
-        final AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new URL("https://example.com/sound.wav"));
+        final AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new URL("https://ncs.io/track/download/f76817e2-fa17-4317-af1a-8bf4d5cc68a9"));
         audioMixer.add(new PullAudioSource(new SampleInputStream(audioInputStream)));
 
         Thread.sleep(Integer.MAX_VALUE);

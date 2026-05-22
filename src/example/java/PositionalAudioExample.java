@@ -20,6 +20,7 @@ import net.raphimc.audiomixer.SourceDataLineAudioMixer;
 import net.raphimc.audiomixer.dsp.processor.spatial.PositionalAudioProcessor;
 import net.raphimc.audiomixer.source.oscillator.OscillatorSource;
 import net.raphimc.audiomixer.source.oscillator.impl.SineOscillatorSource;
+import net.raphimc.audiomixer.util.math.Vector3f;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
@@ -45,24 +46,24 @@ public class PositionalAudioExample {
         frame.setSize(480, 360);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
-        positionalAudioProcessor.setSourcePosition(frame.getWidth() / 2F, 0F, frame.getHeight() / 2F);
-        positionalAudioProcessor.setListenerPosition(frame.getWidth() / 2F, 0F, frame.getHeight() / 2F);
+        positionalAudioProcessor.listenerPosition().set(new Vector3f(frame.getWidth() / 2F, 0F, frame.getHeight() / 2F));
+        positionalAudioProcessor.sourcePosition().set(positionalAudioProcessor.listenerPosition().get());
 
         JPanel panel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
                 super.paintComponent(g);
                 g.setColor(Color.RED);
-                g.fillOval((int) positionalAudioProcessor.getSourceX() - 5, (int) positionalAudioProcessor.getSourceZ() - 5, 10, 10);
+                g.fillOval((int) positionalAudioProcessor.sourcePosition().get().x() - 5, (int) positionalAudioProcessor.sourcePosition().get().z() - 5, 10, 10);
                 g.setColor(Color.BLUE);
-                g.fillOval((int) positionalAudioProcessor.getListenerX() - 5, (int) positionalAudioProcessor.getListenerZ() - 5, 10, 10);
+                g.fillOval((int) positionalAudioProcessor.listenerPosition().get().x() - 5, (int) positionalAudioProcessor.listenerPosition().get().z() - 5, 10, 10);
             }
         };
 
         panel.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseDragged(MouseEvent e) {
-                positionalAudioProcessor.setSourcePosition(e.getX(), 0F, e.getY());
+                positionalAudioProcessor.sourcePosition().set(new Vector3f(e.getX(), 0F, e.getY()));
                 e.getComponent().repaint();
             }
         });

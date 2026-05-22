@@ -15,11 +15,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.raphimc.audiomixer.dsp.processor.effect;
+package net.raphimc.audiomixer.dsp.processor.legacy;
 
 import net.raphimc.audiomixer.dsp.processor.Processor;
-import net.raphimc.audiomixer.util.MathUtil;
 import net.raphimc.audiomixer.util.buffer.AudioBuffer;
+import net.raphimc.audiomixer.util.math.MathUtil;
 
 import java.util.Arrays;
 
@@ -61,7 +61,7 @@ public class BassBoostProcessor implements Processor {
         if (cutoffFrequency <= 0) {
             throw new IllegalArgumentException("Cutoff frequency must be > 0");
         }
-        this.rc = 1F / (MathUtil.TWO_PI * cutoffFrequency);
+        this.rc = (float) (1F / (MathUtil.TWO_PI * cutoffFrequency));
     }
 
     public float getFactor() {

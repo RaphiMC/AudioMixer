@@ -17,14 +17,14 @@
  */
 package net.raphimc.audiomixer.dsp.automation;
 
-import net.raphimc.audiomixer.dsp.automation.parameter.Parameter;
+import net.raphimc.audiomixer.dsp.parameter.FloatParameter;
 
 public abstract class Automation {
 
-    private final Parameter parameter;
-    protected double time;
+    private final FloatParameter parameter;
+    protected float time;
 
-    public Automation(final Parameter parameter) {
+    public Automation(final FloatParameter parameter) {
         this.parameter = parameter;
     }
 
@@ -40,7 +40,7 @@ public abstract class Automation {
         return false;
     }
 
-    public Parameter getParameter() {
+    public FloatParameter getParameter() {
         return this.parameter;
     }
 

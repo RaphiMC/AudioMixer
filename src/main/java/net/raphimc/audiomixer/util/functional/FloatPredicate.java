@@ -18,8 +18,8 @@
 package net.raphimc.audiomixer.util.functional;
 
 @FunctionalInterface
-public interface FloatConsumer {
+public interface FloatPredicate {
 
-    void accept(final float value);
+    boolean test(final float value);
 
 }

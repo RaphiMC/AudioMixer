@@ -19,6 +19,7 @@ package net.raphimc.audiomixer.util;
 
 import net.raphimc.audiomixer.io.raw.SampleOutputStream;
 import net.raphimc.audiomixer.util.buffer.AudioBuffer;
+import net.raphimc.audiomixer.util.math.MathUtil;
 
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;

@@ -46,7 +46,7 @@ public class BufferedAudioSource extends AudioSource {
 
     public void setPosition(final double position) {
         if (position < 0 || position > this.getFrameCount()) {
-            throw new IllegalArgumentException("Position must be >= 0 and <= " + this.getFrameCount());
+            throw new IllegalArgumentException("Position must be in [0, frame count]");
         }
         this.position = position;
     }

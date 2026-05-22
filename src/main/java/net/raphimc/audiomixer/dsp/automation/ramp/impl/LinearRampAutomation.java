@@ -17,12 +17,12 @@
  */
 package net.raphimc.audiomixer.dsp.automation.ramp.impl;
 
-import net.raphimc.audiomixer.dsp.automation.parameter.Parameter;
 import net.raphimc.audiomixer.dsp.automation.ramp.RampAutomation;
+import net.raphimc.audiomixer.dsp.parameter.FloatParameter;
 
 public class LinearRampAutomation extends RampAutomation {
 
-    public LinearRampAutomation(final Parameter parameter, final float startValue, final float endValue, final float duration) {
+    public LinearRampAutomation(final FloatParameter parameter, final float startValue, final float endValue, final float duration) {
         super(parameter, startValue, endValue, duration);
     }
 

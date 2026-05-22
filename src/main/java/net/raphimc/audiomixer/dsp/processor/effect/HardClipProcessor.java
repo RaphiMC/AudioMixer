@@ -17,39 +17,29 @@
  */
 package net.raphimc.audiomixer.dsp.processor.effect;
 
+import net.raphimc.audiomixer.dsp.parameter.FloatParameter;
 import net.raphimc.audiomixer.dsp.processor.Processor;
-import net.raphimc.audiomixer.util.MathUtil;
 import net.raphimc.audiomixer.util.buffer.AudioBuffer;
+import net.raphimc.audiomixer.util.math.MathUtil;
 
 public class HardClipProcessor implements Processor {
 
-    private float drive;
+    private final FloatParameter drive = FloatParameter.of(1F).withConstraint(FloatParameter.Constraint.AT_LEAST_ONE);
 
     public HardClipProcessor() {
-        this(1F);
     }
 
     public HardClipProcessor(final float drive) {
-        this.setDrive(drive);
+        this.drive.set(drive);
     }
 
     @Override
     public void process(final AudioBuffer buffer) {
+        final float drive = this.drive.get();
         final float[] samples = buffer.samples();
-        for (int i = 0; i < samples.length; i++) {
-            samples[i] = MathUtil.clamp(samples[i] * this.drive, -1F, 1F);
+        for (int sampleIndex = 0; sampleIndex < samples.length; sampleIndex++) {
+            samples[sampleIndex] = MathUtil.clamp(samples[sampleIndex] * drive, -1F, 1F);
         }
-    }
-
-    public float getDrive() {
-        return this.drive;
-    }
-
-    public void setDrive(final float drive) {
-        if (drive < 1F) {
-            throw new IllegalArgumentException("Drive must be >= 1");
-        }
-        this.drive = drive;
     }
 
 }

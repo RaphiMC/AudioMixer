@@ -25,7 +25,7 @@ public interface Resampler {
     default AudioBuffer resample(final AudioBuffer src, final FloatAudioFormat dstFormat) {
         if (!src.format().equals(dstFormat)) {
             final float pitch = src.format().sampleRate() / dstFormat.sampleRate();
-            final int dstSampleCount = (int) Math.ceil(src.getFrameCount() * pitch) * dstFormat.channels();
+            final int dstSampleCount = (int) Math.ceil((double) src.getFrameCount() * pitch) * dstFormat.channels();
             final AudioBuffer dst = new AudioBuffer(dstFormat, dstSampleCount);
             this.resample(src, dst, 0);
             return dst;

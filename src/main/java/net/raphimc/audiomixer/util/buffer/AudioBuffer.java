@@ -18,7 +18,7 @@
 package net.raphimc.audiomixer.util.buffer;
 
 import net.raphimc.audiomixer.util.FloatAudioFormat;
-import net.raphimc.audiomixer.util.MathUtil;
+import net.raphimc.audiomixer.util.math.MathUtil;
 
 import java.util.Arrays;
 
@@ -42,17 +42,17 @@ public record AudioBuffer(FloatAudioFormat format, float[] samples) {
         if (otherSamples.length != this.samples.length) {
             throw new IllegalArgumentException("Sample count mismatch: " + otherSamples.length + " != " + this.samples.length);
         }
-        for (int i = 0; i < otherSamples.length; i++) {
-            this.samples[i] += otherSamples[i];
+        for (int sampleIndex = 0; sampleIndex < otherSamples.length; sampleIndex++) {
+            this.samples[sampleIndex] += otherSamples[sampleIndex];
         }
     }
 
-    public void scale(final float factor) {
+    public void multiply(final float factor) {
         if (factor == 0F) {
             this.clear();
         } else if (factor != 1F) {
-            for (int i = 0; i < this.samples.length; i++) {
-                this.samples[i] *= factor;
+            for (int sampleIndex = 0; sampleIndex < this.samples.length; sampleIndex++) {
+                this.samples[sampleIndex] *= factor;
             }
         }
     }
@@ -60,14 +60,14 @@ public record AudioBuffer(FloatAudioFormat format, float[] samples) {
     public void limitToUnitRange() {
         final float peak = this.peakAmplitude();
         if (peak > 1F) {
-            this.scale(1F / peak);
+            this.multiply(1F / peak);
         }
     }
 
     public void normalizePeak() {
         final float peak = this.peakAmplitude();
         if (peak != 0F) {
-            this.scale(1F / peak);
+            this.multiply(1F / peak);
         }
     }
 

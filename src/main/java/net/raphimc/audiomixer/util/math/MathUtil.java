@@ -15,15 +15,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.raphimc.audiomixer.util;
+package net.raphimc.audiomixer.util.math;
 
 import javax.sound.sampled.AudioFormat;
 
 public class MathUtil {
 
-    public static final float PI = (float) Math.PI;
-    public static final float HALF_PI = (float) (Math.PI / 2D);
-    public static final float TWO_PI = (float) (Math.PI * 2D);
+    public static final double HALF_PI = Math.PI / 2D;
+    public static final double TWO_PI = Math.PI * 2D;
 
     public static float clamp(final float value, final float min, final float max) {
         return Math.max(min, Math.min(value, max));
@@ -35,6 +34,14 @@ public class MathUtil {
 
     public static int roundUpToMultiple(final int value, final int multiple) {
         return (int) (Math.ceil((double) value / multiple) * multiple);
+    }
+
+    public static float dbToGain(final float db) {
+        return (float) Math.pow(10D, db / 20D);
+    }
+
+    public static float gainToDb(final float gain) {
+        return (float) (20D * Math.log10(gain));
     }
 
     public static int millisToFrameCount(final AudioFormat audioFormat, final float millis) {

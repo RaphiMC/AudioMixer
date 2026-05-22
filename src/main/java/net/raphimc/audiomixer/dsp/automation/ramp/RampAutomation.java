@@ -18,7 +18,7 @@
 package net.raphimc.audiomixer.dsp.automation.ramp;
 
 import net.raphimc.audiomixer.dsp.automation.Automation;
-import net.raphimc.audiomixer.dsp.automation.parameter.Parameter;
+import net.raphimc.audiomixer.dsp.parameter.FloatParameter;
 
 public abstract class RampAutomation extends Automation {
 
@@ -26,7 +26,7 @@ public abstract class RampAutomation extends Automation {
     private final float endValue;
     private final float duration;
 
-    public RampAutomation(final Parameter parameter, final float startValue, final float endValue, final float duration) {
+    public RampAutomation(final FloatParameter parameter, final float startValue, final float endValue, final float duration) {
         super(parameter);
         if (duration <= 0) {
             throw new IllegalArgumentException("Duration must be > 0");
@@ -43,7 +43,7 @@ public abstract class RampAutomation extends Automation {
         } else if (this.time >= this.duration) {
             this.getParameter().set(this.endValue);
         } else {
-            this.apply((float) (this.time / this.duration));
+            this.apply(this.time / this.duration);
         }
     }
 

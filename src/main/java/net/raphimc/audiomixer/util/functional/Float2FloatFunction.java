@@ -18,8 +18,8 @@
 package net.raphimc.audiomixer.util.functional;
 
 @FunctionalInterface
-public interface FloatSupplier {
+public interface Float2FloatFunction {
 
-    float get();
+    float apply(final float value);
 
 }

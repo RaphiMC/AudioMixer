@@ -17,40 +17,38 @@
  */
 package net.raphimc.audiomixer.dsp.processor.spatial;
 
+import net.raphimc.audiomixer.dsp.parameter.FloatParameter;
 import net.raphimc.audiomixer.dsp.processor.Processor;
+import net.raphimc.audiomixer.dsp.processor.dynamics.StereoGainProcessor;
 import net.raphimc.audiomixer.util.buffer.AudioBuffer;
 
 public class BalanceProcessor implements Processor {
 
-    private float balance;
+    private final StereoGainProcessor internalProcessor = new StereoGainProcessor();
+    private final FloatParameter balance = FloatParameter.of(0F).withConstraint(FloatParameter.Constraint.SIGNED_NORMALIZED).withChangeListener(this::applyBalance);
+
+    public BalanceProcessor() {
+        this.applyBalance();
+    }
 
     public BalanceProcessor(final float balance) {
-        this.setBalance(balance);
+        this.applyBalance();
+        this.balance.set(balance);
     }
 
     @Override
     public void process(final AudioBuffer buffer) {
-        if (buffer.format().channels() != 2) {
-            throw new IllegalArgumentException("Target audio format must have 2 channels");
-        }
-        final float leftGain = (1F - this.balance) / 2F;
-        final float rightGain = (1F + this.balance) / 2F;
-        final float[] samples = buffer.samples();
-        for (int i = 0; i < samples.length; i += 2) {
-            samples[i] *= leftGain;
-            samples[i + 1] *= rightGain;
-        }
+        this.internalProcessor.process(buffer);
     }
 
-    public float getBalance() {
+    public FloatParameter balance() {
         return this.balance;
     }
 
-    public void setBalance(final float balance) {
-        if (balance < -1F || balance > 1F) {
-            throw new IllegalArgumentException("Balance must be >= -1 and <= 1");
-        }
-        this.balance = balance;
+    private void applyBalance() {
+        final float balance = this.balance.get();
+        this.internalProcessor.leftGain().set((1F - balance) / 2F);
+        this.internalProcessor.rightGain().set((1F + balance) / 2F);
     }
 
 }

@@ -18,12 +18,12 @@
 package net.raphimc.audiomixer.source.oscillator.impl;
 
 import net.raphimc.audiomixer.source.oscillator.OscillatorSource;
-import net.raphimc.audiomixer.util.MathUtil;
 import net.raphimc.audiomixer.util.buffer.AudioBuffer;
+import net.raphimc.audiomixer.util.math.MathUtil;
 
 public class SineOscillatorSource extends OscillatorSource {
 
-    private float phase;
+    private double phase;
 
     public SineOscillatorSource(final float frequency) {
         super(frequency);
@@ -31,13 +31,13 @@ public class SineOscillatorSource extends OscillatorSource {
 
     @Override
     protected void renderDry(final AudioBuffer buffer) {
+        final double phaseIncrement = MathUtil.TWO_PI * (this.frequency().get() / buffer.format().sampleRate());
         final int channels = buffer.format().channels();
-        final float phaseIncrement = (this.getFrequency() / buffer.format().sampleRate()) * MathUtil.TWO_PI;
         final float[] samples = buffer.samples();
-        for (int i = 0; i < samples.length; i += channels) {
+        for (int sampleIndex = 0; sampleIndex < samples.length; sampleIndex += channels) {
             final float sample = (float) Math.sin(this.phase);
             for (int channel = 0; channel < channels; channel++) {
-                samples[i + channel] = sample;
+                samples[sampleIndex + channel] = sample;
             }
             this.phase += phaseIncrement;
             this.phase %= MathUtil.TWO_PI;

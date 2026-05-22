@@ -82,7 +82,7 @@ public class GroupedMixerSource extends MixerSource {
 
     public MixerSource getGroup(final int group) {
         if (group < 0 || group >= this.groups.length) {
-            throw new IllegalArgumentException("Group must be >= 0 and <= " + (this.groups.length - 1));
+            throw new IllegalArgumentException("Group must be in [0, group count)");
         }
         return this.groups[group];
     }

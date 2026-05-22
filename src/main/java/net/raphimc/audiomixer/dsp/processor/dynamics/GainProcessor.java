@@ -17,35 +17,34 @@
  */
 package net.raphimc.audiomixer.dsp.processor.dynamics;
 
+import net.raphimc.audiomixer.dsp.parameter.FloatParameter;
 import net.raphimc.audiomixer.dsp.processor.Processor;
 import net.raphimc.audiomixer.util.buffer.AudioBuffer;
+import net.raphimc.audiomixer.util.math.MathUtil;
 
 public class GainProcessor implements Processor {
 
-    private float gain;
+    private final FloatParameter gain = FloatParameter.of(1F).withConstraint(FloatParameter.Constraint.POSITIVE);
+    private final FloatParameter gainDb = this.gain.withMapping(MathUtil::gainToDb, MathUtil::dbToGain);
+
+    public GainProcessor() {
+    }
 
     public GainProcessor(final float gain) {
-        this.setGain(gain);
+        this.gain.set(gain);
     }
 
     @Override
     public void process(final AudioBuffer buffer) {
-        buffer.scale(this.gain);
+        buffer.multiply(this.gain.get());
     }
 
-    public float getGain() {
+    public FloatParameter gain() {
         return this.gain;
     }
 
-    public void setGain(final float gain) {
-        if (gain < 0F) {
-            throw new IllegalArgumentException("Gain must be >= 0");
-        }
-        this.gain = gain;
-    }
-
-    public void setGainPercent(final float gainPercent) {
-        this.setGain(gainPercent / 100F);
+    public FloatParameter gainDb() {
+        return this.gainDb;
     }
 
 }

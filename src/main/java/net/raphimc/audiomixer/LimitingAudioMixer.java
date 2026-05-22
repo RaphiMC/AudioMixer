@@ -17,6 +17,7 @@
  */
 package net.raphimc.audiomixer;
 
+import net.raphimc.audiomixer.dsp.parameter.FloatParameter;
 import net.raphimc.audiomixer.dsp.processor.dynamics.GainProcessor;
 import net.raphimc.audiomixer.dsp.processor.dynamics.LimiterProcessor;
 import net.raphimc.audiomixer.dsp.processor.effect.HardClipProcessor;
@@ -34,16 +35,12 @@ public class LimitingAudioMixer extends AudioMixer {
         this.getProcessors().add(new HardClipProcessor());
     }
 
-    public void setGainPercent(final float gainPercent) {
-        this.gainProcessor.setGainPercent(gainPercent);
+    public FloatParameter gain() {
+        return this.gainProcessor.gain();
     }
 
-    public void setGain(final float gain) {
-        this.gainProcessor.setGain(gain);
-    }
-
-    public float getGain() {
-        return this.gainProcessor.getGain();
+    public FloatParameter gainDb() {
+        return this.gainProcessor.gainDb();
     }
 
     public LimiterProcessor getLimiterProcessor() {
