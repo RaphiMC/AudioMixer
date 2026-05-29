@@ -11,13 +11,24 @@ High performance Java audio library.
     - Push: Audio data is enqueued by the application
   - Automatic sample rate and channel conversion
 - DSP
-  - Gain control
-  - Stereo pan control
-  - Bass boost effect
-  - Bit-crush effect
-  - Basic positional 3D audio
-    - Position and orientation control
-    - Distance attenuation
+  - Dynamics
+    - Gain
+    - Limiter
+  - Filters
+    - IIR
+      - Low/High/Band pass
+    - EQ
+      - Low/High shelf
+      - Peaking
+  - Spatialization
+    - Balance
+    - Pan
+    - Basic 3D audio
+      - Position and orientation
+      - Distance attenuation
+  - Effects
+    - Hard/Soft clip
+    - Bit crusher
   - Most parameters support automation to allow for smooth changes over time
 - High performance (Handles thousands of simultaneously playing audio sources in realtime)
 

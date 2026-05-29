@@ -23,6 +23,8 @@ public class MathUtil {
 
     public static final double HALF_PI = Math.PI / 2D;
     public static final double TWO_PI = Math.PI * 2D;
+    public static final double INV_SQRT_2 = 1D / Math.sqrt(2D);
+    public static final float BUTTERWORTH_Q = (float) INV_SQRT_2;
 
     public static float clamp(final float value, final float min, final float max) {
         return Math.max(min, Math.min(value, max));
