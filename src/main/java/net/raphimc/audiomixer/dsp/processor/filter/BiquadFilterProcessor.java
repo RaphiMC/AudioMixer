@@ -41,7 +41,7 @@ public abstract class BiquadFilterProcessor<IP extends BiquadFilterProcessor.Int
         }
 
         @Override
-        public void process(final AudioBuffer buffer) {
+        protected void processInternal(final AudioBuffer buffer) {
             final float b0 = this.b0;
             final float b1 = this.b1;
             final float b2 = this.b2;

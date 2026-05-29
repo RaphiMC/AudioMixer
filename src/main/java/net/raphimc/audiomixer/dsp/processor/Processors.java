@@ -23,12 +23,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
 
-public class Processors implements Processor {
+public class Processors extends Processor {
 
-    private final List<Processor> processors = new ArrayList<>(2);
+    private final List<Processor> processors = new ArrayList<>(0);
 
     @Override
-    public synchronized void process(final AudioBuffer buffer) {
+    protected synchronized void processInternal(final AudioBuffer buffer) {
         for (Processor processor : this.processors) {
             processor.process(buffer);
         }

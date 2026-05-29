@@ -24,7 +24,7 @@ import java.util.List;
 
 public class Automations {
 
-    private final List<Automation> automations = new ArrayList<>(2);
+    private final List<Automation> automations = new ArrayList<>(0);
 
     public synchronized void update(final AudioBuffer buffer) {
         if (!this.automations.isEmpty()) {

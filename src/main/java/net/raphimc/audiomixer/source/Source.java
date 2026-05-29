@@ -39,11 +39,11 @@ public abstract class Source {
 
     public void render(final AudioBuffer audioBuffer) {
         this.automations.update(audioBuffer);
-        this.renderDry(audioBuffer);
+        this.renderInternal(audioBuffer);
         this.processors.process(audioBuffer);
     }
 
-    protected abstract void renderDry(final AudioBuffer buffer);
+    protected abstract void renderInternal(final AudioBuffer buffer);
 
     public boolean isFinished() {
         return false;

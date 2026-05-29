@@ -19,8 +19,24 @@ package net.raphimc.audiomixer.dsp.processor;
 
 import net.raphimc.audiomixer.util.buffer.AudioBuffer;
 
-public interface Processor {
+public abstract class Processor {
 
-    void process(final AudioBuffer buffer);
+    private boolean enabled = true;
+
+    public void process(final AudioBuffer buffer) {
+        if (this.enabled) {
+            this.processInternal(buffer);
+        }
+    }
+
+    protected abstract void processInternal(final AudioBuffer buffer);
+
+    public boolean isEnabled() {
+        return this.enabled;
+    }
+
+    public void setEnabled(final boolean enabled) {
+        this.enabled = enabled;
+    }
 
 }

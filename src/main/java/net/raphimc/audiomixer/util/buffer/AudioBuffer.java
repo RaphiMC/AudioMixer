@@ -34,7 +34,7 @@ public record AudioBuffer(FloatAudioFormat format, float[] samples) {
         this(format, new float[sampleCount]);
     }
 
-    public void mix(final AudioBuffer other) {
+    public void add(final AudioBuffer other) {
         if (!other.format().equals(this.format)) {
             throw new IllegalArgumentException("Format mismatch: " + other.format() + " != " + this.format);
         }
@@ -73,6 +73,14 @@ public record AudioBuffer(FloatAudioFormat format, float[] samples) {
 
     public void clear() {
         Arrays.fill(this.samples, 0F);
+    }
+
+    public AudioBuffer copy() {
+        return new AudioBuffer(this.format, Arrays.copyOf(this.samples, this.samples.length));
+    }
+
+    public AudioBuffer createWorkBuffer() {
+        return new AudioBuffer(this.format, this.samples.length);
     }
 
     public float peakAmplitude() {

@@ -22,7 +22,7 @@ import net.raphimc.audiomixer.dsp.processor.Processor;
 import net.raphimc.audiomixer.util.buffer.AudioBuffer;
 import net.raphimc.audiomixer.util.math.MathUtil;
 
-public class StereoGainProcessor implements Processor {
+public class StereoGainProcessor extends Processor {
 
     private final FloatParameter leftGain = FloatParameter.of(1F).withConstraint(FloatParameter.Constraint.POSITIVE);
     private final FloatParameter leftGainDb = this.leftGain.withMapping(MathUtil::gainToDb, MathUtil::dbToGain);
@@ -38,7 +38,7 @@ public class StereoGainProcessor implements Processor {
     }
 
     @Override
-    public void process(final AudioBuffer buffer) {
+    protected void processInternal(final AudioBuffer buffer) {
         if (buffer.format().channels() != 2) {
             throw new IllegalArgumentException("Target audio format must have 2 channels");
         }

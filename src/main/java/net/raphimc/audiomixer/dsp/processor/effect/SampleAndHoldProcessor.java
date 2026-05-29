@@ -53,7 +53,7 @@ public class SampleAndHoldProcessor extends FormatDependentProcessor<SampleAndHo
         }
 
         @Override
-        public void process(final AudioBuffer buffer) {
+        protected void processInternal(final AudioBuffer buffer) {
             final int holdFrameCount = buffer.format().millisToFrameCount(SampleAndHoldProcessor.this.holdMillis.get());
             final int channels = buffer.format().channels();
             final float[] samples = buffer.samples();

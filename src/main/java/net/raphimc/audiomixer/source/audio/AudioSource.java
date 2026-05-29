@@ -41,7 +41,7 @@ public abstract class AudioSource extends Source {
     }
 
     @Override
-    protected void renderDry(final AudioBuffer buffer) {
+    protected void renderInternal(final AudioBuffer buffer) {
         if (this.getFormat().equals(buffer.format()) && this.position % 1 == 0) {
             final int offset = (int) this.position * this.getFormat().channels();
             final int count = Math.min(buffer.getSampleCount(), this.buffer.getSampleCount() - offset);

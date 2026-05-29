@@ -24,7 +24,7 @@ import net.raphimc.audiomixer.util.math.MathUtil;
 
 import java.util.ArrayDeque;
 
-public class LimiterProcessor implements Processor {
+public class LimiterProcessor extends Processor {
 
     private final FloatParameter attackMillis = FloatParameter.of(1F).withConstraint(FloatParameter.Constraint.GREATER_THAN_ZERO);
     private final FloatParameter releaseMillis = FloatParameter.of(100F).withConstraint(FloatParameter.Constraint.GREATER_THAN_ZERO);
@@ -42,7 +42,7 @@ public class LimiterProcessor implements Processor {
     }
 
     @Override
-    public void process(final AudioBuffer buffer) {
+    protected void processInternal(final AudioBuffer buffer) {
         final float millisPerFrame = buffer.format().frameCountToMillis(1);
         final float attackCoefficient = computeCoefficient(millisPerFrame, this.attackMillis.get());
         final float releaseCoefficient = computeCoefficient(millisPerFrame, this.releaseMillis.get());

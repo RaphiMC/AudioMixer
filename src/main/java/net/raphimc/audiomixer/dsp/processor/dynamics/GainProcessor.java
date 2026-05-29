@@ -22,7 +22,7 @@ import net.raphimc.audiomixer.dsp.processor.Processor;
 import net.raphimc.audiomixer.util.buffer.AudioBuffer;
 import net.raphimc.audiomixer.util.math.MathUtil;
 
-public class GainProcessor implements Processor {
+public class GainProcessor extends Processor {
 
     private final FloatParameter gain = FloatParameter.of(1F).withConstraint(FloatParameter.Constraint.POSITIVE);
     private final FloatParameter gainDb = this.gain.withMapping(MathUtil::gainToDb, MathUtil::dbToGain);
@@ -35,7 +35,7 @@ public class GainProcessor implements Processor {
     }
 
     @Override
-    public void process(final AudioBuffer buffer) {
+    protected void processInternal(final AudioBuffer buffer) {
         buffer.multiply(this.gain.get());
     }
 

@@ -30,7 +30,7 @@ public class SineOscillatorSource extends OscillatorSource {
     }
 
     @Override
-    protected void renderDry(final AudioBuffer buffer) {
+    protected void renderInternal(final AudioBuffer buffer) {
         final double phaseIncrement = MathUtil.TWO_PI * (this.frequency().get() / buffer.format().sampleRate());
         final int channels = buffer.format().channels();
         final float[] samples = buffer.samples();

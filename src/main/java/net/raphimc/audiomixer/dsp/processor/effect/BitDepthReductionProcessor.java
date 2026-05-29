@@ -21,7 +21,7 @@ import net.raphimc.audiomixer.dsp.parameter.IntParameter;
 import net.raphimc.audiomixer.dsp.processor.Processor;
 import net.raphimc.audiomixer.util.buffer.AudioBuffer;
 
-public class BitDepthReductionProcessor implements Processor {
+public class BitDepthReductionProcessor extends Processor {
 
     private final IntParameter bitDepth = IntParameter.of(8).withConstraint(value -> value > 0 && value <= 16);
 
@@ -33,7 +33,7 @@ public class BitDepthReductionProcessor implements Processor {
     }
 
     @Override
-    public void process(final AudioBuffer buffer) {
+    protected void processInternal(final AudioBuffer buffer) {
         final float step = 2F / (1 << this.bitDepth.get());
         final float[] samples = buffer.samples();
         for (int sampleIndex = 0; sampleIndex < samples.length; sampleIndex++) {

@@ -32,8 +32,8 @@ public abstract class StreamingAudioSource extends AudioSource {
     }
 
     @Override
-    protected synchronized void renderDry(final AudioBuffer buffer) {
-        super.renderDry(buffer);
+    protected synchronized void renderInternal(final AudioBuffer buffer) {
+        super.renderInternal(buffer);
     }
 
     protected synchronized void enqueueBuffer(final AudioBuffer buffer) {

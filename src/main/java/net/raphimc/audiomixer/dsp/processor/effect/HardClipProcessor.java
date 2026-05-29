@@ -22,7 +22,7 @@ import net.raphimc.audiomixer.dsp.processor.Processor;
 import net.raphimc.audiomixer.util.buffer.AudioBuffer;
 import net.raphimc.audiomixer.util.math.MathUtil;
 
-public class HardClipProcessor implements Processor {
+public class HardClipProcessor extends Processor {
 
     private final FloatParameter drive = FloatParameter.of(1F).withConstraint(FloatParameter.Constraint.AT_LEAST_ONE);
 
@@ -34,7 +34,7 @@ public class HardClipProcessor implements Processor {
     }
 
     @Override
-    public void process(final AudioBuffer buffer) {
+    protected void processInternal(final AudioBuffer buffer) {
         final float drive = this.drive.get();
         final float[] samples = buffer.samples();
         for (int sampleIndex = 0; sampleIndex < samples.length; sampleIndex++) {

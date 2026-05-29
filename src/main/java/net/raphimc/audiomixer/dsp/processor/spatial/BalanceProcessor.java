@@ -22,7 +22,7 @@ import net.raphimc.audiomixer.dsp.processor.Processor;
 import net.raphimc.audiomixer.dsp.processor.dynamics.StereoGainProcessor;
 import net.raphimc.audiomixer.util.buffer.AudioBuffer;
 
-public class BalanceProcessor implements Processor {
+public class BalanceProcessor extends Processor {
 
     private final StereoGainProcessor internalProcessor = new StereoGainProcessor();
     private final FloatParameter balance = FloatParameter.of(0F).withConstraint(FloatParameter.Constraint.SIGNED_NORMALIZED).withChangeListener(this::applyBalance);
@@ -37,7 +37,7 @@ public class BalanceProcessor implements Processor {
     }
 
     @Override
-    public void process(final AudioBuffer buffer) {
+    protected void processInternal(final AudioBuffer buffer) {
         this.internalProcessor.process(buffer);
     }
 

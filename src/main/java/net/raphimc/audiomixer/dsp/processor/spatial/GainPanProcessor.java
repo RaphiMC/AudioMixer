@@ -23,7 +23,7 @@ import net.raphimc.audiomixer.dsp.processor.dynamics.StereoGainProcessor;
 import net.raphimc.audiomixer.util.buffer.AudioBuffer;
 import net.raphimc.audiomixer.util.math.MathUtil;
 
-public class GainPanProcessor implements Processor {
+public class GainPanProcessor extends Processor {
 
     private final StereoGainProcessor internalProcessor = new StereoGainProcessor();
     private final FloatParameter gain = FloatParameter.of(1F).withConstraint(FloatParameter.Constraint.POSITIVE).withChangeListener(this::applyParameters);
@@ -41,7 +41,7 @@ public class GainPanProcessor implements Processor {
     }
 
     @Override
-    public void process(final AudioBuffer buffer) {
+    protected void processInternal(final AudioBuffer buffer) {
         this.internalProcessor.process(buffer);
     }
 

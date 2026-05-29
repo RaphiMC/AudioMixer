@@ -20,12 +20,12 @@ package net.raphimc.audiomixer.dsp.processor;
 import net.raphimc.audiomixer.util.FloatAudioFormat;
 import net.raphimc.audiomixer.util.buffer.AudioBuffer;
 
-public abstract class FormatDependentProcessor<IP extends FormatDependentProcessor.InternalProcessor> implements Processor {
+public abstract class FormatDependentProcessor<IP extends FormatDependentProcessor.InternalProcessor> extends Processor {
 
     private IP internalProcessor;
 
     @Override
-    public void process(final AudioBuffer buffer) {
+    protected void processInternal(final AudioBuffer buffer) {
         if (this.internalProcessor == null || !this.internalProcessor.supports(buffer.format())) {
             this.internalProcessor = this.createInternalProcessor(buffer.format());
         }
@@ -38,7 +38,7 @@ public abstract class FormatDependentProcessor<IP extends FormatDependentProcess
         return this.internalProcessor;
     }
 
-    protected abstract static class InternalProcessor implements Processor {
+    protected abstract static class InternalProcessor extends Processor {
 
         protected final FloatAudioFormat format;
 

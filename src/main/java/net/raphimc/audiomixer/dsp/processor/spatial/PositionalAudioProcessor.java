@@ -23,7 +23,7 @@ import net.raphimc.audiomixer.dsp.processor.Processor;
 import net.raphimc.audiomixer.util.buffer.AudioBuffer;
 import net.raphimc.audiomixer.util.math.Vector3f;
 
-public class PositionalAudioProcessor implements Processor {
+public class PositionalAudioProcessor extends Processor {
 
     private final GainPanProcessor internalProcessor = new GainPanProcessor();
     private final FloatParameter maxDistance = FloatParameter.of(0F).withConstraint(FloatParameter.Constraint.GREATER_THAN_ZERO).withChangeListener(this::applyParameters);
@@ -36,7 +36,7 @@ public class PositionalAudioProcessor implements Processor {
     }
 
     @Override
-    public void process(final AudioBuffer buffer) {
+    protected void processInternal(final AudioBuffer buffer) {
         this.internalProcessor.process(buffer);
     }
 

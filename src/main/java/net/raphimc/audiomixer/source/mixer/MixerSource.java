@@ -51,13 +51,13 @@ public class MixerSource extends Source {
     }
 
     @Override
-    protected synchronized void renderDry(final AudioBuffer buffer) {
+    protected synchronized void renderInternal(final AudioBuffer buffer) {
         this.mixedSources = this.sources.size();
-        final AudioBuffer sourceBuffer = new AudioBuffer(buffer.format(), buffer.samples().length);
+        final AudioBuffer sourceBuffer = buffer.createWorkBuffer();
         for (Source source : this.sources) {
             sourceBuffer.clear();
             source.render(sourceBuffer);
-            buffer.mix(sourceBuffer);
+            buffer.add(sourceBuffer);
         }
         this.sources.removeIf(Source::isFinished);
     }

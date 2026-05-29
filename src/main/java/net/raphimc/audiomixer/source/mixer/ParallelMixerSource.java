@@ -59,9 +59,9 @@ public class ParallelMixerSource extends GroupedMixerSource implements AutoClose
     }
 
     @Override
-    protected void renderDry(final AudioBuffer buffer) {
+    protected void renderInternal(final AudioBuffer buffer) {
         for (int i = 0; i < this.threadBuffers.length; i++) {
-            this.threadBuffers[i] = new AudioBuffer(buffer.format(), buffer.getSampleCount());
+            this.threadBuffers[i] = buffer.createWorkBuffer();
         }
         try {
             this.startBarrier.await();
@@ -70,7 +70,7 @@ public class ParallelMixerSource extends GroupedMixerSource implements AutoClose
             throw new RuntimeException(e);
         }
         for (AudioBuffer threadBuffer : this.threadBuffers) {
-            buffer.mix(threadBuffer);
+            buffer.add(threadBuffer);
         }
     }
 
