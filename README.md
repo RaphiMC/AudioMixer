@@ -28,7 +28,8 @@ High performance Java audio library.
       - Distance attenuation
   - Effects
     - Hard/Soft clip
-    - Bit crusher
+    - Bit depth reduction
+    - Sample rate reduction (Sample and hold)
   - Most parameters support automation to allow for smooth changes over time
 - High performance (Handles thousands of simultaneously playing audio sources in realtime)
 
