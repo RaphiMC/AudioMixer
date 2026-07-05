@@ -35,7 +35,6 @@ public class Benchmark {
         }
 
         AudioMixer mixer = new AudioMixer(outputFormat);
-        mixer.setMaxSources(65535);
 
         // Add 5000 sources
         for (int i = 0; i < 5000; i++) {

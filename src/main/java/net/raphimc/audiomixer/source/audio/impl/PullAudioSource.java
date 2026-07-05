@@ -17,9 +17,9 @@
  */
 package net.raphimc.audiomixer.source.audio.impl;
 
-import net.raphimc.audiomixer.dsp.resampler.Resampler;
-import net.raphimc.audiomixer.dsp.resampler.impl.LinearResampler;
 import net.raphimc.audiomixer.io.raw.SampleInputStream;
+import net.raphimc.audiomixer.resampler.Resampler;
+import net.raphimc.audiomixer.resampler.impl.LinearResampler;
 import net.raphimc.audiomixer.source.audio.StreamingAudioSource;
 import net.raphimc.audiomixer.util.buffer.AudioBufferBuilder;
 

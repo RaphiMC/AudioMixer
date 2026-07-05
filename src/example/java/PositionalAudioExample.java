@@ -17,7 +17,7 @@
  */
 
 import net.raphimc.audiomixer.SourceDataLineAudioMixer;
-import net.raphimc.audiomixer.dsp.processor.spatial.PositionalAudioProcessor;
+import net.raphimc.audiomixer.processor.spatial.PositionalAudioProcessor;
 import net.raphimc.audiomixer.source.oscillator.OscillatorSource;
 import net.raphimc.audiomixer.source.oscillator.impl.SineOscillatorSource;
 import net.raphimc.audiomixer.util.math.Vector3f;
@@ -37,7 +37,7 @@ public class PositionalAudioExample {
 
         final OscillatorSource oscillator = new SineOscillatorSource(440);
         final PositionalAudioProcessor positionalAudioProcessor = new PositionalAudioProcessor(250);
-        oscillator.getProcessors().add(positionalAudioProcessor);
+        oscillator.processors().add(positionalAudioProcessor);
         audioMixer.add(oscillator);
 
         JFrame frame = new JFrame("AudioMixer Test");

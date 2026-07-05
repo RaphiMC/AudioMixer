@@ -15,21 +15,35 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.raphimc.audiomixer.source.oscillator;
+package net.raphimc.audiomixer.processor;
 
-import net.raphimc.audiomixer.parameter.FloatParameter;
-import net.raphimc.audiomixer.source.Source;
+import net.raphimc.audiomixer.automation.Automations;
+import net.raphimc.audiomixer.util.buffer.AudioBuffer;
 
-public abstract class OscillatorSource extends Source {
+public abstract class Processor {
 
-    private final FloatParameter frequency = FloatParameter.of(0F).withConstraint(FloatParameter.Constraint.GREATER_THAN_ZERO);
+    private final Automations automations = new Automations();
+    private boolean enabled = true;
 
-    public OscillatorSource(final float frequency) {
-        this.frequency.set(frequency);
+    public void process(final AudioBuffer buffer) {
+        if (this.enabled) {
+            this.automations.process(buffer);
+            this.processInternal(buffer);
+        }
     }
 
-    public FloatParameter frequency() {
-        return this.frequency;
+    protected abstract void processInternal(final AudioBuffer buffer);
+
+    public Automations automations() {
+        return this.automations;
+    }
+
+    public boolean isEnabled() {
+        return this.enabled;
+    }
+
+    public void setEnabled(final boolean enabled) {
+        this.enabled = enabled;
     }
 
 }

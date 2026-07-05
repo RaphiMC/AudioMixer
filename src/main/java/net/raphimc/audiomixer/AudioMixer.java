@@ -17,28 +17,43 @@
  */
 package net.raphimc.audiomixer;
 
-import net.raphimc.audiomixer.source.mixer.MixerSource;
+import net.raphimc.audiomixer.mixer.Mixer;
 import net.raphimc.audiomixer.util.FloatAudioFormat;
+import net.raphimc.audiomixer.util.ListenerList;
 import net.raphimc.audiomixer.util.buffer.AudioBuffer;
 
-public class AudioMixer extends MixerSource {
+public class AudioMixer extends Mixer {
 
     private final FloatAudioFormat audioFormat;
+    private final ListenerList<AudioMixer> preRenderActions = new ListenerList<>();
 
     public AudioMixer(final FloatAudioFormat audioFormat) {
         this.audioFormat = audioFormat;
     }
 
     public AudioBuffer renderMillis(final float millis) {
-        return this.renderMillis(this.audioFormat, millis);
+        return this.render(this.audioFormat.millisToFrameCount(millis));
     }
 
     public AudioBuffer render(final int frameCount) {
-        return this.render(this.audioFormat, frameCount);
+        final AudioBuffer buffer = new AudioBuffer(this.audioFormat, frameCount);
+        this.render(buffer);
+        return buffer;
+    }
+
+    @Override
+    public void render(final AudioBuffer buffer) {
+        this.preRenderActions.invoke(this);
+        this.preRenderActions.clear();
+        super.render(buffer);
     }
 
     public FloatAudioFormat getAudioFormat() {
         return this.audioFormat;
+    }
+
+    public ListenerList<AudioMixer> preRenderActions() {
+        return this.preRenderActions;
     }
 
 }

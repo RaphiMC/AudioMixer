@@ -15,21 +15,36 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.raphimc.audiomixer.source.oscillator;
+package net.raphimc.audiomixer.automation;
 
 import net.raphimc.audiomixer.parameter.FloatParameter;
-import net.raphimc.audiomixer.source.Source;
 
-public abstract class OscillatorSource extends Source {
+public abstract class Automation {
 
-    private final FloatParameter frequency = FloatParameter.of(0F).withConstraint(FloatParameter.Constraint.GREATER_THAN_ZERO);
+    private final FloatParameter parameter;
+    private float time;
 
-    public OscillatorSource(final float frequency) {
-        this.frequency.set(frequency);
+    public Automation(final FloatParameter parameter) {
+        this.parameter = parameter;
     }
 
-    public FloatParameter frequency() {
-        return this.frequency;
+    public void advance(final float deltaTime) {
+        this.time += deltaTime;
+        this.apply();
+    }
+
+    public abstract void apply();
+
+    public FloatParameter parameter() {
+        return this.parameter;
+    }
+
+    protected float getTime() {
+        return this.time;
+    }
+
+    protected void setTime(final float time) {
+        this.time = time;
     }
 
 }

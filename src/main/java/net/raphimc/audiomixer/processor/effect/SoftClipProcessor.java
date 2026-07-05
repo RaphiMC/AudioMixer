@@ -15,21 +15,30 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.raphimc.audiomixer.source.oscillator;
+package net.raphimc.audiomixer.processor.effect;
 
 import net.raphimc.audiomixer.parameter.FloatParameter;
-import net.raphimc.audiomixer.source.Source;
+import net.raphimc.audiomixer.processor.Processor;
+import net.raphimc.audiomixer.util.buffer.AudioBuffer;
 
-public abstract class OscillatorSource extends Source {
+public class SoftClipProcessor extends Processor {
 
-    private final FloatParameter frequency = FloatParameter.of(0F).withConstraint(FloatParameter.Constraint.GREATER_THAN_ZERO);
+    private final FloatParameter drive = FloatParameter.of(1F).withConstraint(FloatParameter.Constraint.AT_LEAST_ONE);
 
-    public OscillatorSource(final float frequency) {
-        this.frequency.set(frequency);
+    public SoftClipProcessor() {
     }
 
-    public FloatParameter frequency() {
-        return this.frequency;
+    public SoftClipProcessor(final float drive) {
+        this.drive.set(drive);
+    }
+
+    @Override
+    protected void processInternal(final AudioBuffer buffer) {
+        final float drive = this.drive.get();
+        final float[] samples = buffer.samples();
+        for (int sampleIndex = 0; sampleIndex < samples.length; sampleIndex++) {
+            samples[sampleIndex] = (float) Math.tanh(samples[sampleIndex] * drive);
+        }
     }
 
 }

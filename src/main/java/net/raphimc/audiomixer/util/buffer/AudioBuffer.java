@@ -30,8 +30,8 @@ public record AudioBuffer(FloatAudioFormat format, float[] samples) {
         }
     }
 
-    public AudioBuffer(final FloatAudioFormat format, final int sampleCount) {
-        this(format, new float[sampleCount]);
+    public AudioBuffer(final FloatAudioFormat format, final int frameCount) {
+        this(format, new float[frameCount * format.channels()]);
     }
 
     public void add(final AudioBuffer other) {
@@ -80,7 +80,7 @@ public record AudioBuffer(FloatAudioFormat format, float[] samples) {
     }
 
     public AudioBuffer createWorkBuffer() {
-        return new AudioBuffer(this.format, this.samples.length);
+        return new AudioBuffer(this.format, this.getFrameCount());
     }
 
     public float peakAmplitude() {

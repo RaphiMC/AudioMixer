@@ -17,22 +17,29 @@
  */
 package net.raphimc.audiomixer;
 
-import net.raphimc.audiomixer.dsp.parameter.FloatParameter;
-import net.raphimc.audiomixer.dsp.processor.dynamics.GainProcessor;
-import net.raphimc.audiomixer.dsp.processor.dynamics.LimiterProcessor;
-import net.raphimc.audiomixer.dsp.processor.effect.HardClipProcessor;
+import net.raphimc.audiomixer.parameter.FloatParameter;
+import net.raphimc.audiomixer.processor.dynamics.GainProcessor;
+import net.raphimc.audiomixer.processor.dynamics.LimiterProcessor;
+import net.raphimc.audiomixer.processor.effect.HardClipProcessor;
 import net.raphimc.audiomixer.util.FloatAudioFormat;
+import net.raphimc.audiomixer.util.buffer.AudioBuffer;
 
 public class LimitingAudioMixer extends AudioMixer {
 
     private final LimiterProcessor limiterProcessor = new LimiterProcessor();
     private final GainProcessor gainProcessor = new GainProcessor(1F);
+    private final HardClipProcessor hardClipProcessor = new HardClipProcessor();
 
     public LimitingAudioMixer(final FloatAudioFormat audioFormat) {
         super(audioFormat);
-        this.getProcessors().add(this.limiterProcessor);
-        this.getProcessors().add(this.gainProcessor);
-        this.getProcessors().add(new HardClipProcessor());
+    }
+
+    @Override
+    public void render(final AudioBuffer buffer) {
+        super.render(buffer);
+        this.limiterProcessor.process(buffer);
+        this.gainProcessor.process(buffer);
+        this.hardClipProcessor.process(buffer);
     }
 
     public FloatParameter gain() {

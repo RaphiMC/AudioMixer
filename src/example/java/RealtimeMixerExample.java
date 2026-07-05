@@ -17,9 +17,9 @@
  */
 
 import net.raphimc.audiomixer.SourceDataLineAudioMixer;
-import net.raphimc.audiomixer.dsp.processor.dynamics.GainProcessor;
-import net.raphimc.audiomixer.dsp.processor.spatial.PanProcessor;
 import net.raphimc.audiomixer.io.AudioIO;
+import net.raphimc.audiomixer.processor.dynamics.GainProcessor;
+import net.raphimc.audiomixer.processor.spatial.PanProcessor;
 import net.raphimc.audiomixer.source.audio.AudioSource;
 import net.raphimc.audiomixer.source.audio.impl.BufferedAudioSource;
 import net.raphimc.audiomixer.util.buffer.AudioBuffer;
@@ -51,23 +51,23 @@ public class RealtimeMixerExample {
                     audioMixer.add(source);
                 } else if (e.getKeyCode() == KeyEvent.VK_Q) {
                     final AudioSource source = new BufferedAudioSource(audioBuffer);
-                    source.getProcessors().add(new PanProcessor(-1F));
+                    source.processors().add(new PanProcessor(-1F));
                     audioMixer.add(source);
                 } else if (e.getKeyCode() == KeyEvent.VK_P) {
                     final AudioSource source = new BufferedAudioSource(audioBuffer);
-                    source.getProcessors().add(new PanProcessor(1F));
+                    source.processors().add(new PanProcessor(1F));
                     audioMixer.add(source);
                 } else if (e.getKeyCode() == KeyEvent.VK_W) {
                     final AudioSource source = new BufferedAudioSource(audioBuffer);
-                    source.getProcessors().add(new GainProcessor(0.25F));
+                    source.processors().add(new GainProcessor(0.25F));
                     audioMixer.add(source);
                 } else if (e.getKeyCode() == KeyEvent.VK_E) {
                     final AudioSource source = new BufferedAudioSource(audioBuffer);
-                    source.getProcessors().add(new GainProcessor(0.5F));
+                    source.processors().add(new GainProcessor(0.5F));
                     audioMixer.add(source);
                 } else if (e.getKeyCode() == KeyEvent.VK_R) {
                     final AudioSource source = new BufferedAudioSource(audioBuffer);
-                    source.getProcessors().add(new GainProcessor(1F));
+                    source.processors().add(new GainProcessor(1F));
                     audioMixer.add(source);
                 } else if (e.getKeyCode() == KeyEvent.VK_SPACE) {
                     audioMixer.clear();

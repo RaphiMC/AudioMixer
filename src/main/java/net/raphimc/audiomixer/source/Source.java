@@ -17,44 +17,42 @@
  */
 package net.raphimc.audiomixer.source;
 
-import net.raphimc.audiomixer.dsp.automation.Automations;
-import net.raphimc.audiomixer.dsp.processor.Processors;
-import net.raphimc.audiomixer.util.FloatAudioFormat;
+import net.raphimc.audiomixer.automation.Automations;
+import net.raphimc.audiomixer.processor.Processors;
+import net.raphimc.audiomixer.util.ListenerList;
 import net.raphimc.audiomixer.util.buffer.AudioBuffer;
 
 public abstract class Source {
 
     private final Automations automations = new Automations();
     private final Processors processors = new Processors();
+    private final ListenerList<Source> finishListeners = new ListenerList<>();
 
-    public AudioBuffer renderMillis(final FloatAudioFormat format, final float millis) {
-        return this.render(format, format.millisToFrameCount(millis));
-    }
-
-    public AudioBuffer render(final FloatAudioFormat format, final int frameCount) {
-        final AudioBuffer buffer = new AudioBuffer(format, frameCount * format.channels());
-        this.render(buffer);
-        return buffer;
-    }
-
-    public void render(final AudioBuffer audioBuffer) {
-        this.automations.update(audioBuffer);
-        this.renderInternal(audioBuffer);
-        this.processors.process(audioBuffer);
+    public void render(final AudioBuffer buffer) {
+        this.automations.process(buffer);
+        this.renderInternal(buffer);
+        this.processors.process(buffer);
+        if (this.isFinished()) {
+            this.finishListeners.invoke(this);
+        }
     }
 
     protected abstract void renderInternal(final AudioBuffer buffer);
 
-    public boolean isFinished() {
-        return false;
-    }
-
-    public Automations getAutomations() {
+    public Automations automations() {
         return this.automations;
     }
 
-    public Processors getProcessors() {
+    public Processors processors() {
         return this.processors;
+    }
+
+    public ListenerList<Source> finishListeners() {
+        return this.finishListeners;
+    }
+
+    public boolean isFinished() {
+        return false;
     }
 
 }

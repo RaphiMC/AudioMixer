@@ -15,21 +15,20 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.raphimc.audiomixer.source.oscillator;
+package net.raphimc.audiomixer.automation.finite.ramp.impl;
 
+import net.raphimc.audiomixer.automation.finite.ramp.RampAutomation;
 import net.raphimc.audiomixer.parameter.FloatParameter;
-import net.raphimc.audiomixer.source.Source;
 
-public abstract class OscillatorSource extends Source {
+public class LinearRampAutomation extends RampAutomation {
 
-    private final FloatParameter frequency = FloatParameter.of(0F).withConstraint(FloatParameter.Constraint.GREATER_THAN_ZERO);
-
-    public OscillatorSource(final float frequency) {
-        this.frequency.set(frequency);
+    public LinearRampAutomation(final FloatParameter parameter, final float startValue, final float endValue, final float duration) {
+        super(parameter, startValue, endValue, duration);
     }
 
-    public FloatParameter frequency() {
-        return this.frequency;
+    @Override
+    public void apply() {
+        this.parameter().set(this.getStartValue() + (this.getEndValue() - this.getStartValue()) * this.getProgress());
     }
 
 }

@@ -15,26 +15,34 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.raphimc.audiomixer.source.audio.impl;
+package net.raphimc.audiomixer.processor.effect;
 
-import net.raphimc.audiomixer.resampler.Resampler;
-import net.raphimc.audiomixer.source.audio.StreamingAudioSource;
-import net.raphimc.audiomixer.util.FloatAudioFormat;
+import net.raphimc.audiomixer.parameter.IntParameter;
+import net.raphimc.audiomixer.processor.Processor;
 import net.raphimc.audiomixer.util.buffer.AudioBuffer;
 
-public class PushAudioSource extends StreamingAudioSource {
+public class BitDepthReductionProcessor extends Processor {
 
-    public PushAudioSource(final FloatAudioFormat format) {
-        super(format);
+    private final IntParameter bitDepth = IntParameter.of(8).withConstraint(value -> value > 0 && value <= 16);
+
+    public BitDepthReductionProcessor() {
     }
 
-    public PushAudioSource(final FloatAudioFormat format, final Resampler resampler) {
-        super(format, resampler);
+    public BitDepthReductionProcessor(final int bitDepth) {
+        this.bitDepth.set(bitDepth);
     }
 
     @Override
-    public void enqueueBuffer(final AudioBuffer buffer) {
-        super.enqueueBuffer(buffer);
+    protected void processInternal(final AudioBuffer buffer) {
+        final float step = 2F / (1 << this.bitDepth.get());
+        final float[] samples = buffer.samples();
+        for (int sampleIndex = 0; sampleIndex < samples.length; sampleIndex++) {
+            samples[sampleIndex] = Math.round(samples[sampleIndex] / step) * step;
+        }
+    }
+
+    public IntParameter bitDepth() {
+        return this.bitDepth;
     }
 
 }

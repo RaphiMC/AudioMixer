@@ -15,21 +15,36 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.raphimc.audiomixer.source.oscillator;
+package net.raphimc.audiomixer.processor.dynamics;
 
 import net.raphimc.audiomixer.parameter.FloatParameter;
-import net.raphimc.audiomixer.source.Source;
+import net.raphimc.audiomixer.processor.Processor;
+import net.raphimc.audiomixer.util.buffer.AudioBuffer;
+import net.raphimc.audiomixer.util.math.MathUtil;
 
-public abstract class OscillatorSource extends Source {
+public class GainProcessor extends Processor {
 
-    private final FloatParameter frequency = FloatParameter.of(0F).withConstraint(FloatParameter.Constraint.GREATER_THAN_ZERO);
+    private final FloatParameter gain = FloatParameter.of(1F).withConstraint(FloatParameter.Constraint.POSITIVE);
+    private final FloatParameter gainDb = this.gain.withMapping(MathUtil::gainToDb, MathUtil::dbToGain);
 
-    public OscillatorSource(final float frequency) {
-        this.frequency.set(frequency);
+    public GainProcessor() {
     }
 
-    public FloatParameter frequency() {
-        return this.frequency;
+    public GainProcessor(final float gain) {
+        this.gain.set(gain);
+    }
+
+    @Override
+    protected void processInternal(final AudioBuffer buffer) {
+        buffer.multiply(this.gain.get());
+    }
+
+    public FloatParameter gain() {
+        return this.gain;
+    }
+
+    public FloatParameter gainDb() {
+        return this.gainDb;
     }
 
 }
