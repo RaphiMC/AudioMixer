@@ -23,17 +23,12 @@ import net.raphimc.audiomixer.util.buffer.AudioBuffer;
 
 public class BufferedAudioSource extends AudioSource {
 
-    public BufferedAudioSource(final AudioBuffer audioBuffer) {
-        super(audioBuffer);
+    public BufferedAudioSource(final AudioBuffer buffer) {
+        super(buffer);
     }
 
-    public BufferedAudioSource(final AudioBuffer audioBuffer, final Resampler resampler) {
-        super(audioBuffer, resampler);
-    }
-
-    @Override
-    public boolean isFinished() {
-        return this.position >= this.getFrameCount();
+    public BufferedAudioSource(final AudioBuffer buffer, final Resampler resampler) {
+        super(buffer, resampler);
     }
 
     public int getFrameCount() {

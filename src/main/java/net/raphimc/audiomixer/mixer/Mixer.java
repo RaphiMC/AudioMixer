@@ -17,6 +17,7 @@
  */
 package net.raphimc.audiomixer.mixer;
 
+import net.raphimc.audiomixer.source.FiniteSource;
 import net.raphimc.audiomixer.source.Source;
 import net.raphimc.audiomixer.util.buffer.AudioBuffer;
 
@@ -53,7 +54,7 @@ public class Mixer extends Source implements Collection<Source> {
     protected void renderInternal(final AudioBuffer buffer) {
         this.mixedSourceCount = this.size();
         this.mix(buffer);
-        this.removeIf(Source::isFinished);
+        this.removeIf(source -> source instanceof FiniteSource finiteSource && finiteSource.isFinished());
     }
 
     protected void mix(final AudioBuffer buffer) {

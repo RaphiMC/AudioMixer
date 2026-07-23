@@ -45,7 +45,7 @@ public class FileExample {
         AudioBufferBuilder outputBufferBuilder = new AudioBufferBuilder(mixer.getAudioFormat());
         // Render 1 second of audio until there are no more active sources (The mixer will automatically remove finished sources)
         while (!mixer.isEmpty()) {
-            outputBufferBuilder.put(mixer.renderMillis(1000));
+            outputBufferBuilder.append(mixer.renderMillis(1000));
         }
         AudioBuffer outputAudioBuffer = outputBufferBuilder.build();
         // Limit the audio samples to [-1, 1]

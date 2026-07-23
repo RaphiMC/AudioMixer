@@ -23,6 +23,8 @@ import net.raphimc.audiomixer.util.buffer.AudioBuffer;
 
 public abstract class StreamingAudioSource extends AudioSource {
 
+    private static final int MARGIN_FRAME_COUNT = 4;
+
     public StreamingAudioSource(final FloatAudioFormat format) {
         super(new AudioBuffer(format, 0));
     }
@@ -37,9 +39,8 @@ public abstract class StreamingAudioSource extends AudioSource {
     }
 
     protected synchronized void enqueueBuffer(final AudioBuffer buffer) {
-        final int frameOffset = (int) this.position;
-        final int sampleOffset = frameOffset * this.getFormat().channels();
-        this.buffer = this.buffer.slice(sampleOffset, this.buffer.getSampleCount()).append(buffer);
+        final int frameOffset = Math.max((int) this.position - MARGIN_FRAME_COUNT, 0);
+        this.buffer = this.buffer.slice(frameOffset * this.getFormat().channels(), this.buffer.getSampleCount()).append(buffer);
         this.position -= frameOffset;
     }
 

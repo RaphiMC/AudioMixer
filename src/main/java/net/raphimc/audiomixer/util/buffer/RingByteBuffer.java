@@ -87,6 +87,10 @@ public class RingByteBuffer {
         return this.buffer.length - this.size;
     }
 
+    public int capacity() {
+        return this.buffer.length;
+    }
+
     public int size() {
         return this.size;
     }

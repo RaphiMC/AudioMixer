@@ -19,14 +19,14 @@ package net.raphimc.audiomixer.source.audio;
 
 import net.raphimc.audiomixer.resampler.Resampler;
 import net.raphimc.audiomixer.resampler.impl.LinearResampler;
-import net.raphimc.audiomixer.source.Source;
+import net.raphimc.audiomixer.source.FiniteSource;
 import net.raphimc.audiomixer.util.FloatAudioFormat;
 import net.raphimc.audiomixer.util.buffer.AudioBuffer;
 
-public abstract class AudioSource extends Source {
+public abstract class AudioSource extends FiniteSource {
 
     private final FloatAudioFormat originalFormat;
-    private final Resampler resampler;
+    protected final Resampler resampler;
     protected AudioBuffer buffer;
     protected double position;
 
@@ -42,14 +42,12 @@ public abstract class AudioSource extends Source {
 
     @Override
     protected void renderInternal(final AudioBuffer buffer) {
-        if (this.getFormat().equals(buffer.format()) && this.position % 1 == 0) {
-            final int offset = (int) this.position * this.getFormat().channels();
-            final int count = Math.min(buffer.getSampleCount(), this.buffer.getSampleCount() - offset);
-            System.arraycopy(this.buffer.samples(), offset, buffer.samples(), 0, count);
-            this.position += this.getFormat().sampleCountToFrameCount(count);
-        } else {
-            this.position = Math.min(this.resampler.resample(this.buffer, buffer, this.position), this.buffer.getFrameCount());
-        }
+        this.position = Math.min(this.resampler.resample(this.buffer, buffer, this.position), this.buffer.getFrameCount());
+    }
+
+    @Override
+    public boolean isFinished() {
+        return this.position >= this.buffer.getFrameCount();
     }
 
     public FloatAudioFormat getFormat() {

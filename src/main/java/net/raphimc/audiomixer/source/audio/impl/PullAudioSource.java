@@ -56,7 +56,7 @@ public class PullAudioSource extends StreamingAudioSource implements Closeable {
                         final AudioBufferBuilder bufferBuilder = new AudioBufferBuilder(this.sampleInputStream.getFormat(), bufferSampleCount);
                         try {
                             for (int i = 0; i < bufferSampleCount; i++) {
-                                bufferBuilder.put(this.sampleInputStream.readSample());
+                                bufferBuilder.append(this.sampleInputStream.readSample());
                             }
                         } catch (EOFException e) {
                             Thread.currentThread().interrupt();
@@ -82,7 +82,7 @@ public class PullAudioSource extends StreamingAudioSource implements Closeable {
 
     @Override
     public boolean isFinished() {
-        return !this.readThread.isAlive() && this.getRemainingFrameCount() <= 0;
+        return !this.readThread.isAlive() && super.isFinished();
     }
 
     @Override

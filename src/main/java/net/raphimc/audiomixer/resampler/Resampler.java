@@ -25,7 +25,7 @@ public interface Resampler {
     default AudioBuffer resample(final AudioBuffer src, final FloatAudioFormat dstFormat) {
         if (!src.format().equals(dstFormat)) {
             final float pitch = src.format().sampleRate() / dstFormat.sampleRate();
-            final AudioBuffer dst = new AudioBuffer(dstFormat, (int) Math.ceil((double) src.getFrameCount() * pitch));
+            final AudioBuffer dst = new AudioBuffer(dstFormat, (int) Math.ceil((double) src.getFrameCount() / pitch));
             this.resample(src, dst, 0);
             return dst;
         } else {
@@ -38,17 +38,24 @@ public interface Resampler {
     }
 
     default double resample(final float[] src, final FloatAudioFormat srcFormat, final float[] dst, final FloatAudioFormat dstFormat, final double srcPosition) {
-        final float pitch = srcFormat.sampleRate() / dstFormat.sampleRate();
-        if (srcFormat.channels() == 1 && dstFormat.channels() == 1) {
-            return this.resampleMonoToMono(src, dst, pitch, srcPosition);
-        } else if (srcFormat.channels() == 2 && dstFormat.channels() == 2) {
-            return this.resampleStereoToStereo(src, dst, pitch, srcPosition);
-        } else if (srcFormat.channels() == 1 && dstFormat.channels() == 2) {
-            return this.resampleMonoToStereo(src, dst, pitch, srcPosition);
-        } else if (srcFormat.channels() == 2 && dstFormat.channels() == 1) {
-            return this.resampleStereoToMono(src, dst, pitch, srcPosition);
+        if (!srcFormat.equals(dstFormat) || srcPosition % 1 != 0) {
+            final float pitch = srcFormat.sampleRate() / dstFormat.sampleRate();
+            if (srcFormat.channels() == 1 && dstFormat.channels() == 1) {
+                return this.resampleMonoToMono(src, dst, pitch, srcPosition);
+            } else if (srcFormat.channels() == 2 && dstFormat.channels() == 2) {
+                return this.resampleStereoToStereo(src, dst, pitch, srcPosition);
+            } else if (srcFormat.channels() == 1 && dstFormat.channels() == 2) {
+                return this.resampleMonoToStereo(src, dst, pitch, srcPosition);
+            } else if (srcFormat.channels() == 2 && dstFormat.channels() == 1) {
+                return this.resampleStereoToMono(src, dst, pitch, srcPosition);
+            } else {
+                throw new IllegalArgumentException("Unsupported channel configuration: " + srcFormat.channels() + " -> " + dstFormat.channels());
+            }
         } else {
-            throw new IllegalArgumentException("Unsupported channel configuration: " + srcFormat.channels() + " -> " + dstFormat.channels());
+            final int offset = (int) srcPosition * srcFormat.channels();
+            final int count = Math.min(dst.length, Math.max(src.length - offset, 0));
+            System.arraycopy(src, offset, dst, 0, count);
+            return srcPosition + srcFormat.sampleCountToFrameCount(count);
         }
     }
 

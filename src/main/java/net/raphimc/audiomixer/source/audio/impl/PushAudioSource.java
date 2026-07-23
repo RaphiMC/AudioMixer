@@ -22,7 +22,9 @@ import net.raphimc.audiomixer.source.audio.StreamingAudioSource;
 import net.raphimc.audiomixer.util.FloatAudioFormat;
 import net.raphimc.audiomixer.util.buffer.AudioBuffer;
 
-public class PushAudioSource extends StreamingAudioSource {
+public class PushAudioSource extends StreamingAudioSource implements AutoCloseable {
+
+    private boolean closed;
 
     public PushAudioSource(final FloatAudioFormat format) {
         super(format);
@@ -34,7 +36,20 @@ public class PushAudioSource extends StreamingAudioSource {
 
     @Override
     public void enqueueBuffer(final AudioBuffer buffer) {
+        if (this.closed) {
+            throw new IllegalStateException("Cannot push buffer to closed PushAudioSource");
+        }
         super.enqueueBuffer(buffer);
+    }
+
+    @Override
+    public boolean isFinished() {
+        return this.closed && super.isFinished();
+    }
+
+    @Override
+    public void close() {
+        this.closed = true;
     }
 
 }

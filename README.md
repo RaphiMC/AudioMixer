@@ -10,6 +10,7 @@ High performance Java audio library.
     - Pull: Audio data is read from an InputStream
     - Push: Audio data is enqueued by the application
   - Automatic sample rate and channel conversion
+  - Looping (With optional fade in/out)
 - DSP
   - Dynamics
     - Gain

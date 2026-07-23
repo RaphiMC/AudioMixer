@@ -36,22 +36,26 @@ public class AudioBufferBuilder {
         this.array = new float[initialCapacity];
     }
 
-    public void put(final float value) {
+    public void append(final float value) {
         this.ensureHasEnoughSpace(1);
         this.array[this.size++] = value;
     }
 
-    public void put(final float[] values) {
-        this.ensureHasEnoughSpace(values.length);
-        System.arraycopy(values, 0, this.array, this.size, values.length);
-        this.size += values.length;
+    public void append(final float[] values) {
+        this.append(values, 0, values.length);
     }
 
-    public void put(final AudioBuffer buffer) {
+    public void append(final float[] values, final int offset, final int length) {
+        this.ensureHasEnoughSpace(length);
+        System.arraycopy(values, offset, this.array, this.size, length);
+        this.size += length;
+    }
+
+    public void append(final AudioBuffer buffer) {
         if (!buffer.format().equals(this.format)) {
             throw new IllegalArgumentException("Format mismatch: " + buffer.format() + " != " + this.format);
         }
-        this.put(buffer.samples());
+        this.append(buffer.samples());
     }
 
     public AudioBuffer build() {
@@ -64,8 +68,7 @@ public class AudioBufferBuilder {
 
     private void ensureHasEnoughSpace(final int length) {
         if (this.size + length > this.array.length) {
-            final int newSize = this.size + Math.max(length, this.size);
-            this.array = Arrays.copyOf(this.array, newSize);
+            this.array = Arrays.copyOf(this.array, this.size + Math.max(length, this.size));
         }
     }
 

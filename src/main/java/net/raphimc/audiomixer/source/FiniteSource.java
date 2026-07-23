@@ -17,29 +17,25 @@
  */
 package net.raphimc.audiomixer.source;
 
-import net.raphimc.audiomixer.automation.Automations;
-import net.raphimc.audiomixer.processor.Processors;
+import net.raphimc.audiomixer.util.ListenerList;
 import net.raphimc.audiomixer.util.buffer.AudioBuffer;
 
-public abstract class Source {
+public abstract class FiniteSource extends Source {
 
-    private final Automations automations = new Automations();
-    private final Processors processors = new Processors();
+    private final ListenerList<Source> finishListeners = new ListenerList<>();
 
+    @Override
     public void render(final AudioBuffer buffer) {
-        this.automations.process(buffer);
-        this.renderInternal(buffer);
-        this.processors.process(buffer);
+        super.render(buffer);
+        if (this.isFinished()) {
+            this.finishListeners.invoke(this);
+        }
     }
 
-    protected abstract void renderInternal(final AudioBuffer buffer);
+    public abstract boolean isFinished();
 
-    public Automations automations() {
-        return this.automations;
-    }
-
-    public Processors processors() {
-        return this.processors;
+    public ListenerList<Source> finishListeners() {
+        return this.finishListeners;
     }
 
 }

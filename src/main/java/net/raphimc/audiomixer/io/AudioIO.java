@@ -60,7 +60,7 @@ public class AudioIO {
             final AudioBufferBuilder bufferBuilder = new AudioBufferBuilder(is.getFormat());
             try {
                 while (true) {
-                    bufferBuilder.put(is.readSample());
+                    bufferBuilder.append(is.readSample());
                 }
             } catch (EOFException ignored) {
             }
