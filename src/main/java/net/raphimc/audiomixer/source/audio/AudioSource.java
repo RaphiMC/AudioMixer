@@ -17,6 +17,7 @@
  */
 package net.raphimc.audiomixer.source.audio;
 
+import net.raphimc.audiomixer.parameter.FloatParameter;
 import net.raphimc.audiomixer.resampler.Resampler;
 import net.raphimc.audiomixer.resampler.impl.LinearResampler;
 import net.raphimc.audiomixer.source.FiniteSource;
@@ -28,6 +29,8 @@ public abstract class AudioSource extends FiniteSource {
     private final FloatAudioFormat originalFormat;
     protected final Resampler resampler;
     protected AudioBuffer buffer;
+    private final FloatParameter sampleRate;
+    private final FloatParameter pitch;
     protected double position;
 
     public AudioSource(final AudioBuffer buffer) {
@@ -38,6 +41,8 @@ public abstract class AudioSource extends FiniteSource {
         this.originalFormat = buffer.format();
         this.resampler = resampler;
         this.buffer = buffer;
+        this.sampleRate = FloatParameter.of(this::getSampleRate, this::setSampleRate).withConstraint(FloatParameter.Constraint.GREATER_THAN_ZERO);
+        this.pitch = this.sampleRate.withMapping(value -> value / this.originalFormat.sampleRate(), value -> value * this.originalFormat.sampleRate());
     }
 
     @Override
@@ -62,26 +67,20 @@ public abstract class AudioSource extends FiniteSource {
         return this.getFormat().frameCountToMillis(this.getRemainingFrameCount());
     }
 
-    public float getSampleRate() {
+    public FloatParameter sampleRate() {
+        return this.sampleRate;
+    }
+
+    public FloatParameter pitch() {
+        return this.pitch;
+    }
+
+    protected float getSampleRate() {
         return this.getFormat().sampleRate();
     }
 
-    public void setSampleRate(final float sampleRate) {
-        if (sampleRate <= 0) {
-            throw new IllegalArgumentException("Sample rate must be > 0");
-        }
+    protected void setSampleRate(final float sampleRate) {
         this.buffer = new AudioBuffer(this.originalFormat.withSampleRate(sampleRate), this.buffer.samples());
-    }
-
-    public float getPitch() {
-        return this.getSampleRate() / this.originalFormat.sampleRate();
-    }
-
-    public void setPitch(final float pitch) {
-        if (pitch <= 0) {
-            throw new IllegalArgumentException("Pitch must be > 0");
-        }
-        this.setSampleRate(this.originalFormat.sampleRate() * pitch);
     }
 
 }

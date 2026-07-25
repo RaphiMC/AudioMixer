@@ -39,7 +39,7 @@ public class FileExample {
         AudioMixer mixer = new AudioMixer(inputAudioBuffer.format());
         // Play the audio buffer with half the original pitch
         BufferedAudioSource source = new BufferedAudioSource(inputAudioBuffer);
-        source.setPitch(0.5F);
+        source.pitch().set(0.5F);
         mixer.add(source);
         // Create the output buffer
         AudioBufferBuilder outputBufferBuilder = new AudioBufferBuilder(mixer.getAudioFormat());

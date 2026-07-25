@@ -47,7 +47,7 @@ public class RealtimeMixerExample {
             public void keyPressed(KeyEvent e) {
                 if (e.getKeyCode() >= KeyEvent.VK_1 && e.getKeyCode() <= KeyEvent.VK_9) {
                     final AudioSource source = new BufferedAudioSource(audioBuffer);
-                    source.setPitch((float) Math.pow(2, ((e.getKeyCode() - KeyEvent.VK_1) - 4) / 4F));
+                    source.pitch().set((float) Math.pow(2, ((e.getKeyCode() - KeyEvent.VK_1) - 4) / 4F));
                     audioMixer.add(source);
                 } else if (e.getKeyCode() == KeyEvent.VK_Q) {
                     final AudioSource source = new BufferedAudioSource(audioBuffer);

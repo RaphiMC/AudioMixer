@@ -39,7 +39,7 @@ public class Benchmark {
         // Add 5000 sources
         for (int i = 0; i < 5000; i++) {
             final BufferedAudioSource source = new BufferedAudioSource(buffer);
-            source.setPitch(1.33F);
+            source.pitch().set(1.33F);
             mixer.add(source);
         }
 

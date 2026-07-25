@@ -45,7 +45,7 @@ public abstract class StreamingAudioSource extends AudioSource {
     }
 
     @Override
-    public synchronized void setSampleRate(final float sampleRate) {
+    protected synchronized void setSampleRate(final float sampleRate) {
         super.setSampleRate(sampleRate);
     }
 

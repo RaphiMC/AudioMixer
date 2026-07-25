@@ -26,6 +26,10 @@ public class MathUtil {
     public static final double INV_SQRT_2 = 1D / Math.sqrt(2D);
     public static final float BUTTERWORTH_Q = (float) INV_SQRT_2;
 
+    public static int clamp(final int value, final int min, final int max) {
+        return Math.max(min, Math.min(value, max));
+    }
+
     public static float clamp(final float value, final float min, final float max) {
         return Math.max(min, Math.min(value, max));
     }

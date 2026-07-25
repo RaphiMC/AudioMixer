@@ -18,7 +18,9 @@
 package net.raphimc.audiomixer.parameter;
 
 import net.raphimc.audiomixer.util.functional.Float2FloatFunction;
+import net.raphimc.audiomixer.util.functional.FloatConsumer;
 import net.raphimc.audiomixer.util.functional.FloatPredicate;
+import net.raphimc.audiomixer.util.functional.FloatSupplier;
 
 public interface FloatParameter {
 
@@ -37,6 +39,23 @@ public interface FloatParameter {
                     throw new IllegalArgumentException("Value must be finite");
                 }
                 this.value = value;
+            }
+        };
+    }
+
+    static FloatParameter of(final FloatSupplier getter, final FloatConsumer setter) {
+        return new FloatParameter() {
+            @Override
+            public float get() {
+                return getter.get();
+            }
+
+            @Override
+            public void set(final float value) {
+                if (!Float.isFinite(value)) {
+                    throw new IllegalArgumentException("Value must be finite");
+                }
+                setter.accept(value);
             }
         };
     }

@@ -17,7 +17,9 @@
  */
 package net.raphimc.audiomixer.parameter;
 
+import java.util.function.IntConsumer;
 import java.util.function.IntPredicate;
+import java.util.function.IntSupplier;
 
 public interface IntParameter {
 
@@ -33,6 +35,20 @@ public interface IntParameter {
             @Override
             public void set(final int value) {
                 this.value = value;
+            }
+        };
+    }
+
+    static IntParameter of(final IntSupplier getter, final IntConsumer setter) {
+        return new IntParameter() {
+            @Override
+            public int get() {
+                return getter.getAsInt();
+            }
+
+            @Override
+            public void set(final int value) {
+                setter.accept(value);
             }
         };
     }
