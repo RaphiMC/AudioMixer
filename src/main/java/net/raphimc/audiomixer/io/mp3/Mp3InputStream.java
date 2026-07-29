@@ -23,13 +23,14 @@ import net.raphimc.audiomixer.util.buffer.RingByteBuffer;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 
 public class Mp3InputStream extends InputStream {
 
     private final Bitstream mp3BitStream;
-    private final Decoder decoder = new Decoder(null);
+    private final Decoder decoder = new Decoder();
     private final SampleBuffer outputBuffer;
     private final InputStream mp3Stream;
     private final RingByteBuffer samplesBuffer;
@@ -47,10 +48,10 @@ public class Mp3InputStream extends InputStream {
         try {
             frame = this.mp3BitStream.readFrame();
         } catch (BitstreamException e) {
-            throw new IOException("Error reading mp3 frame", e);
+            throw new IOException("Failed to read mp3 frame", e);
         }
         if (frame == null) {
-            throw new IOException("Invalid mp3 file: Can't read first frame");
+            throw new EOFException("Unexpected end of mp3 stream");
         }
 
         final int channels = frame.mode() == Header.SINGLE_CHANNEL ? 1 : 2;
@@ -106,9 +107,9 @@ public class Mp3InputStream extends InputStream {
             }
             return true;
         } catch (BitstreamException e) {
-            throw new IOException("Error reading mp3 frame", e);
+            throw new IOException("Failed to read mp3 frame", e);
         } catch (DecoderException e) {
-            throw new IOException("Error decoding mp3 frame", e);
+            throw new IOException("Failed to decode mp3 frame", e);
         }
     }
 
