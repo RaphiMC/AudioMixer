@@ -22,6 +22,10 @@ import net.raphimc.audiomixer.parameter.FloatParameter;
 
 public class LinearRampAutomation extends RampAutomation {
 
+    public LinearRampAutomation(final FloatParameter parameter, final float endValue, final float duration) {
+        super(parameter, endValue, duration);
+    }
+
     public LinearRampAutomation(final FloatParameter parameter, final float startValue, final float endValue, final float duration) {
         super(parameter, startValue, endValue, duration);
     }

@@ -25,6 +25,10 @@ public abstract class RampAutomation extends FiniteAutomation {
     private final float startValue;
     private final float endValue;
 
+    public RampAutomation(final FloatParameter parameter, final float endValue, final float duration) {
+        this(parameter, parameter.get(), endValue, duration);
+    }
+
     public RampAutomation(final FloatParameter parameter, final float startValue, final float endValue, final float duration) {
         super(parameter, duration);
         this.startValue = startValue;
