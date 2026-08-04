@@ -18,21 +18,22 @@
 package net.raphimc.audiomixer.io.mp3;
 
 import javazoom.jl.decoder.*;
-import net.raphimc.audiomixer.util.CircularByteBuffer;
+import net.raphimc.audiomixer.util.buffer.RingByteBuffer;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 
 public class Mp3InputStream extends InputStream {
 
     private final Bitstream mp3BitStream;
-    private final Decoder decoder = new Decoder(null);
+    private final Decoder decoder = new Decoder();
     private final SampleBuffer outputBuffer;
     private final InputStream mp3Stream;
-    private final CircularByteBuffer samplesBuffer;
+    private final RingByteBuffer samplesBuffer;
 
     public static AudioInputStream createAudioInputStream(final InputStream mp3Stream) throws IOException {
         final Mp3InputStream mp3InputStream = new Mp3InputStream(mp3Stream);
@@ -47,16 +48,16 @@ public class Mp3InputStream extends InputStream {
         try {
             frame = this.mp3BitStream.readFrame();
         } catch (BitstreamException e) {
-            throw new IOException("Error reading mp3 frame", e);
+            throw new IOException("Failed to read mp3 frame", e);
         }
         if (frame == null) {
-            throw new IOException("Invalid mp3 file: Can't read first frame");
+            throw new EOFException("Unexpected end of mp3 stream");
         }
 
         final int channels = frame.mode() == Header.SINGLE_CHANNEL ? 1 : 2;
         this.outputBuffer = new SampleBuffer(frame.frequency(), channels);
         this.decoder.setOutputBuffer(this.outputBuffer);
-        this.samplesBuffer = new CircularByteBuffer(this.outputBuffer.getBuffer().length * Short.BYTES);
+        this.samplesBuffer = new RingByteBuffer(this.outputBuffer.getBuffer().length * Short.BYTES);
     }
 
     @Override
@@ -66,7 +67,7 @@ public class Mp3InputStream extends InputStream {
                 return -1;
             }
         }
-        return this.samplesBuffer.readSafe() & 0xFF;
+        return this.samplesBuffer.read() & 0xFF;
     }
 
     @Override
@@ -76,9 +77,7 @@ public class Mp3InputStream extends InputStream {
                 return -1;
             }
         }
-        final byte[] data = this.samplesBuffer.readAllSafe(Math.min(len, this.samplesBuffer.getSize()));
-        System.arraycopy(data, 0, b, off, data.length);
-        return data.length;
+        return this.samplesBuffer.read(b, off, len);
     }
 
     @Override
@@ -108,9 +107,9 @@ public class Mp3InputStream extends InputStream {
             }
             return true;
         } catch (BitstreamException e) {
-            throw new IOException("Error reading mp3 frame", e);
+            throw new IOException("Failed to read mp3 frame", e);
         } catch (DecoderException e) {
-            throw new IOException("Error decoding mp3 frame", e);
+            throw new IOException("Failed to decode mp3 frame", e);
         }
     }
 

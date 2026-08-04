@@ -25,8 +25,8 @@ import com.jcraft.jorbis.Block;
 import com.jcraft.jorbis.Comment;
 import com.jcraft.jorbis.DspState;
 import com.jcraft.jorbis.Info;
-import net.raphimc.audiomixer.util.CircularByteBuffer;
-import net.raphimc.audiomixer.util.MathUtil;
+import net.raphimc.audiomixer.util.buffer.RingByteBuffer;
+import net.raphimc.audiomixer.util.math.MathUtil;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
@@ -38,12 +38,12 @@ import java.io.InputStream;
 public class OggVorbisInputStream extends InputStream {
 
     private static final int BUFFER_SIZE = 8192; // Don't change. This is hardcoded in jorbis.
-    private static final int PAGEOUT_RECAPTURE = -1;
     private static final int PAGEOUT_NEED_MORE_DATA = 0;
     private static final int PAGEOUT_SUCCESS = 1;
-    private static final int PACKETOUT_ERROR = -1;
+    private static final int PAGEOUT_ERROR = -1;
     private static final int PACKETOUT_NEED_MORE_DATA = 0;
     private static final int PACKETOUT_SUCCESS = 1;
+    private static final int PACKETOUT_ERROR = -1;
 
     private final SyncState syncState = new SyncState();
     private final Page page = new Page();
@@ -53,9 +53,7 @@ public class OggVorbisInputStream extends InputStream {
     private final DspState dspState = new DspState();
     private final Block block = new Block(this.dspState);
     private final InputStream oggStream;
-    private final CircularByteBuffer samplesBuffer;
-    private long totalSamples = Long.MAX_VALUE;
-    private long writtenSamples;
+    private final RingByteBuffer samplesBuffer;
 
     public static AudioInputStream createAudioInputStream(final InputStream oggStream) throws IOException {
         final OggVorbisInputStream oggVorbisInputStream = new OggVorbisInputStream(oggStream);
@@ -66,29 +64,19 @@ public class OggVorbisInputStream extends InputStream {
         this.oggStream = oggStream;
 
         final Comment comment = new Comment();
-        final Page page = this.readPage();
-        if (page == null) {
-            throw new IOException("Invalid ogg file: Can't read first page");
-        }
-
-        Packet packet = this.readIdentificationPacket(page);
-        if (this.info.synthesis_headerin(comment, packet) < 0) {
-            throw new IOException("Invalid ogg identification packet");
-        }
-
-        for (int i = 0; i < 2; i++) {
-            packet = this.readPacket();
-            if (packet == null) {
+        for (int i = 0; i < 3; i++) {
+            if (!this.readPacket()) {
                 throw new EOFException("Unexpected end of ogg stream");
             }
-            if (this.info.synthesis_headerin(comment, packet) < 0) {
+            if (this.info.synthesis_headerin(comment, this.packet) < 0) {
                 throw new IOException("Invalid ogg header packet " + i);
             }
         }
 
-        this.dspState.synthesis_init(this.info);
-        this.block.init(this.dspState);
-        this.samplesBuffer = new CircularByteBuffer(BUFFER_SIZE * Short.BYTES * this.info.channels);
+        if (this.dspState.synthesis_init(this.info) < 0) {
+            throw new IOException("Failed to initialize dsp state");
+        }
+        this.samplesBuffer = new RingByteBuffer(BUFFER_SIZE * Short.BYTES * this.info.channels);
     }
 
     @Override
@@ -98,7 +86,7 @@ public class OggVorbisInputStream extends InputStream {
                 return -1;
             }
         }
-        return this.samplesBuffer.readSafe() & 0xFF;
+        return this.samplesBuffer.read() & 0xFF;
     }
 
     @Override
@@ -108,9 +96,7 @@ public class OggVorbisInputStream extends InputStream {
                 return -1;
             }
         }
-        final byte[] data = this.samplesBuffer.readAllSafe(Math.min(len, this.samplesBuffer.getSize()));
-        System.arraycopy(data, 0, b, off, data.length);
-        return data.length;
+        return this.samplesBuffer.read(b, off, len);
     }
 
     @Override
@@ -123,97 +109,84 @@ public class OggVorbisInputStream extends InputStream {
     }
 
     private boolean fillSamplesBuffer() throws IOException {
-        final Packet packet = this.readPacket();
-        if (packet == null) {
+        if (!this.readPacket()) {
             return false;
         }
-        if (this.block.synthesis(packet) < 0) {
+        if (this.block.synthesis(this.packet) < 0) {
             throw new IOException("Failed to decode audio packet");
         }
+        if (this.dspState.synthesis_blockin(this.block) < 0) {
+            throw new IOException("Failed to submit audio block to dsp state");
+        }
 
-        this.dspState.synthesis_blockin(this.block);
         final float[][][] allSamples = new float[1][][];
         final int[] offsets = new int[this.info.channels];
 
-        int sampleCount;
-        while ((sampleCount = this.dspState.synthesis_pcmout(allSamples, offsets)) > 0) {
-            final int actualSampleCount = (int) Math.min(sampleCount, this.totalSamples - this.writtenSamples);
-
-            for (int i = 0; i < actualSampleCount; i++) {
+        int frameCount;
+        while ((frameCount = this.dspState.synthesis_pcmout(allSamples, offsets)) > 0) {
+            for (int i = 0; i < frameCount; i++) {
                 for (int channel = 0; channel < this.info.channels; channel++) {
                     final int offset = offsets[channel];
                     final float[] samples = allSamples[0][channel];
                     final float floatSample = MathUtil.clamp(samples[offset + i], -1F, 1F); // jorbis seems to return out of range samples sometimes
-                    final short sample = (short) (floatSample > 0 ? (floatSample * Short.MAX_VALUE) : (floatSample * (-Short.MIN_VALUE)));
+                    final short sample = (short) Math.round(floatSample > 0 ? (floatSample * Short.MAX_VALUE) : (floatSample * (-Short.MIN_VALUE)));
                     this.samplesBuffer.write((byte) (sample & 0xFF));
                     this.samplesBuffer.write((byte) ((sample >> 8) & 0xFF));
                 }
             }
-
-            this.writtenSamples += actualSampleCount;
-            this.dspState.synthesis_read(sampleCount);
+            if (this.dspState.synthesis_read(frameCount) < 0) {
+                throw new IOException("Failed to update dsp state");
+            }
         }
         return true;
     }
 
-    private Packet readIdentificationPacket(final Page page) throws IOException {
-        this.streamState.init(page.serialno());
-        if (this.streamState.pagein(page) < 0) {
-            throw new IOException("Failed to parse page");
-        } else {
+    private boolean readPacket() throws IOException {
+        while (true) {
             final int result = this.streamState.packetout(this.packet);
-            if (result != PACKETOUT_SUCCESS) {
-                throw new IOException("Failed to read identification packet: " + result);
-            } else {
-                return this.packet;
+            switch (result) {
+                case PACKETOUT_NEED_MORE_DATA -> {
+                    if (this.streamState.eof() != 0) {
+                        return false;
+                    }
+                    if (!this.readPage()) {
+                        return false;
+                    }
+                    if (this.page.bos() != 0) { // Begin of stream -> Initialize stream state
+                        this.streamState.init(this.page.serialno());
+                    }
+                    if (this.streamState.pagein(this.page) < 0) {
+                        throw new IOException("Failed to handle page");
+                    }
+                }
+                case PACKETOUT_SUCCESS -> {
+                    return true;
+                }
+                case PACKETOUT_ERROR -> throw new IOException("Corrupted ogg stream");
+                default -> throw new IllegalStateException("Unknown packet decode result: " + result);
             }
         }
     }
 
-    private Page readPage() throws IOException {
+    private boolean readPage() throws IOException {
         while (true) {
             final int result = this.syncState.pageout(this.page);
             switch (result) {
-                case PAGEOUT_RECAPTURE -> throw new IllegalStateException("Corrupt or missing data in ogg stream");
                 case PAGEOUT_NEED_MORE_DATA -> {
                     final int offset = this.syncState.buffer(BUFFER_SIZE);
                     final int size = this.oggStream.read(this.syncState.data, offset, BUFFER_SIZE);
                     if (size == -1) {
-                        return null;
-                    } else {
-                        this.syncState.wrote(size);
+                        return false;
+                    }
+                    if (this.syncState.wrote(size) < 0) {
+                        throw new IOException("Failed to update sync state");
                     }
                 }
                 case PAGEOUT_SUCCESS -> {
-                    if (this.page.eos() != 0) {
-                        this.totalSamples = this.page.granulepos();
-                    }
-
-                    return this.page;
+                    return true;
                 }
+                case PAGEOUT_ERROR -> throw new IOException("Corrupted ogg stream");
                 default -> throw new IllegalStateException("Unknown page decode result: " + result);
-            }
-        }
-    }
-
-    private Packet readPacket() throws IOException {
-        while (true) {
-            final int result = this.streamState.packetout(this.packet);
-            switch (result) {
-                case PACKETOUT_ERROR -> throw new IOException("Failed to parse packet");
-                case PACKETOUT_NEED_MORE_DATA -> {
-                    final Page page = this.readPage();
-                    if (page == null) {
-                        return null;
-                    }
-                    if (this.streamState.pagein(page) < 0) {
-                        throw new IOException("Failed to parse page");
-                    }
-                }
-                case PACKETOUT_SUCCESS -> {
-                    return this.packet;
-                }
-                default -> throw new IllegalStateException("Unknown packet decode result: " + result);
             }
         }
     }

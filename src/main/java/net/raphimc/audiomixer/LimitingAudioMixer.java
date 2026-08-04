@@ -17,48 +17,45 @@
  */
 package net.raphimc.audiomixer;
 
-import net.raphimc.audiomixer.soundmodifier.impl.ClippingModifier;
-import net.raphimc.audiomixer.soundmodifier.impl.LimiterModifier;
-import net.raphimc.audiomixer.soundmodifier.impl.VolumeModifier;
-import net.raphimc.audiomixer.util.PcmFloatAudioFormat;
+import net.raphimc.audiomixer.parameter.FloatParameter;
+import net.raphimc.audiomixer.processor.dynamics.GainProcessor;
+import net.raphimc.audiomixer.processor.dynamics.LimiterProcessor;
+import net.raphimc.audiomixer.processor.effect.HardClipProcessor;
+import net.raphimc.audiomixer.util.FloatAudioFormat;
+import net.raphimc.audiomixer.util.buffer.AudioBuffer;
 
 public class LimitingAudioMixer extends AudioMixer {
 
-    private final LimiterModifier limiterModifier = new LimiterModifier();
-    private final VolumeModifier volumeModifier = new VolumeModifier(1F);
+    private final LimiterProcessor limiterProcessor = new LimiterProcessor();
+    private final GainProcessor gainProcessor = new GainProcessor(1F);
+    private final HardClipProcessor hardClipProcessor = new HardClipProcessor();
 
-    public LimitingAudioMixer(final PcmFloatAudioFormat audioFormat) {
+    public LimitingAudioMixer(final FloatAudioFormat audioFormat) {
         super(audioFormat);
-        this.getSoundModifiers().append(this.limiterModifier);
-        this.getSoundModifiers().append(this.volumeModifier);
-        this.getSoundModifiers().append(new ClippingModifier());
     }
 
     @Override
-    public void stopAllSounds() {
-        super.stopAllSounds();
-        this.limiterModifier.reset();
+    public void render(final AudioBuffer buffer) {
+        super.render(buffer);
+        this.limiterProcessor.process(buffer);
+        this.gainProcessor.process(buffer);
+        this.hardClipProcessor.process(buffer);
     }
 
-    public VolumeModifier getVolumeModifier() {
-        return this.volumeModifier;
+    public FloatParameter gain() {
+        return this.gainProcessor.gain();
     }
 
-    public LimiterModifier getLimiterModifier() {
-        return this.limiterModifier;
+    public FloatParameter gainDb() {
+        return this.gainProcessor.gainDb();
     }
 
-    public LimitingAudioMixer setMasterVolume(final int masterVolume) {
-        return this.setMasterVolume(masterVolume / 100F);
+    public LimiterProcessor getLimiterProcessor() {
+        return this.limiterProcessor;
     }
 
-    public LimitingAudioMixer setMasterVolume(final float masterVolume) {
-        this.volumeModifier.setVolume(masterVolume);
-        return this;
-    }
-
-    public float getMasterVolume() {
-        return this.volumeModifier.getVolume();
+    public GainProcessor getGainProcessor() {
+        return this.gainProcessor;
     }
 
 }

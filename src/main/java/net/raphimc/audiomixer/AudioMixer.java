@@ -17,55 +17,43 @@
  */
 package net.raphimc.audiomixer;
 
-import net.raphimc.audiomixer.sound.Sound;
-import net.raphimc.audiomixer.sound.impl.mix.MixSound;
-import net.raphimc.audiomixer.soundmodifier.SoundModifiers;
-import net.raphimc.audiomixer.util.MathUtil;
-import net.raphimc.audiomixer.util.PcmFloatAudioFormat;
+import net.raphimc.audiomixer.mixer.Mixer;
+import net.raphimc.audiomixer.util.FloatAudioFormat;
+import net.raphimc.audiomixer.util.ListenerList;
+import net.raphimc.audiomixer.util.buffer.AudioBuffer;
 
-import javax.sound.sampled.AudioFormat;
+public class AudioMixer extends Mixer {
 
-public class AudioMixer {
+    private final FloatAudioFormat audioFormat;
+    private final ListenerList<AudioMixer> preRenderActions = new ListenerList<>();
 
-    private final PcmFloatAudioFormat audioFormat;
-    private final MixSound masterMixSound = new MixSound();
-
-    public AudioMixer(final PcmFloatAudioFormat audioFormat) {
+    public AudioMixer(final FloatAudioFormat audioFormat) {
         this.audioFormat = audioFormat;
     }
 
-    public void playSound(final Sound sound) {
-        this.masterMixSound.playSound(sound);
+    public AudioBuffer renderMillis(final float millis) {
+        return this.render(this.audioFormat.millisToFrameCount(millis));
     }
 
-    public void stopSound(final Sound sound) {
-        this.masterMixSound.stopSound(sound);
+    public AudioBuffer render(final int frameCount) {
+        final AudioBuffer buffer = new AudioBuffer(this.audioFormat, frameCount);
+        this.render(buffer);
+        return buffer;
     }
 
-    public void stopAllSounds() {
-        this.masterMixSound.stopAllSounds();
+    @Override
+    public void render(final AudioBuffer buffer) {
+        this.preRenderActions.invoke(this);
+        this.preRenderActions.clear();
+        super.render(buffer);
     }
 
-    public SoundModifiers getSoundModifiers() {
-        return this.masterMixSound.getSoundModifiers();
-    }
-
-    public float[] renderMillis(final float millis) {
-        return this.render(MathUtil.millisToFrameCount(this.audioFormat, millis));
-    }
-
-    public float[] render(final int frameCount) {
-        final float[] renderedSamples = new float[frameCount * this.audioFormat.getChannels()];
-        this.masterMixSound.render(this.audioFormat, renderedSamples);
-        return renderedSamples;
-    }
-
-    public AudioFormat getAudioFormat() {
+    public FloatAudioFormat getAudioFormat() {
         return this.audioFormat;
     }
 
-    public MixSound getMasterMixSound() {
-        return this.masterMixSound;
+    public ListenerList<AudioMixer> preRenderActions() {
+        return this.preRenderActions;
     }
 
 }

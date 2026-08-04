@@ -1,0 +1,55 @@
+/*
+ * This file is part of AudioMixer - https://github.com/RaphiMC/AudioMixer
+ * Copyright (C) 2024-2026 RK_01/RaphiMC and contributors
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 3 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+package net.raphimc.audiomixer.source.audio.impl;
+
+import net.raphimc.audiomixer.resampler.Resampler;
+import net.raphimc.audiomixer.source.audio.StreamingAudioSource;
+import net.raphimc.audiomixer.util.FloatAudioFormat;
+import net.raphimc.audiomixer.util.buffer.AudioBuffer;
+
+public class PushAudioSource extends StreamingAudioSource implements AutoCloseable {
+
+    private boolean closed;
+
+    public PushAudioSource(final FloatAudioFormat format) {
+        super(format);
+    }
+
+    public PushAudioSource(final FloatAudioFormat format, final Resampler resampler) {
+        super(format, resampler);
+    }
+
+    @Override
+    public void enqueueBuffer(final AudioBuffer buffer) {
+        if (this.closed) {
+            throw new IllegalStateException("Cannot push buffer to closed PushAudioSource");
+        }
+        super.enqueueBuffer(buffer);
+    }
+
+    @Override
+    public boolean isFinished() {
+        return this.closed && super.isFinished();
+    }
+
+    @Override
+    public void close() {
+        this.closed = true;
+    }
+
+}
