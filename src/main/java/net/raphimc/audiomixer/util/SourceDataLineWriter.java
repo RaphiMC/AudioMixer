@@ -71,8 +71,8 @@ public class SourceDataLineWriter implements AutoCloseable {
                     }
                     Thread.sleep(1);
                 }
-            } catch (InterruptedException ignored) {
-            } catch (Throwable e) {
+            } catch (final InterruptedException ignored) {
+            } catch (final Throwable e) {
                 e.printStackTrace();
                 this.close();
             }
@@ -93,7 +93,7 @@ public class SourceDataLineWriter implements AutoCloseable {
             this.interrupted = true;
             try {
                 this.writerThread.join(1000);
-            } catch (InterruptedException ignored) {
+            } catch (final InterruptedException ignored) {
             }
             this.writerThread = null;
         }

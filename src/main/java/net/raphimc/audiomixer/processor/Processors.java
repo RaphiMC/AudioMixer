@@ -19,7 +19,14 @@ package net.raphimc.audiomixer.processor;
 
 import net.raphimc.audiomixer.util.buffer.AudioBuffer;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Spliterator;
 import java.util.function.Consumer;
 import java.util.function.IntFunction;
 import java.util.function.Predicate;
@@ -94,8 +101,18 @@ public class Processors extends Processor implements List<Processor> {
     }
 
     @Override
+    public void add(final int index, final Processor element) {
+        this.processors.add(index, element);
+    }
+
+    @Override
     public boolean remove(final Object o) {
         return this.processors.remove(o);
+    }
+
+    @Override
+    public Processor remove(final int index) {
+        return this.processors.remove(index);
     }
 
     @Override
@@ -151,16 +168,6 @@ public class Processors extends Processor implements List<Processor> {
     @Override
     public Processor set(final int index, final Processor element) {
         return this.processors.set(index, element);
-    }
-
-    @Override
-    public void add(final int index, final Processor element) {
-        this.processors.add(index, element);
-    }
-
-    @Override
-    public Processor remove(final int index) {
-        return this.processors.remove(index);
     }
 
     @Override

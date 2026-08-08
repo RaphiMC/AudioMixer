@@ -74,7 +74,7 @@ public class LowShelfFilterProcessor extends BiquadFilterProcessor<LowShelfFilte
         }
     }
 
-    protected static class InternalProcessor extends BiquadFilterProcessor.InternalProcessor {
+    protected static final class InternalProcessor extends BiquadFilterProcessor.InternalProcessor {
 
         private InternalProcessor(final FloatAudioFormat format) {
             super(format);

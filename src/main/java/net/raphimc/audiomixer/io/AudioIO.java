@@ -27,9 +27,18 @@ import net.raphimc.audiomixer.util.math.MathUtil;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.UnsupportedAudioFileException;
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.EOFException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 
-public class AudioIO {
+public final class AudioIO {
+
+    private AudioIO() {
+    }
 
     public static AudioBuffer read(final InputStream is) throws IOException, UnsupportedAudioFileException {
         return read(new SampleInputStream(is));
@@ -62,7 +71,7 @@ public class AudioIO {
                 while (true) {
                     bufferBuilder.append(is.readSample());
                 }
-            } catch (EOFException ignored) {
+            } catch (final EOFException ignored) {
             }
             return bufferBuilder.build();
         }

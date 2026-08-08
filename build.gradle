@@ -1,8 +1,15 @@
 plugins {
     id "java-library"
     id "base.base-conventions"
+    id "base.checkstyle"
     id "base.example-sourceset"
     id "audio-mixer.publishing-conventions"
+}
+
+checkstyle {
+    configProperties += [
+        allowedAbbreviationLength: 1
+    ]
 }
 
 dependencies {

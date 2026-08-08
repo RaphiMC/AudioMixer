@@ -19,12 +19,15 @@ package net.raphimc.audiomixer.util.math;
 
 import javax.sound.sampled.AudioFormat;
 
-public class MathUtil {
+public final class MathUtil {
 
     public static final double HALF_PI = Math.PI / 2D;
     public static final double TWO_PI = Math.PI * 2D;
     public static final double INV_SQRT_2 = 1D / Math.sqrt(2D);
     public static final float BUTTERWORTH_Q = (float) INV_SQRT_2;
+
+    private MathUtil() {
+    }
 
     public static int clamp(final int value, final int min, final int max) {
         return Math.max(min, Math.min(value, max));

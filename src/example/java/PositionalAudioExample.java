@@ -24,23 +24,30 @@ import net.raphimc.audiomixer.util.math.Vector3f;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.BoxLayout;
+import javax.swing.JFrame;
+import javax.swing.JPanel;
+import javax.swing.WindowConstants;
+import java.awt.Color;
+import java.awt.Graphics;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionAdapter;
 
-public class PositionalAudioExample {
+public final class PositionalAudioExample {
 
-    public static void main(String[] args) throws Throwable {
-        AudioFormat format = new AudioFormat(48000, 16, 2, true, false);
-        SourceDataLineAudioMixer audioMixer = new SourceDataLineAudioMixer(AudioSystem.getSourceDataLine(format));
+    private PositionalAudioExample() {
+    }
+
+    public static void main(final String[] args) throws Throwable {
+        final AudioFormat format = new AudioFormat(48000, 16, 2, true, false);
+        final SourceDataLineAudioMixer audioMixer = new SourceDataLineAudioMixer(AudioSystem.getSourceDataLine(format));
 
         final OscillatorSource oscillator = new SineOscillatorSource(440);
         final PositionalAudioProcessor positionalAudioProcessor = new PositionalAudioProcessor(250);
         oscillator.processors().add(positionalAudioProcessor);
         audioMixer.add(oscillator);
 
-        JFrame frame = new JFrame("AudioMixer Test");
+        final JFrame frame = new JFrame("AudioMixer Test");
         frame.setLayout(new BoxLayout(frame.getContentPane(), BoxLayout.Y_AXIS));
         frame.pack();
         frame.setSize(480, 360);
@@ -49,9 +56,9 @@ public class PositionalAudioExample {
         positionalAudioProcessor.listenerPosition().set(new Vector3f(frame.getWidth() / 2F, 0F, frame.getHeight() / 2F));
         positionalAudioProcessor.sourcePosition().set(positionalAudioProcessor.listenerPosition().get());
 
-        JPanel panel = new JPanel() {
+        final JPanel panel = new JPanel() {
             @Override
-            protected void paintComponent(Graphics g) {
+            protected void paintComponent(final Graphics g) {
                 super.paintComponent(g);
                 g.setColor(Color.RED);
                 g.fillOval((int) positionalAudioProcessor.sourcePosition().get().x() - 5, (int) positionalAudioProcessor.sourcePosition().get().z() - 5, 10, 10);
@@ -62,7 +69,7 @@ public class PositionalAudioExample {
 
         panel.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
-            public void mouseDragged(MouseEvent e) {
+            public void mouseDragged(final MouseEvent e) {
                 positionalAudioProcessor.sourcePosition().set(new Vector3f(e.getX(), 0F, e.getY()));
                 e.getComponent().repaint();
             }

@@ -74,7 +74,7 @@ public class SampleOutputStream extends OutputStream {
         return this.is.getFormat();
     }
 
-    private class BufferInputStream extends InputStream {
+    private final class BufferInputStream extends InputStream {
 
         @Override
         public int read() {

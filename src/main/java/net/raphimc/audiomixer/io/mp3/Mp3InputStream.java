@@ -17,7 +17,12 @@
  */
 package net.raphimc.audiomixer.io.mp3;
 
-import javazoom.jl.decoder.*;
+import javazoom.jl.decoder.Bitstream;
+import javazoom.jl.decoder.BitstreamException;
+import javazoom.jl.decoder.Decoder;
+import javazoom.jl.decoder.DecoderException;
+import javazoom.jl.decoder.Header;
+import javazoom.jl.decoder.SampleBuffer;
 import net.raphimc.audiomixer.util.buffer.RingByteBuffer;
 
 import javax.sound.sampled.AudioFormat;
@@ -44,10 +49,10 @@ public class Mp3InputStream extends InputStream {
         this.mp3Stream = mp3Stream;
         this.mp3BitStream = new Bitstream(mp3Stream);
 
-        Header frame;
+        final Header frame;
         try {
             frame = this.mp3BitStream.readFrame();
-        } catch (BitstreamException e) {
+        } catch (final BitstreamException e) {
             throw new IOException("Failed to read mp3 frame", e);
         }
         if (frame == null) {
@@ -106,9 +111,9 @@ public class Mp3InputStream extends InputStream {
                 this.samplesBuffer.write((byte) ((sample >> 8) & 0xFF));
             }
             return true;
-        } catch (BitstreamException e) {
+        } catch (final BitstreamException e) {
             throw new IOException("Failed to read mp3 frame", e);
-        } catch (DecoderException e) {
+        } catch (final DecoderException e) {
             throw new IOException("Failed to decode mp3 frame", e);
         }
     }

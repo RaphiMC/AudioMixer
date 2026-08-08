@@ -26,25 +26,31 @@ import net.raphimc.audiomixer.util.buffer.AudioBuffer;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
-import javax.swing.*;
+import javax.swing.BoxLayout;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.WindowConstants;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 
-public class RealtimeMixerExample {
+public final class RealtimeMixerExample {
 
-    public static void main(String[] args) throws Throwable {
-        AudioFormat format = new AudioFormat(48000, 16, 2, true, false);
-        SourceDataLineAudioMixer audioMixer = new SourceDataLineAudioMixer(AudioSystem.getSourceDataLine(format));
-        AudioBuffer audioBuffer = AudioIO.read(RealtimeMixerExample.class.getResourceAsStream("/piano.wav"), audioMixer.getAudioFormat().withChannels(1));
+    private RealtimeMixerExample() {
+    }
 
-        JFrame frame = new JFrame("AudioMixer Test");
+    public static void main(final String[] args) throws Throwable {
+        final AudioFormat format = new AudioFormat(48000, 16, 2, true, false);
+        final SourceDataLineAudioMixer audioMixer = new SourceDataLineAudioMixer(AudioSystem.getSourceDataLine(format));
+        final AudioBuffer audioBuffer = AudioIO.read(RealtimeMixerExample.class.getResourceAsStream("/piano.wav"), audioMixer.getAudioFormat().withChannels(1));
+
+        final JFrame frame = new JFrame("AudioMixer Test");
         frame.setLayout(new BoxLayout(frame.getContentPane(), BoxLayout.Y_AXIS));
         frame.pack();
         frame.setSize(480, 360);
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         frame.addKeyListener(new KeyAdapter() {
             @Override
-            public void keyPressed(KeyEvent e) {
+            public void keyPressed(final KeyEvent e) {
                 if (e.getKeyCode() >= KeyEvent.VK_1 && e.getKeyCode() <= KeyEvent.VK_9) {
                     final AudioSource source = new BufferedAudioSource(audioBuffer);
                     source.pitch().set((float) Math.pow(2, ((e.getKeyCode() - KeyEvent.VK_1) - 4) / 4F));

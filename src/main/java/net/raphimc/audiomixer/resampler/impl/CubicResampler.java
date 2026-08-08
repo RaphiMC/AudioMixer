@@ -20,7 +20,7 @@ package net.raphimc.audiomixer.resampler.impl;
 import net.raphimc.audiomixer.resampler.Resampler;
 
 // Catmull-Rom cubic resampler
-public class CubicResampler implements Resampler {
+public final class CubicResampler implements Resampler {
 
     public static final CubicResampler INSTANCE = new CubicResampler();
 

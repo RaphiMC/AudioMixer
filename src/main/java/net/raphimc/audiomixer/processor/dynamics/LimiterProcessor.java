@@ -92,7 +92,7 @@ public class LimiterProcessor extends Processor {
         return 1F - (float) Math.exp(-millisPerFrame / timeConstantMillis);
     }
 
-    private static class LookaheadPeakWindow {
+    private static final class LookaheadPeakWindow {
 
         private final float[] framePeaks;
         private final int lookaheadFrameCount;

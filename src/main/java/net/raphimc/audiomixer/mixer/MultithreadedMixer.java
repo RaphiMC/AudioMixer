@@ -27,7 +27,7 @@ public class MultithreadedMixer extends Mixer {
         this.parallelStream().collect(() -> new Accumulator(buffer), Accumulator::accept, Accumulator::combine).finish();
     }
 
-    private static class Accumulator {
+    private static final class Accumulator {
 
         private final AudioBuffer finalBuffer;
         private final AudioBuffer mix;

@@ -20,7 +20,11 @@ package net.raphimc.audiomixer.automation;
 import net.raphimc.audiomixer.automation.finite.FiniteAutomation;
 import net.raphimc.audiomixer.util.buffer.AudioBuffer;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.Spliterator;
 import java.util.function.Consumer;
 import java.util.function.IntFunction;
 import java.util.function.Predicate;

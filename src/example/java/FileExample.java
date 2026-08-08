@@ -27,22 +27,25 @@ import javax.sound.sampled.AudioSystem;
 import java.io.File;
 import java.io.FileInputStream;
 
-public class FileExample {
+public final class FileExample {
 
-    public static void main(String[] args) throws Throwable {
-        File input = new File("input.wav");
-        File output = new File("output.wav");
+    private FileExample() {
+    }
+
+    public static void main(final String[] args) throws Throwable {
+        final File input = new File("input.wav");
+        final File output = new File("output.wav");
 
         // Load the input audio buffer
-        AudioBuffer inputAudioBuffer = AudioIO.read(new FileInputStream(input));
+        final AudioBuffer inputAudioBuffer = AudioIO.read(new FileInputStream(input));
         // Create an audio mixer
-        AudioMixer mixer = new AudioMixer(inputAudioBuffer.format());
+        final AudioMixer mixer = new AudioMixer(inputAudioBuffer.format());
         // Play the audio buffer with half the original pitch
-        BufferedAudioSource source = new BufferedAudioSource(inputAudioBuffer);
+        final BufferedAudioSource source = new BufferedAudioSource(inputAudioBuffer);
         source.pitch().set(0.5F);
         mixer.add(source);
         // Create the output buffer
-        AudioBufferBuilder outputBufferBuilder = new AudioBufferBuilder(mixer.getAudioFormat());
+        final AudioBufferBuilder outputBufferBuilder = new AudioBufferBuilder(mixer.getAudioFormat());
         // Render 1 second of audio until there are no more active sources (The mixer will automatically remove finished sources)
         while (!mixer.isEmpty()) {
             outputBufferBuilder.append(mixer.renderMillis(1000));

@@ -23,18 +23,21 @@ import net.raphimc.audiomixer.util.buffer.AudioBuffer;
 
 import java.util.Random;
 
-public class Benchmark {
+public final class Benchmark {
 
-    public static void main(String[] args) {
-        FloatAudioFormat outputFormat = new FloatAudioFormat(48000, 2);
-        AudioBuffer buffer = new AudioBuffer(outputFormat.withChannels(1), 48000 * 10);
-        float[] samples = buffer.samples();
-        Random random = new Random();
+    private Benchmark() {
+    }
+
+    public static void main(final String[] args) {
+        final FloatAudioFormat outputFormat = new FloatAudioFormat(48000, 2);
+        final AudioBuffer buffer = new AudioBuffer(outputFormat.withChannels(1), 48000 * 10);
+        final float[] samples = buffer.samples();
+        final Random random = new Random();
         for (int i = 0; i < samples.length; i++) {
             samples[i] = random.nextFloat(-1, 1);
         }
 
-        AudioMixer mixer = new AudioMixer(outputFormat);
+        final AudioMixer mixer = new AudioMixer(outputFormat);
 
         // Add 5000 sources
         for (int i = 0; i < 5000; i++) {
@@ -49,11 +52,11 @@ public class Benchmark {
         }
 
         // Benchmark (Render 2 seconds of audio)
-        long start = System.currentTimeMillis();
+        final long start = System.currentTimeMillis();
         for (int i = 0; i < 200; i++) {
             mixer.renderMillis(10);
         }
-        long end = System.currentTimeMillis();
+        final long end = System.currentTimeMillis();
         System.out.println("Time: " + (end - start) + "ms");
     }
 

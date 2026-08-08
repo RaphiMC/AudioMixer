@@ -19,7 +19,7 @@ package net.raphimc.audiomixer.resampler.impl;
 
 import net.raphimc.audiomixer.resampler.Resampler;
 
-public class PointResampler implements Resampler {
+public final class PointResampler implements Resampler {
 
     public static final PointResampler INSTANCE = new PointResampler();
 

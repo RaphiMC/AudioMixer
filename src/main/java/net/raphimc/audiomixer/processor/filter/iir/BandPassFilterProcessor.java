@@ -58,7 +58,7 @@ public class BandPassFilterProcessor extends BiquadFilterProcessor<BandPassFilte
         }
     }
 
-    protected static class InternalProcessor extends BiquadFilterProcessor.InternalProcessor {
+    protected static final class InternalProcessor extends BiquadFilterProcessor.InternalProcessor {
 
         private InternalProcessor(final FloatAudioFormat format) {
             super(format);

@@ -25,11 +25,14 @@ import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import java.net.URL;
 
-public class StreamedPlaybackExample {
+public final class StreamedPlaybackExample {
 
-    public static void main(String[] args) throws Throwable {
-        AudioFormat format = new AudioFormat(48000, 16, 2, true, false);
-        SourceDataLineAudioMixer audioMixer = new SourceDataLineAudioMixer(AudioSystem.getSourceDataLine(format));
+    private StreamedPlaybackExample() {
+    }
+
+    public static void main(final String[] args) throws Throwable {
+        final AudioFormat format = new AudioFormat(48000, 16, 2, true, false);
+        final SourceDataLineAudioMixer audioMixer = new SourceDataLineAudioMixer(AudioSystem.getSourceDataLine(format));
 
         final AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(new URL("https://ncs.io/track/download/f76817e2-fa17-4317-af1a-8bf4d5cc68a9"));
         audioMixer.add(new PullAudioSource(new SampleInputStream(audioInputStream)));

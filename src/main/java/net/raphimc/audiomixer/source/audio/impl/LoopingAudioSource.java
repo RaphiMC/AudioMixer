@@ -147,7 +147,7 @@ public class LoopingAudioSource extends BufferedAudioSource {
         return this.loopEndPosition - this.loopStartPosition + 1;
     }
 
-    private static class LoopBuffer {
+    private static final class LoopBuffer {
 
         private float[] array = new float[0];
         private int size;

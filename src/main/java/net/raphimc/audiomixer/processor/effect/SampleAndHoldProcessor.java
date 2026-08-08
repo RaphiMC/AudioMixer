@@ -42,7 +42,7 @@ public class SampleAndHoldProcessor extends FormatDependentProcessor<SampleAndHo
         return new InternalProcessor(format);
     }
 
-    protected class InternalProcessor extends FormatDependentProcessor.InternalProcessor {
+    protected final class InternalProcessor extends FormatDependentProcessor.InternalProcessor {
 
         private final float[] heldSamples;
         private int holdFramesRemaining;

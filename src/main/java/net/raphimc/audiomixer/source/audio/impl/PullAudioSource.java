@@ -58,7 +58,7 @@ public class PullAudioSource extends StreamingAudioSource implements Closeable {
                             for (int i = 0; i < bufferSampleCount; i++) {
                                 bufferBuilder.append(this.sampleInputStream.readSample());
                             }
-                        } catch (EOFException e) {
+                        } catch (final EOFException e) {
                             Thread.currentThread().interrupt();
                         }
                         this.enqueueBuffer(bufferBuilder.build());
@@ -66,13 +66,13 @@ public class PullAudioSource extends StreamingAudioSource implements Closeable {
                     }
                     Thread.sleep(100);
                 }
-            } catch (InterruptedException ignored) {
-            } catch (Throwable e) {
+            } catch (final InterruptedException ignored) {
+            } catch (final Throwable e) {
                 e.printStackTrace();
             } finally {
                 try {
                     this.close();
-                } catch (IOException ignored) {
+                } catch (final IOException ignored) {
                 }
             }
         }, "AudioMixer PullAudioSource Reader");
