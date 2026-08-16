@@ -18,18 +18,18 @@
 package net.raphimc.audiomixer.source.audio;
 
 import net.raphimc.audiomixer.resampler.Resampler;
-import net.raphimc.audiomixer.util.FloatAudioFormat;
+import net.raphimc.audiomixer.util.AudioFormat;
 import net.raphimc.audiomixer.util.buffer.AudioBuffer;
 
 public abstract class StreamingAudioSource extends AudioSource {
 
     private static final int MARGIN_FRAME_COUNT = 4;
 
-    public StreamingAudioSource(final FloatAudioFormat format) {
+    public StreamingAudioSource(final AudioFormat format) {
         super(new AudioBuffer(format, 0));
     }
 
-    public StreamingAudioSource(final FloatAudioFormat format, final Resampler resampler) {
+    public StreamingAudioSource(final AudioFormat format, final Resampler resampler) {
         super(new AudioBuffer(format, 0), resampler);
     }
 
@@ -40,7 +40,7 @@ public abstract class StreamingAudioSource extends AudioSource {
 
     protected synchronized void enqueueBuffer(final AudioBuffer buffer) {
         final int frameOffset = Math.max((int) this.position - MARGIN_FRAME_COUNT, 0);
-        this.buffer = this.buffer.slice(frameOffset * this.getFormat().channels(), this.buffer.getSampleCount()).append(buffer);
+        this.buffer = this.buffer.slice(frameOffset * this.getFormat().channels(), this.buffer.sampleCount()).append(buffer);
         this.position -= frameOffset;
     }
 

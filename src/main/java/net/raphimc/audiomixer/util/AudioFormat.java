@@ -17,11 +17,9 @@
  */
 package net.raphimc.audiomixer.util;
 
-import javax.sound.sampled.AudioFormat;
+public record AudioFormat(float sampleRate, int channels) {
 
-public record FloatAudioFormat(float sampleRate, int channels) {
-
-    public FloatAudioFormat {
+    public AudioFormat {
         if (sampleRate <= 0) {
             throw new IllegalArgumentException("Sample rate must be > 0");
         }
@@ -30,16 +28,12 @@ public record FloatAudioFormat(float sampleRate, int channels) {
         }
     }
 
-    public FloatAudioFormat(final AudioFormat audioFormat) {
-        this(audioFormat.getSampleRate(), audioFormat.getChannels());
+    public AudioFormat withSampleRate(final float sampleRate) {
+        return new AudioFormat(sampleRate, this.channels);
     }
 
-    public FloatAudioFormat withSampleRate(final float sampleRate) {
-        return new FloatAudioFormat(sampleRate, this.channels);
-    }
-
-    public FloatAudioFormat withChannels(final int channels) {
-        return new FloatAudioFormat(this.sampleRate, channels);
+    public AudioFormat withChannels(final int channels) {
+        return new AudioFormat(this.sampleRate, channels);
     }
 
     public int millisToFrameCount(final float millis) {
@@ -63,14 +57,6 @@ public record FloatAudioFormat(float sampleRate, int channels) {
             throw new IllegalArgumentException("Sample count must be a multiple of the channel count");
         }
         return sampleCount / this.channels;
-    }
-
-    public AudioFormat toJavaAudioFormat() {
-        return new AudioFormat(AudioFormat.Encoding.PCM_FLOAT, this.sampleRate, Float.SIZE, this.channels, this.channels * Float.BYTES, this.sampleRate, true);
-    }
-
-    public AudioFormat toJavaPcmAudioFormat(final int sampleSizeInBits) {
-        return new AudioFormat(this.sampleRate, sampleSizeInBits, this.channels, true, false);
     }
 
 }

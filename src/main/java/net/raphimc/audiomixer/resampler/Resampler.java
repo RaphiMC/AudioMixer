@@ -17,15 +17,15 @@
  */
 package net.raphimc.audiomixer.resampler;
 
-import net.raphimc.audiomixer.util.FloatAudioFormat;
+import net.raphimc.audiomixer.util.AudioFormat;
 import net.raphimc.audiomixer.util.buffer.AudioBuffer;
 
 public interface Resampler {
 
-    default AudioBuffer resample(final AudioBuffer src, final FloatAudioFormat dstFormat) {
+    default AudioBuffer resample(final AudioBuffer src, final AudioFormat dstFormat) {
         if (!src.format().equals(dstFormat)) {
             final float pitch = src.format().sampleRate() / dstFormat.sampleRate();
-            final AudioBuffer dst = new AudioBuffer(dstFormat, (int) Math.ceil((double) src.getFrameCount() / pitch));
+            final AudioBuffer dst = new AudioBuffer(dstFormat, (int) Math.ceil((double) src.frameCount() / pitch));
             this.resample(src, dst, 0);
             return dst;
         } else {
@@ -37,7 +37,7 @@ public interface Resampler {
         return this.resample(src.samples(), src.format(), dst.samples(), dst.format(), srcPosition);
     }
 
-    default double resample(final float[] src, final FloatAudioFormat srcFormat, final float[] dst, final FloatAudioFormat dstFormat, final double srcPosition) {
+    default double resample(final float[] src, final AudioFormat srcFormat, final float[] dst, final AudioFormat dstFormat, final double srcPosition) {
         if (!srcFormat.equals(dstFormat) || srcPosition % 1 != 0) {
             final float pitch = srcFormat.sampleRate() / dstFormat.sampleRate();
             if (srcFormat.channels() == 1 && dstFormat.channels() == 1) {

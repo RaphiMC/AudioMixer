@@ -21,12 +21,12 @@ import net.raphimc.audiomixer.parameter.FloatParameter;
 import net.raphimc.audiomixer.resampler.Resampler;
 import net.raphimc.audiomixer.resampler.impl.LinearResampler;
 import net.raphimc.audiomixer.source.FiniteSource;
-import net.raphimc.audiomixer.util.FloatAudioFormat;
+import net.raphimc.audiomixer.util.AudioFormat;
 import net.raphimc.audiomixer.util.buffer.AudioBuffer;
 
 public abstract class AudioSource extends FiniteSource {
 
-    private final FloatAudioFormat originalFormat;
+    private final AudioFormat originalFormat;
     protected final Resampler resampler;
     protected AudioBuffer buffer;
     private final FloatParameter sampleRate;
@@ -47,20 +47,20 @@ public abstract class AudioSource extends FiniteSource {
 
     @Override
     protected void renderInternal(final AudioBuffer buffer) {
-        this.position = Math.min(this.resampler.resample(this.buffer, buffer, this.position), this.buffer.getFrameCount());
+        this.position = Math.min(this.resampler.resample(this.buffer, buffer, this.position), this.buffer.frameCount());
     }
 
     @Override
     public boolean isFinished() {
-        return this.position >= this.buffer.getFrameCount();
+        return this.position >= this.buffer.frameCount();
     }
 
-    public FloatAudioFormat getFormat() {
+    public AudioFormat getFormat() {
         return this.buffer.format();
     }
 
     public int getRemainingFrameCount() {
-        return this.buffer.getFrameCount() - (int) this.position;
+        return this.buffer.frameCount() - (int) this.position;
     }
 
     public float getRemainingMillisecondLength() {

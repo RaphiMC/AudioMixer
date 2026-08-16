@@ -17,15 +17,18 @@
  */
 
 import net.raphimc.audiomixer.AudioMixer;
-import net.raphimc.audiomixer.io.AudioIO;
+import net.raphimc.audiomixer.io.AudioIo;
+import net.raphimc.audiomixer.io.wav.WavPcmAudioOutputStream;
 import net.raphimc.audiomixer.source.audio.impl.BufferedAudioSource;
+import net.raphimc.audiomixer.util.PcmAudioFormat;
+import net.raphimc.audiomixer.util.PcmSampleEncoding;
 import net.raphimc.audiomixer.util.buffer.AudioBuffer;
 import net.raphimc.audiomixer.util.buffer.AudioBufferBuilder;
 
-import javax.sound.sampled.AudioFileFormat;
-import javax.sound.sampled.AudioSystem;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 
 public final class FileExample {
 
@@ -37,7 +40,7 @@ public final class FileExample {
         final File output = new File("output.wav");
 
         // Load the input audio buffer
-        final AudioBuffer inputAudioBuffer = AudioIO.read(new FileInputStream(input));
+        final AudioBuffer inputAudioBuffer = AudioIo.read(new FileInputStream(input));
         // Create an audio mixer
         final AudioMixer mixer = new AudioMixer(inputAudioBuffer.format());
         // Play the audio buffer with half the original pitch
@@ -45,7 +48,7 @@ public final class FileExample {
         source.pitch().set(0.5F);
         mixer.add(source);
         // Create the output buffer
-        final AudioBufferBuilder outputBufferBuilder = new AudioBufferBuilder(mixer.getAudioFormat());
+        final AudioBufferBuilder outputBufferBuilder = new AudioBufferBuilder(mixer.getFormat());
         // Render 1 second of audio until there are no more active sources (The mixer will automatically remove finished sources)
         while (!mixer.isEmpty()) {
             outputBufferBuilder.append(mixer.renderMillis(1000));
@@ -56,7 +59,9 @@ public final class FileExample {
         // Trim trailing silence
         outputAudioBuffer = outputAudioBuffer.trimTrailingSilence();
         // Write the audio buffer to a file
-        AudioSystem.write(AudioIO.createAudioInputStream(outputAudioBuffer.samples(), outputAudioBuffer.format().toJavaPcmAudioFormat(Short.SIZE)), AudioFileFormat.Type.WAVE, output);
+        final WavPcmAudioOutputStream wavOutputStream = new WavPcmAudioOutputStream(new BufferedOutputStream(new FileOutputStream(output)), new PcmAudioFormat(outputAudioBuffer.format(), PcmSampleEncoding.S16_LE), outputAudioBuffer.sampleCount());
+        wavOutputStream.write(outputAudioBuffer.samples());
+        wavOutputStream.close();
     }
 
 }

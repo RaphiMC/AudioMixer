@@ -17,26 +17,26 @@
  */
 package net.raphimc.audiomixer.util.buffer;
 
-public class RingByteBuffer {
+public class FloatRingBuffer {
 
-    private final byte[] buffer;
+    private final float[] buffer;
     private int head;
     private int tail;
     private int size;
 
-    public RingByteBuffer(final int capacity) {
-        this.buffer = new byte[capacity];
+    public FloatRingBuffer(final int capacity) {
+        this.buffer = new float[capacity];
     }
 
-    public byte read() {
+    public float read() {
         this.checkNotEmpty();
-        final byte value = this.buffer[this.head];
+        final float value = this.buffer[this.head];
         this.head = (this.head + 1) % this.buffer.length;
         this.size--;
         return value;
     }
 
-    public int read(final byte[] dst, final int offset, final int length) {
+    public int read(final float[] dst, final int offset, final int length) {
         this.checkNotEmpty();
         final int readLength = Math.min(length, this.size);
         final int firstPartLength = Math.min(readLength, this.buffer.length - this.head);
@@ -50,14 +50,14 @@ public class RingByteBuffer {
         return readLength;
     }
 
-    public void write(final byte value) {
+    public void write(final float value) {
         this.checkHasEnoughSpace(1);
         this.buffer[this.tail] = value;
         this.tail = (this.tail + 1) % this.buffer.length;
         this.size++;
     }
 
-    public void write(final byte[] src, final int offset, final int length) {
+    public void write(final float[] src, final int offset, final int length) {
         this.checkHasEnoughSpace(length);
         final int firstPartLength = Math.min(length, this.buffer.length - this.tail);
         System.arraycopy(src, offset, this.buffer, this.tail, firstPartLength);

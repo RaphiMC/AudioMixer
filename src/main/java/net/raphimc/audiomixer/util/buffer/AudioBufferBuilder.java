@@ -17,21 +17,21 @@
  */
 package net.raphimc.audiomixer.util.buffer;
 
-import net.raphimc.audiomixer.util.FloatAudioFormat;
+import net.raphimc.audiomixer.util.AudioFormat;
 
 import java.util.Arrays;
 
 public class AudioBufferBuilder {
 
-    private final FloatAudioFormat format;
+    private final AudioFormat format;
     private float[] array;
     private int size;
 
-    public AudioBufferBuilder(final FloatAudioFormat format) {
+    public AudioBufferBuilder(final AudioFormat format) {
         this(format, 128 * 1024);
     }
 
-    public AudioBufferBuilder(final FloatAudioFormat format, final int initialCapacity) {
+    public AudioBufferBuilder(final AudioFormat format, final int initialCapacity) {
         this.format = format;
         this.array = new float[initialCapacity];
     }
@@ -41,13 +41,13 @@ public class AudioBufferBuilder {
         this.array[this.size++] = value;
     }
 
-    public void append(final float[] values) {
-        this.append(values, 0, values.length);
+    public void append(final float[] samples) {
+        this.append(samples, 0, samples.length);
     }
 
-    public void append(final float[] values, final int offset, final int length) {
+    public void append(final float[] samples, final int offset, final int length) {
         this.ensureHasEnoughSpace(length);
-        System.arraycopy(values, offset, this.array, this.size, length);
+        System.arraycopy(samples, offset, this.array, this.size, length);
         this.size += length;
     }
 

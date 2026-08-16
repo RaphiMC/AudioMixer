@@ -18,7 +18,7 @@
 package net.raphimc.audiomixer.processor.filter;
 
 import net.raphimc.audiomixer.processor.FormatDependentProcessor;
-import net.raphimc.audiomixer.util.FloatAudioFormat;
+import net.raphimc.audiomixer.util.AudioFormat;
 import net.raphimc.audiomixer.util.buffer.AudioBuffer;
 
 // Direct Form 2 Transposed Biquad filter
@@ -34,7 +34,7 @@ public abstract class BiquadFilterProcessor<IP extends BiquadFilterProcessor.Int
         private final float[] s1;
         private final float[] s2;
 
-        protected InternalProcessor(final FloatAudioFormat format) {
+        protected InternalProcessor(final AudioFormat format) {
             super(format);
             this.s1 = new float[format.channels()];
             this.s2 = new float[format.channels()];

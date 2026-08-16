@@ -101,18 +101,8 @@ public class Processors extends Processor implements List<Processor> {
     }
 
     @Override
-    public void add(final int index, final Processor element) {
-        this.processors.add(index, element);
-    }
-
-    @Override
     public boolean remove(final Object o) {
         return this.processors.remove(o);
-    }
-
-    @Override
-    public Processor remove(final int index) {
-        return this.processors.remove(index);
     }
 
     @Override
@@ -168,6 +158,16 @@ public class Processors extends Processor implements List<Processor> {
     @Override
     public Processor set(final int index, final Processor element) {
         return this.processors.set(index, element);
+    }
+
+    @Override
+    public void add(final int index, final Processor element) {
+        this.processors.add(index, element);
+    }
+
+    @Override
+    public Processor remove(final int index) {
+        return this.processors.remove(index);
     }
 
     @Override

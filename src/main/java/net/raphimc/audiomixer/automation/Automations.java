@@ -36,7 +36,7 @@ public class Automations implements Collection<Automation> {
 
     public void process(final AudioBuffer buffer) {
         if (!this.isEmpty()) {
-            this.forEach(automation -> automation.advance(buffer.getMillisecondLength()));
+            this.forEach(automation -> automation.advance(buffer.millisecondLength()));
             this.removeIf(automation -> automation instanceof FiniteAutomation finiteAutomation && finiteAutomation.isFinished());
         }
     }

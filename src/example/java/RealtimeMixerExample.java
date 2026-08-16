@@ -17,7 +17,7 @@
  */
 
 import net.raphimc.audiomixer.SourceDataLineAudioMixer;
-import net.raphimc.audiomixer.io.AudioIO;
+import net.raphimc.audiomixer.io.AudioIo;
 import net.raphimc.audiomixer.processor.dynamics.GainProcessor;
 import net.raphimc.audiomixer.processor.spatial.PanProcessor;
 import net.raphimc.audiomixer.source.audio.AudioSource;
@@ -41,7 +41,7 @@ public final class RealtimeMixerExample {
     public static void main(final String[] args) throws Throwable {
         final AudioFormat format = new AudioFormat(48000, 16, 2, true, false);
         final SourceDataLineAudioMixer audioMixer = new SourceDataLineAudioMixer(AudioSystem.getSourceDataLine(format));
-        final AudioBuffer audioBuffer = AudioIO.read(RealtimeMixerExample.class.getResourceAsStream("/piano.wav"), audioMixer.getAudioFormat().withChannels(1));
+        final AudioBuffer audioBuffer = AudioIo.read(RealtimeMixerExample.class.getResourceAsStream("/piano.wav"), audioMixer.getFormat().withChannels(1));
 
         final JFrame frame = new JFrame("AudioMixer Test");
         frame.setLayout(new BoxLayout(frame.getContentPane(), BoxLayout.Y_AXIS));

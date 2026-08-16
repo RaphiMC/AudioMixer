@@ -19,7 +19,7 @@ package net.raphimc.audiomixer.processor.filter.eq;
 
 import net.raphimc.audiomixer.parameter.FloatParameter;
 import net.raphimc.audiomixer.processor.filter.BiquadFilterProcessor;
-import net.raphimc.audiomixer.util.FloatAudioFormat;
+import net.raphimc.audiomixer.util.AudioFormat;
 import net.raphimc.audiomixer.util.math.MathUtil;
 
 public class PeakingFilterProcessor extends BiquadFilterProcessor<PeakingFilterProcessor.InternalProcessor> {
@@ -61,7 +61,7 @@ public class PeakingFilterProcessor extends BiquadFilterProcessor<PeakingFilterP
     }
 
     @Override
-    protected InternalProcessor createInternalProcessor(final FloatAudioFormat format) {
+    protected InternalProcessor createInternalProcessor(final AudioFormat format) {
         final InternalProcessor internalProcessor = new InternalProcessor(format);
         internalProcessor.applyParameters(this.frequency.get(), this.gain.get(), this.q.get());
         return internalProcessor;
@@ -76,7 +76,7 @@ public class PeakingFilterProcessor extends BiquadFilterProcessor<PeakingFilterP
 
     protected static final class InternalProcessor extends BiquadFilterProcessor.InternalProcessor {
 
-        private InternalProcessor(final FloatAudioFormat format) {
+        private InternalProcessor(final AudioFormat format) {
             super(format);
         }
 

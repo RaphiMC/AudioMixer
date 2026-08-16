@@ -17,54 +17,48 @@
  */
 package net.raphimc.audiomixer.source.audio.impl;
 
-import net.raphimc.audiomixer.io.raw.SampleInputStream;
+import net.raphimc.audiomixer.io.AudioInputStream;
 import net.raphimc.audiomixer.resampler.Resampler;
 import net.raphimc.audiomixer.resampler.impl.LinearResampler;
 import net.raphimc.audiomixer.source.audio.StreamingAudioSource;
-import net.raphimc.audiomixer.util.buffer.AudioBufferBuilder;
+import net.raphimc.audiomixer.util.buffer.AudioBuffer;
 
 import java.io.Closeable;
-import java.io.EOFException;
 import java.io.IOException;
 
 public class PullAudioSource extends StreamingAudioSource implements Closeable {
 
-    private final SampleInputStream sampleInputStream;
+    private final AudioInputStream inputStream;
     private final Thread readThread;
 
-    public PullAudioSource(final SampleInputStream sampleInputStream) {
-        this(sampleInputStream, 1000);
+    public PullAudioSource(final AudioInputStream inputStream) {
+        this(inputStream, 1000);
     }
 
-    public PullAudioSource(final SampleInputStream sampleInputStream, final int bufferMillis) {
-        this(sampleInputStream, bufferMillis, LinearResampler.INSTANCE);
+    public PullAudioSource(final AudioInputStream inputStream, final int bufferMillis) {
+        this(inputStream, bufferMillis, LinearResampler.INSTANCE);
     }
 
-    public PullAudioSource(final SampleInputStream sampleInputStream, final int bufferMillis, final Resampler resampler) {
-        super(sampleInputStream.getFormat(), resampler);
+    public PullAudioSource(final AudioInputStream inputStream, final int bufferMillis, final Resampler resampler) {
+        super(inputStream.getFormat(), resampler);
         if (bufferMillis <= 0) {
             throw new IllegalArgumentException("Buffer millis must be greater than 0");
         }
 
-        this.sampleInputStream = sampleInputStream;
+        this.inputStream = inputStream;
         this.readThread = new Thread(() -> {
-            final int bufferFrameCount = this.sampleInputStream.getFormat().millisToFrameCount(bufferMillis);
-            final int bufferSampleCount = this.sampleInputStream.getFormat().millisToSampleCount(bufferMillis);
+            final int bufferFrameCount = this.inputStream.getFormat().millisToFrameCount(bufferMillis);
+            final int bufferSampleCount = this.inputStream.getFormat().millisToSampleCount(bufferMillis);
             try {
                 while (!Thread.currentThread().isInterrupted()) {
                     while (!Thread.currentThread().isInterrupted() && this.getRemainingFrameCount() < bufferFrameCount) {
-                        final AudioBufferBuilder bufferBuilder = new AudioBufferBuilder(this.sampleInputStream.getFormat(), bufferSampleCount);
-                        try {
-                            for (int i = 0; i < bufferSampleCount; i++) {
-                                bufferBuilder.append(this.sampleInputStream.readSample());
-                            }
-                        } catch (final EOFException e) {
+                        final float[] buffer = this.inputStream.read(bufferSampleCount);
+                        this.enqueueBuffer(new AudioBuffer(this.inputStream.getFormat(), buffer));
+                        if (buffer.length < bufferSampleCount) {
                             Thread.currentThread().interrupt();
                         }
-                        this.enqueueBuffer(bufferBuilder.build());
-                        Thread.sleep(10);
                     }
-                    Thread.sleep(100);
+                    Thread.sleep(10);
                 }
             } catch (final InterruptedException ignored) {
             } catch (final Throwable e) {
@@ -88,7 +82,7 @@ public class PullAudioSource extends StreamingAudioSource implements Closeable {
     @Override
     public void close() throws IOException {
         this.readThread.interrupt();
-        this.sampleInputStream.close();
+        this.inputStream.close();
     }
 
 }

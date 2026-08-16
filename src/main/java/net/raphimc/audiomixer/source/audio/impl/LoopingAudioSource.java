@@ -52,7 +52,7 @@ public class LoopingAudioSource extends BufferedAudioSource {
         this.loopBuffer.clear();
         int sourcePosition = (int) this.position;
         final float pitch = this.getFormat().sampleRate() / buffer.format().sampleRate();
-        int neededFrameCount = (int) Math.ceil((double) buffer.getFrameCount() * pitch) + MARGIN_FRAME_COUNT;
+        int neededFrameCount = (int) Math.ceil((double) buffer.frameCount() * pitch) + MARGIN_FRAME_COUNT;
         if (sourcePosition < this.loopStartPosition && neededFrameCount > 0) { // Intro
             final int frameCount = Math.min(neededFrameCount, this.loopStartPosition - sourcePosition);
             this.loopBuffer.append(this.buffer, sourcePosition, frameCount);

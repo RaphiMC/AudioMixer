@@ -19,7 +19,7 @@ package net.raphimc.audiomixer.processor.effect;
 
 import net.raphimc.audiomixer.parameter.FloatParameter;
 import net.raphimc.audiomixer.processor.FormatDependentProcessor;
-import net.raphimc.audiomixer.util.FloatAudioFormat;
+import net.raphimc.audiomixer.util.AudioFormat;
 import net.raphimc.audiomixer.util.buffer.AudioBuffer;
 
 public class SampleAndHoldProcessor extends FormatDependentProcessor<SampleAndHoldProcessor.InternalProcessor> {
@@ -38,7 +38,7 @@ public class SampleAndHoldProcessor extends FormatDependentProcessor<SampleAndHo
     }
 
     @Override
-    protected InternalProcessor createInternalProcessor(final FloatAudioFormat format) {
+    protected InternalProcessor createInternalProcessor(final AudioFormat format) {
         return new InternalProcessor(format);
     }
 
@@ -47,7 +47,7 @@ public class SampleAndHoldProcessor extends FormatDependentProcessor<SampleAndHo
         private final float[] heldSamples;
         private int holdFramesRemaining;
 
-        private InternalProcessor(final FloatAudioFormat format) {
+        private InternalProcessor(final AudioFormat format) {
             super(format);
             this.heldSamples = new float[format.channels()];
         }
@@ -73,7 +73,7 @@ public class SampleAndHoldProcessor extends FormatDependentProcessor<SampleAndHo
         }
 
         @Override
-        protected boolean supports(final FloatAudioFormat other) {
+        protected boolean supports(final AudioFormat other) {
             return this.format.channels() == other.channels();
         }
 

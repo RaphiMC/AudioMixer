@@ -51,7 +51,7 @@ public class Mixer extends Source implements Collection<Source> {
         final long startTime = System.nanoTime();
         super.render(buffer);
         final float neededMillis = (System.nanoTime() - startTime) / 1_000_000F;
-        final float availableMillis = buffer.getMillisecondLength();
+        final float availableMillis = buffer.millisecondLength();
         this.processingLoad = (neededMillis / availableMillis) * 100F;
     }
 

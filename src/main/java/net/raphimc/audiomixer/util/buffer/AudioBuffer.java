@@ -17,12 +17,12 @@
  */
 package net.raphimc.audiomixer.util.buffer;
 
-import net.raphimc.audiomixer.util.FloatAudioFormat;
+import net.raphimc.audiomixer.util.AudioFormat;
 import net.raphimc.audiomixer.util.math.MathUtil;
 
 import java.util.Arrays;
 
-public record AudioBuffer(FloatAudioFormat format, float[] samples) {
+public record AudioBuffer(AudioFormat format, float[] samples) {
 
     public AudioBuffer {
         if (samples.length % format.channels() != 0) {
@@ -30,7 +30,7 @@ public record AudioBuffer(FloatAudioFormat format, float[] samples) {
         }
     }
 
-    public AudioBuffer(final FloatAudioFormat format, final int frameCount) {
+    public AudioBuffer(final AudioFormat format, final int frameCount) {
         this(format, new float[frameCount * format.channels()]);
     }
 
@@ -80,7 +80,7 @@ public record AudioBuffer(FloatAudioFormat format, float[] samples) {
     }
 
     public AudioBuffer createWorkBuffer() {
-        return new AudioBuffer(this.format, this.getFrameCount());
+        return new AudioBuffer(this.format, this.frameCount());
     }
 
     public float peakAmplitude() {
@@ -91,16 +91,16 @@ public record AudioBuffer(FloatAudioFormat format, float[] samples) {
         return peak;
     }
 
-    public int getSampleCount() {
+    public int sampleCount() {
         return this.samples.length;
     }
 
-    public int getFrameCount() {
-        return this.format.sampleCountToFrameCount(this.getSampleCount());
+    public int frameCount() {
+        return this.format.sampleCountToFrameCount(this.sampleCount());
     }
 
-    public float getMillisecondLength() {
-        return this.format.sampleCountToMillis(this.getSampleCount());
+    public float millisecondLength() {
+        return this.format.sampleCountToMillis(this.sampleCount());
     }
 
     public AudioBuffer append(final AudioBuffer other) {

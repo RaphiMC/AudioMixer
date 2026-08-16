@@ -15,26 +15,35 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+package net.raphimc.audiomixer.io;
 
-import net.raphimc.audiomixer.SourceDataLineAudioMixer;
-import net.raphimc.audiomixer.io.AudioIo;
-import net.raphimc.audiomixer.source.audio.impl.PullAudioSource;
+import net.raphimc.audiomixer.util.AudioFormat;
 
-import javax.sound.sampled.AudioFormat;
-import javax.sound.sampled.AudioSystem;
-import java.net.URL;
+import java.io.Closeable;
+import java.io.IOException;
 
-public final class StreamedPlaybackExample {
+public abstract class AudioOutputStream implements Closeable {
 
-    private StreamedPlaybackExample() {
+    private final AudioFormat format;
+
+    public AudioOutputStream(final AudioFormat format) {
+        this.format = format;
     }
 
-    public static void main(final String[] args) throws Throwable {
-        final AudioFormat format = new AudioFormat(48000, 16, 2, true, false);
-        final SourceDataLineAudioMixer audioMixer = new SourceDataLineAudioMixer(AudioSystem.getSourceDataLine(format));
-        audioMixer.add(new PullAudioSource(AudioIo.open(new URL("https://ncs.io/track/download/f76817e2-fa17-4317-af1a-8bf4d5cc68a9").openStream())));
+    public abstract void write(final float sample) throws IOException;
 
-        Thread.sleep(Integer.MAX_VALUE);
+    public void write(final float[] samples) throws IOException {
+        this.write(samples, 0, samples.length);
+    }
+
+    public void write(final float[] samples, final int offset, final int length) throws IOException {
+        for (int i = 0; i < length; i++) {
+            this.write(samples[offset + i]);
+        }
+    }
+
+    public AudioFormat getFormat() {
+        return this.format;
     }
 
 }

@@ -18,7 +18,7 @@
 
 import net.raphimc.audiomixer.AudioMixer;
 import net.raphimc.audiomixer.source.audio.impl.BufferedAudioSource;
-import net.raphimc.audiomixer.util.FloatAudioFormat;
+import net.raphimc.audiomixer.util.AudioFormat;
 import net.raphimc.audiomixer.util.buffer.AudioBuffer;
 
 import java.util.Random;
@@ -29,7 +29,7 @@ public final class Benchmark {
     }
 
     public static void main(final String[] args) {
-        final FloatAudioFormat outputFormat = new FloatAudioFormat(48000, 2);
+        final AudioFormat outputFormat = new AudioFormat(48000, 2);
         final AudioBuffer buffer = new AudioBuffer(outputFormat.withChannels(1), 48000 * 10);
         final float[] samples = buffer.samples();
         final Random random = new Random();

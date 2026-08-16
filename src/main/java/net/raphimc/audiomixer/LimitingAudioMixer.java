@@ -21,7 +21,7 @@ import net.raphimc.audiomixer.parameter.FloatParameter;
 import net.raphimc.audiomixer.processor.dynamics.GainProcessor;
 import net.raphimc.audiomixer.processor.dynamics.LimiterProcessor;
 import net.raphimc.audiomixer.processor.effect.HardClipProcessor;
-import net.raphimc.audiomixer.util.FloatAudioFormat;
+import net.raphimc.audiomixer.util.AudioFormat;
 import net.raphimc.audiomixer.util.buffer.AudioBuffer;
 
 public class LimitingAudioMixer extends AudioMixer {
@@ -30,8 +30,8 @@ public class LimitingAudioMixer extends AudioMixer {
     private final GainProcessor gainProcessor = new GainProcessor(1F);
     private final HardClipProcessor hardClipProcessor = new HardClipProcessor();
 
-    public LimitingAudioMixer(final FloatAudioFormat audioFormat) {
-        super(audioFormat);
+    public LimitingAudioMixer(final AudioFormat format) {
+        super(format);
     }
 
     @Override

@@ -19,18 +19,18 @@ package net.raphimc.audiomixer.source.audio.impl;
 
 import net.raphimc.audiomixer.resampler.Resampler;
 import net.raphimc.audiomixer.source.audio.StreamingAudioSource;
-import net.raphimc.audiomixer.util.FloatAudioFormat;
+import net.raphimc.audiomixer.util.AudioFormat;
 import net.raphimc.audiomixer.util.buffer.AudioBuffer;
 
 public class PushAudioSource extends StreamingAudioSource implements AutoCloseable {
 
     private boolean closed;
 
-    public PushAudioSource(final FloatAudioFormat format) {
+    public PushAudioSource(final AudioFormat format) {
         super(format);
     }
 
-    public PushAudioSource(final FloatAudioFormat format, final Resampler resampler) {
+    public PushAudioSource(final AudioFormat format, final Resampler resampler) {
         super(format, resampler);
     }
 

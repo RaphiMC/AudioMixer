@@ -17,9 +17,11 @@
  */
 package net.raphimc.audiomixer.util.math;
 
-import javax.sound.sampled.AudioFormat;
-
 public final class MathUtil {
+
+    public static final int MEDIUM_BYTES = 3;
+    public static final int MEDIUM_MIN_VALUE = -8388608;
+    public static final int MEDIUM_MAX_VALUE = 8388607;
 
     public static final double HALF_PI = Math.PI / 2D;
     public static final double TWO_PI = Math.PI * 2D;
@@ -51,26 +53,6 @@ public final class MathUtil {
 
     public static float gainToDb(final float gain) {
         return (float) (20D * Math.log10(gain));
-    }
-
-    public static int millisToFrameCount(final AudioFormat audioFormat, final float millis) {
-        return (int) Math.ceil(audioFormat.getSampleRate() / 1000F * millis);
-    }
-
-    public static int millisToByteCount(final AudioFormat audioFormat, final float millis) {
-        return millisToFrameCount(audioFormat, millis) * audioFormat.getFrameSize();
-    }
-
-    public static float sampleCountToMillis(final AudioFormat audioFormat, final int sampleCount) {
-        return (sampleCount / (audioFormat.getSampleRate() * audioFormat.getChannels())) * 1000F;
-    }
-
-    public static int sampleCountToByteCount(final AudioFormat audioFormat, final int sampleCount) {
-        return sampleCount * (audioFormat.getSampleSizeInBits() / Byte.SIZE);
-    }
-
-    public static int byteCountToFrameCount(final AudioFormat audioFormat, final int byteCount) {
-        return byteCount / audioFormat.getFrameSize();
     }
 
 }

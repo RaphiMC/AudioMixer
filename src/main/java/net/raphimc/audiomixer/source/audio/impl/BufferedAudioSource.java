@@ -32,7 +32,7 @@ public class BufferedAudioSource extends AudioSource {
     }
 
     public int getFrameCount() {
-        return this.buffer.getFrameCount();
+        return this.buffer.frameCount();
     }
 
     public double getPosition() {

@@ -6,12 +6,6 @@ plugins {
     id "audio-mixer.publishing-conventions"
 }
 
-checkstyle {
-    configProperties += [
-        allowedAbbreviationLength: 1
-    ]
-}
-
 dependencies {
     compileOnly "org.jetbrains:annotations:26.1.0"
 

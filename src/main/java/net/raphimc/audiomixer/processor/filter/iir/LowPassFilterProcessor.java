@@ -19,7 +19,7 @@ package net.raphimc.audiomixer.processor.filter.iir;
 
 import net.raphimc.audiomixer.parameter.FloatParameter;
 import net.raphimc.audiomixer.processor.filter.BiquadFilterProcessor;
-import net.raphimc.audiomixer.util.FloatAudioFormat;
+import net.raphimc.audiomixer.util.AudioFormat;
 import net.raphimc.audiomixer.util.math.MathUtil;
 
 public class LowPassFilterProcessor extends BiquadFilterProcessor<LowPassFilterProcessor.InternalProcessor> {
@@ -45,7 +45,7 @@ public class LowPassFilterProcessor extends BiquadFilterProcessor<LowPassFilterP
     }
 
     @Override
-    protected InternalProcessor createInternalProcessor(final FloatAudioFormat format) {
+    protected InternalProcessor createInternalProcessor(final AudioFormat format) {
         final InternalProcessor internalProcessor = new InternalProcessor(format);
         internalProcessor.applyParameters(this.frequency.get(), this.q.get());
         return internalProcessor;
@@ -60,7 +60,7 @@ public class LowPassFilterProcessor extends BiquadFilterProcessor<LowPassFilterP
 
     protected static final class InternalProcessor extends BiquadFilterProcessor.InternalProcessor {
 
-        private InternalProcessor(final FloatAudioFormat format) {
+        private InternalProcessor(final AudioFormat format) {
             super(format);
         }
 

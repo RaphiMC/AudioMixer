@@ -17,7 +17,7 @@
  */
 package net.raphimc.audiomixer.processor;
 
-import net.raphimc.audiomixer.util.FloatAudioFormat;
+import net.raphimc.audiomixer.util.AudioFormat;
 import net.raphimc.audiomixer.util.buffer.AudioBuffer;
 
 public abstract class FormatDependentProcessor<IP extends FormatDependentProcessor.InternalProcessor> extends Processor {
@@ -32,7 +32,7 @@ public abstract class FormatDependentProcessor<IP extends FormatDependentProcess
         this.internalProcessor.process(buffer);
     }
 
-    protected abstract IP createInternalProcessor(final FloatAudioFormat format);
+    protected abstract IP createInternalProcessor(final AudioFormat format);
 
     protected IP getInternalProcessor() {
         return this.internalProcessor;
@@ -40,13 +40,13 @@ public abstract class FormatDependentProcessor<IP extends FormatDependentProcess
 
     protected abstract static class InternalProcessor extends Processor {
 
-        protected final FloatAudioFormat format;
+        protected final AudioFormat format;
 
-        protected InternalProcessor(final FloatAudioFormat format) {
+        protected InternalProcessor(final AudioFormat format) {
             this.format = format;
         }
 
-        protected boolean supports(final FloatAudioFormat other) {
+        protected boolean supports(final AudioFormat other) {
             return this.format.equals(other);
         }
 

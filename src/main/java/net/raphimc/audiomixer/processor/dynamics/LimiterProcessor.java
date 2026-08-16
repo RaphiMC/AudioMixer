@@ -50,7 +50,7 @@ public class LimiterProcessor extends Processor {
         final int channels = buffer.format().channels();
         final float[] samples = buffer.samples();
 
-        final float[] framePeaks = new float[buffer.getFrameCount()];
+        final float[] framePeaks = new float[buffer.frameCount()];
         for (int frame = 0; frame < framePeaks.length; frame++) {
             for (int channel = 0; channel < channels; channel++) {
                 framePeaks[frame] = Math.max(Math.abs(samples[frame * channels + channel]), framePeaks[frame]);

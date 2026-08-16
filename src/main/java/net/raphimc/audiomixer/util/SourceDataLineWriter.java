@@ -17,9 +17,8 @@
  */
 package net.raphimc.audiomixer.util;
 
-import net.raphimc.audiomixer.io.raw.SampleOutputStream;
+import net.raphimc.audiomixer.io.pcm.PcmAudioOutputStream;
 import net.raphimc.audiomixer.util.buffer.AudioBuffer;
-import net.raphimc.audiomixer.util.math.MathUtil;
 
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
@@ -28,6 +27,7 @@ import java.io.ByteArrayOutputStream;
 public class SourceDataLineWriter implements AutoCloseable {
 
     private final SourceDataLine sourceDataLine;
+    private final PcmAudioFormat format;
     private final Callback callback;
     private Thread writerThread;
     private boolean interrupted; // Java clears the interrupt flag in SourceDataLine#write() and doesn't rethrow InterruptedException
@@ -38,8 +38,9 @@ public class SourceDataLineWriter implements AutoCloseable {
             throw new IllegalArgumentException("Buffer millis must be > 0");
         }
         this.sourceDataLine = sourceDataLine;
-        this.sourceDataLine.open(this.sourceDataLine.getFormat(), MathUtil.millisToByteCount(this.sourceDataLine.getFormat(), bufferMillis));
+        this.format = JavaAudioFormatUtil.getPcmAudioFormat(this.sourceDataLine.getFormat());
         this.callback = callback;
+        this.sourceDataLine.open(this.sourceDataLine.getFormat(), this.format.millisToByteCount(bufferMillis));
     }
 
     public void start() {
@@ -54,20 +55,18 @@ public class SourceDataLineWriter implements AutoCloseable {
                 while (!Thread.currentThread().isInterrupted() && !this.interrupted) {
                     while (this.sourceDataLine.available() > 0 && !Thread.currentThread().isInterrupted() && !this.interrupted) {
                         final long startTime = System.nanoTime();
-                        final float[] samples = this.callback.renderAudio(MathUtil.byteCountToFrameCount(this.sourceDataLine.getFormat(), this.sourceDataLine.available())).samples();
-                        final ByteArrayOutputStream baos = new ByteArrayOutputStream(MathUtil.sampleCountToByteCount(this.sourceDataLine.getFormat(), samples.length));
-                        final SampleOutputStream sos = new SampleOutputStream(baos, this.sourceDataLine.getFormat());
-                        for (float sample : samples) {
-                            sos.writeSample(sample);
+                        final AudioBuffer buffer = this.callback.renderAudio(this.format.byteCountToFrameCount(this.sourceDataLine.available()));
+                        final ByteArrayOutputStream baos = new ByteArrayOutputStream(this.format.frameCountToByteCount(buffer.frameCount()));
+                        try (PcmAudioOutputStream aos = new PcmAudioOutputStream(baos, this.format)) {
+                            aos.write(buffer.samples());
                         }
-                        final byte[] sampleData = baos.toByteArray();
+                        final byte[] pcmData = baos.toByteArray();
                         if (!this.sourceDataLine.isActive()) {
                             this.sourceDataLine.start();
                         }
                         final float neededMillis = (System.nanoTime() - startTime) / 1_000_000F;
-                        final float availableMillis = MathUtil.sampleCountToMillis(this.sourceDataLine.getFormat(), samples.length);
-                        this.processingLoad = (neededMillis / availableMillis) * 100F;
-                        this.sourceDataLine.write(sampleData, 0, sampleData.length);
+                        this.processingLoad = (neededMillis / buffer.millisecondLength()) * 100F;
+                        this.sourceDataLine.write(pcmData, 0, pcmData.length);
                     }
                     Thread.sleep(1);
                 }
