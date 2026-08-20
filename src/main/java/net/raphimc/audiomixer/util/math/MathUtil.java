@@ -39,6 +39,10 @@ public final class MathUtil {
         return Math.max(min, Math.min(value, max));
     }
 
+    public static float map(final float value, final float inMin, final float inMax, final float outMin, final float outMax) {
+        return (value - inMin) / (inMax - inMin) * (outMax - outMin) + outMin;
+    }
+
     public static int roundDownToMultiple(final int value, final int multiple) {
         return (value / multiple) * multiple;
     }
