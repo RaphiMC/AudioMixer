@@ -19,12 +19,12 @@ package net.raphimc.audiomixer.automation.finite;
 
 import net.raphimc.audiomixer.automation.Automation;
 import net.raphimc.audiomixer.parameter.FloatParameter;
-import net.raphimc.audiomixer.util.ListenerList;
+import net.raphimc.audiomixer.util.collection.ConsumerListenerList;
 import net.raphimc.audiomixer.util.math.MathUtil;
 
 public abstract class FiniteAutomation extends Automation {
 
-    private final ListenerList<Automation> finishListeners = new ListenerList<>();
+    private final ConsumerListenerList<Automation> finishListeners = new ConsumerListenerList<>();
     private final float duration;
 
     public FiniteAutomation(final FloatParameter parameter, final float duration) {
@@ -39,7 +39,7 @@ public abstract class FiniteAutomation extends Automation {
     public void advance(final float deltaTime) {
         super.advance(deltaTime);
         if (this.isFinished()) {
-            this.finishListeners.invoke(this);
+            this.finishListeners.accept(this);
         }
     }
 
@@ -47,7 +47,7 @@ public abstract class FiniteAutomation extends Automation {
         return this.getTime() >= this.duration;
     }
 
-    public ListenerList<Automation> finishListeners() {
+    public ConsumerListenerList<Automation> finishListeners() {
         return this.finishListeners;
     }
 

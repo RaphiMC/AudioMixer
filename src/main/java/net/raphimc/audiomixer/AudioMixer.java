@@ -19,13 +19,13 @@ package net.raphimc.audiomixer;
 
 import net.raphimc.audiomixer.mixer.Mixer;
 import net.raphimc.audiomixer.util.AudioFormat;
-import net.raphimc.audiomixer.util.ListenerList;
 import net.raphimc.audiomixer.util.buffer.AudioBuffer;
+import net.raphimc.audiomixer.util.collection.RunnableTaskList;
 
 public class AudioMixer extends Mixer {
 
     private final AudioFormat format;
-    private final ListenerList<AudioMixer> preRenderActions = new ListenerList<>();
+    private final RunnableTaskList preRenderTasks = new RunnableTaskList();
 
     public AudioMixer(final AudioFormat format) {
         this.format = format;
@@ -43,8 +43,7 @@ public class AudioMixer extends Mixer {
 
     @Override
     public void render(final AudioBuffer buffer) {
-        this.preRenderActions.invoke(this);
-        this.preRenderActions.clear();
+        this.preRenderTasks.run();
         super.render(buffer);
     }
 
@@ -52,8 +51,8 @@ public class AudioMixer extends Mixer {
         return this.format;
     }
 
-    public ListenerList<AudioMixer> preRenderActions() {
-        return this.preRenderActions;
+    public RunnableTaskList preRenderTasks() {
+        return this.preRenderTasks;
     }
 
 }

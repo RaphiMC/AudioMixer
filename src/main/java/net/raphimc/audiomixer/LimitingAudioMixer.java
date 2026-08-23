@@ -27,7 +27,7 @@ import net.raphimc.audiomixer.util.buffer.AudioBuffer;
 public class LimitingAudioMixer extends AudioMixer {
 
     private final LimiterProcessor limiterProcessor = new LimiterProcessor();
-    private final GainProcessor gainProcessor = new GainProcessor(1F);
+    private final GainProcessor gainProcessor = new GainProcessor();
     private final HardClipProcessor hardClipProcessor = new HardClipProcessor();
 
     public LimitingAudioMixer(final AudioFormat format) {

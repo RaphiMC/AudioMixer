@@ -15,27 +15,36 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.raphimc.audiomixer.source;
+package net.raphimc.audiomixer.util.collection;
 
-import net.raphimc.audiomixer.util.buffer.AudioBuffer;
-import net.raphimc.audiomixer.util.collection.ConsumerListenerList;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
-public abstract class FiniteSource extends Source {
+public class RunnableTaskList {
 
-    private final ConsumerListenerList<Source> finishListeners = new ConsumerListenerList<>();
+    private final Queue<Runnable> tasks = new ConcurrentLinkedQueue<>();
 
-    @Override
-    public void render(final AudioBuffer buffer) {
-        super.render(buffer);
-        if (this.isFinished()) {
-            this.finishListeners.accept(this);
+    public void run() {
+        Runnable task;
+        while ((task = this.tasks.poll()) != null) {
+            task.run();
         }
     }
 
-    public abstract boolean isFinished();
+    public boolean add(final Runnable task) {
+        return this.tasks.add(task);
+    }
 
-    public ConsumerListenerList<Source> finishListeners() {
-        return this.finishListeners;
+    public boolean remove(final Runnable task) {
+        return this.tasks.remove(task);
+    }
+
+    public boolean contains(final Runnable task) {
+        return this.tasks.contains(task);
+    }
+
+    public boolean isEmpty() {
+        return this.tasks.isEmpty();
     }
 
 }
