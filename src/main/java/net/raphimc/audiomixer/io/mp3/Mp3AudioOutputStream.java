@@ -48,7 +48,7 @@ public class Mp3AudioOutputStream extends AudioOutputStream {
     private final FloatRingBuffer samplesBuffer;
     private final float[] interleavedSamples;
     private final int[][] channelSamples;
-    private final byte[] mp3Buffer;
+    private final byte[] encodeOutputBuffer;
     private final long dataStartPosition;
 
     public Mp3AudioOutputStream(final OutputStream outputStream, final AudioFormat format) throws IOException {
@@ -128,7 +128,7 @@ public class Mp3AudioOutputStream extends AudioOutputStream {
         this.samplesBuffer = new FloatRingBuffer(this.instance.framesize * this.instance.num_channels);
         this.interleavedSamples = new float[this.samplesBuffer.capacity()];
         this.channelSamples = new int[2][this.instance.framesize];
-        this.mp3Buffer = new byte[(int) Math.ceil(1.25F * this.instance.framesize + 7200)];
+        this.encodeOutputBuffer = new byte[(int) Math.ceil(1.25F * this.instance.framesize + 7200)];
 
         if (this.id3Tag != null) {
             final byte[] id3v2Tag = new byte[this.id3Tag.lame_get_id3v2_tag(this.instance, null, 0)];
@@ -151,8 +151,8 @@ public class Mp3AudioOutputStream extends AudioOutputStream {
         if (!this.samplesBuffer.isEmpty()) {
             this.flushSamplesBuffer();
         }
-        final int length = checkResult(this.lame.lame_encode_flush(this.instance, this.mp3Buffer, 0, this.mp3Buffer.length), "Failed to flush encoder");
-        this.outputStream.write(this.mp3Buffer, 0, length);
+        final int length = checkResult(this.lame.lame_encode_flush(this.instance, this.encodeOutputBuffer, 0, this.encodeOutputBuffer.length), "Failed to flush encoder");
+        this.outputStream.write(this.encodeOutputBuffer, 0, length);
 
         if (this.id3Tag != null) {
             final byte[] id3v1Tag = new byte[this.id3Tag.lame_get_id3v1_tag(this.instance, null, 0)];
@@ -183,13 +183,13 @@ public class Mp3AudioOutputStream extends AudioOutputStream {
                 channelSamples[frame] = Math.round(this.interleavedSamples[frame * channels + channel] * Integer.MAX_VALUE);
             }
         }
-        final int length = checkResult(this.lame.lame_encode_buffer_int(this.instance, this.channelSamples[0], this.channelSamples[1], frameCount, this.mp3Buffer, 0, this.mp3Buffer.length), "Failed to encode buffer");
-        this.outputStream.write(this.mp3Buffer, 0, length);
+        final int length = checkResult(this.lame.lame_encode_buffer_int(this.instance, this.channelSamples[0], this.channelSamples[1], frameCount, this.encodeOutputBuffer, 0, this.encodeOutputBuffer.length), "Failed to encode buffer");
+        this.outputStream.write(this.encodeOutputBuffer, 0, length);
     }
 
     private static int checkResult(final int result, final String message) {
         if (result < 0) {
-            throw new RuntimeException(message + " (LAME error code: " + result + ")");
+            throw new RuntimeException(message + " (error code: " + result + ")");
         } else {
             return result;
         }

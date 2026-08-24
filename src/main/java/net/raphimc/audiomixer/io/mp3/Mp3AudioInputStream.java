@@ -24,7 +24,6 @@ import javazoom.jl.decoder.DecoderException;
 import javazoom.jl.decoder.Header;
 import javazoom.jl.decoder.SampleBuffer;
 import net.raphimc.audiomixer.io.AudioInputStream;
-import net.raphimc.audiomixer.io.ogg.OggInputStream;
 import net.raphimc.audiomixer.util.AudioFormat;
 import net.raphimc.audiomixer.util.buffer.FloatRingBuffer;
 
@@ -35,9 +34,9 @@ import java.io.InputStream;
 public class Mp3AudioInputStream extends AudioInputStream {
 
     private final Bitstream mp3InputStream;
-    private final SampleBuffer outputBuffer;
-    private final FloatRingBuffer samplesBuffer;
     private final Decoder decoder = new Decoder();
+    private final SampleBuffer decodeOutputBuffer;
+    private final FloatRingBuffer samplesBuffer;
 
     public Mp3AudioInputStream(final InputStream inputStream) throws IOException {
         this(new CodeBeforeSuper(inputStream));
@@ -46,15 +45,15 @@ public class Mp3AudioInputStream extends AudioInputStream {
     private Mp3AudioInputStream(final CodeBeforeSuper codeBeforeSuper) {
         super(new AudioFormat(codeBeforeSuper.firstFrame.frequency(), codeBeforeSuper.firstFrame.mode() == Header.SINGLE_CHANNEL ? 1 : 2));
         this.mp3InputStream = codeBeforeSuper.mp3InputStream;
-        this.outputBuffer = new SampleBuffer(codeBeforeSuper.firstFrame.frequency(), this.getFormat().channels());
-        this.samplesBuffer = new FloatRingBuffer(OggInputStream.BUFFER_SIZE * this.getFormat().channels());
-        this.decoder.setOutputBuffer(this.outputBuffer);
+        this.decodeOutputBuffer = new SampleBuffer(codeBeforeSuper.firstFrame.frequency(), this.getFormat().channels());
+        this.samplesBuffer = new FloatRingBuffer(this.decodeOutputBuffer.getBuffer().length);
+        this.decoder.setOutputBuffer(this.decodeOutputBuffer);
     }
 
     @Override
     public float read() throws IOException {
         while (this.samplesBuffer.isEmpty()) {
-            this.processNextFrame();
+            this.decodeNextFrame();
         }
         return this.samplesBuffer.read();
     }
@@ -64,23 +63,20 @@ public class Mp3AudioInputStream extends AudioInputStream {
         try {
             this.mp3InputStream.close();
         } catch (final BitstreamException e) {
-            throw new IOException("Failed to close mp3 stream", e);
+            throw unwrapBitstreamException(e);
         }
     }
 
-    private void processNextFrame() throws IOException {
+    private void decodeNextFrame() throws IOException {
         try {
             final Header frame = this.mp3InputStream.readFrame();
             if (frame == null) {
                 throw new EOFException();
             }
-
             this.decoder.decodeFrame(frame, this.mp3InputStream);
             this.mp3InputStream.closeFrame();
-
-            final short[] buffer = this.outputBuffer.getBuffer();
-            for (int i = 0; i < this.outputBuffer.getBufferLength(); i++) {
-                final short sample = buffer[i];
+            for (int i = 0; i < this.decodeOutputBuffer.getBufferLength(); i++) {
+                final short sample = this.decodeOutputBuffer.getBuffer()[i];
                 if (sample < 0) {
                     this.samplesBuffer.write(-(float) sample / Short.MIN_VALUE);
                 } else if (sample > 0) {
@@ -90,9 +86,17 @@ public class Mp3AudioInputStream extends AudioInputStream {
                 }
             }
         } catch (final BitstreamException e) {
-            throw new IOException("Failed to read mp3 frame", e);
+            throw unwrapBitstreamException(e);
         } catch (final DecoderException e) {
-            throw new IOException("Failed to decode mp3 frame", e);
+            throw new IOException("Failed to decode frame", e);
+        }
+    }
+
+    private static IOException unwrapBitstreamException(final BitstreamException e) {
+        if (e.getCause() instanceof IOException ioException) {
+            return ioException;
+        } else {
+            return new IOException("Malformed MP3 stream", e);
         }
     }
 
@@ -106,10 +110,10 @@ public class Mp3AudioInputStream extends AudioInputStream {
             try {
                 this.firstFrame = this.mp3InputStream.readFrame();
             } catch (final BitstreamException e) {
-                throw new IOException("Failed to read mp3 frame", e);
+                throw unwrapBitstreamException(e);
             }
             if (this.firstFrame == null) {
-                throw new EOFException("Unexpected end of mp3 stream");
+                throw new EOFException("Unexpected end of stream");
             }
         }
 

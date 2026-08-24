@@ -21,14 +21,12 @@ import com.jcraft.jogg.Packet;
 import com.jcraft.jogg.Page;
 import com.jcraft.jogg.StreamState;
 import com.jcraft.jogg.SyncState;
-import org.jetbrains.annotations.ApiStatus;
 
 import java.io.Closeable;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 
-@ApiStatus.Internal
 public class OggInputStream implements Closeable {
 
     public static final int BUFFER_SIZE = 8192; // Don't change. This is hardcoded in jorbis.
@@ -67,7 +65,7 @@ public class OggInputStream implements Closeable {
                 case PACKETOUT_SUCCESS -> {
                     return packet;
                 }
-                case PACKETOUT_ERROR -> throw new IOException("Corrupted ogg stream");
+                case PACKETOUT_ERROR -> throw new IOException("Malformed Ogg stream");
                 default -> throw new IllegalStateException("Unknown packet decode result: " + result);
             }
         }
@@ -82,7 +80,7 @@ public class OggInputStream implements Closeable {
                     final int offset = this.syncState.buffer(BUFFER_SIZE);
                     final int read = this.inputStream.read(this.syncState.data, offset, BUFFER_SIZE);
                     if (read == -1) {
-                        throw new EOFException("Unexpected end of ogg stream");
+                        throw new EOFException("Unexpected end of Ogg stream");
                     }
                     if (this.syncState.wrote(read) < 0) {
                         throw new IOException("Failed to update sync state");
@@ -91,7 +89,7 @@ public class OggInputStream implements Closeable {
                 case PAGEOUT_SUCCESS -> {
                     return page;
                 }
-                case PAGEOUT_ERROR -> throw new IOException("Corrupted ogg stream");
+                case PAGEOUT_ERROR -> throw new IOException("Malformed Ogg stream");
                 default -> throw new IllegalStateException("Unknown page decode result: " + result);
             }
         }

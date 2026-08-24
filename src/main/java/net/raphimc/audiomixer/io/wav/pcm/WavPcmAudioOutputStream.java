@@ -15,12 +15,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.raphimc.audiomixer.io.wav;
+package net.raphimc.audiomixer.io.wav.pcm;
 
 import net.raphimc.audiomixer.io.pcm.PcmAudioOutputStream;
-import net.raphimc.audiomixer.io.wav.riff.RiffChunk;
-import net.raphimc.audiomixer.io.wav.riff.RiffOutputStream;
+import net.raphimc.audiomixer.util.AudioFormat;
 import net.raphimc.audiomixer.util.PcmAudioFormat;
+import net.raphimc.audiomixer.util.PcmSampleEncoding;
+import net.raphimc.audiomixer.util.io.riff.RiffChunk;
+import net.raphimc.audiomixer.util.io.riff.RiffOutputStream;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -36,6 +38,10 @@ public class WavPcmAudioOutputStream extends PcmAudioOutputStream {
 
     public WavPcmAudioOutputStream(final OutputStream outputStream, final PcmAudioFormat format, final long sampleCount) throws IOException {
         this(new CodeBeforeSuper(outputStream, format, sampleCount));
+    }
+
+    public WavPcmAudioOutputStream(final OutputStream outputStream, final AudioFormat format, final PcmSampleEncoding encoding, final long sampleCount) throws IOException {
+        this(outputStream, new PcmAudioFormat(format, encoding), sampleCount);
     }
 
     private WavPcmAudioOutputStream(final CodeBeforeSuper codeBeforeSuper) {

@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.raphimc.audiomixer.io.ogg;
+package net.raphimc.audiomixer.io.ogg.vorbis;
 
 import com.jcraft.jogg.Packet;
 import com.jcraft.jorbis.Block;
@@ -23,6 +23,7 @@ import com.jcraft.jorbis.Comment;
 import com.jcraft.jorbis.DspState;
 import com.jcraft.jorbis.Info;
 import net.raphimc.audiomixer.io.AudioInputStream;
+import net.raphimc.audiomixer.io.ogg.OggInputStream;
 import net.raphimc.audiomixer.util.AudioFormat;
 import net.raphimc.audiomixer.util.buffer.FloatRingBuffer;
 import net.raphimc.audiomixer.util.math.MathUtil;
@@ -52,7 +53,7 @@ public class OggVorbisAudioInputStream extends AudioInputStream {
     @Override
     public float read() throws IOException {
         while (this.samplesBuffer.isEmpty()) {
-            this.processNextPacket();
+            this.decodeNextPacket();
         }
         return this.samplesBuffer.read();
     }
@@ -62,7 +63,7 @@ public class OggVorbisAudioInputStream extends AudioInputStream {
         this.oggInputStream.close();
     }
 
-    private void processNextPacket() throws IOException {
+    private void decodeNextPacket() throws IOException {
         final Packet packet = this.oggInputStream.readPacket();
         if (this.block.synthesis(packet) < 0) {
             throw new IOException("Failed to decode audio packet");
@@ -100,7 +101,7 @@ public class OggVorbisAudioInputStream extends AudioInputStream {
             for (int i = 0; i < 3; i++) {
                 final Packet packet = this.oggInputStream.readPacket();
                 if (this.info.synthesis_headerin(this.comment, packet) < 0) {
-                    throw new IOException("Invalid ogg header packet " + i);
+                    throw new IOException("Invalid Ogg header packet " + i);
                 }
             }
             if (this.dspState.synthesis_init(this.info) < 0) {

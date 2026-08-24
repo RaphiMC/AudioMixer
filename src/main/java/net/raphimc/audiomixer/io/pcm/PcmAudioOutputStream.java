@@ -37,10 +37,6 @@ public class PcmAudioOutputStream extends AudioOutputStream {
         this(outputStream, format.format(), format.encoding());
     }
 
-    public PcmAudioOutputStream(final OutputStream outputStream, final float sampleRate, final int channels, final PcmSampleEncoding encoding) {
-        this(outputStream, new AudioFormat(sampleRate, channels), encoding);
-    }
-
     public PcmAudioOutputStream(final OutputStream outputStream, final AudioFormat format, final PcmSampleEncoding encoding) {
         super(format);
         this.outputStream = new BinaryOutputStream(outputStream);
@@ -60,7 +56,7 @@ public class PcmAudioOutputStream extends AudioOutputStream {
             case U32_BE, U32_LE -> this.writeUnsignedInt(sample, this.encoding.byteOrder());
             case F32_BE, F32_LE -> this.outputStream.writeFloat(sample, this.encoding.byteOrder());
             case F64_BE, F64_LE -> this.outputStream.writeDouble(sample, this.encoding.byteOrder());
-            default -> throw new IllegalStateException("Unsupported PCM format: " + this.encoding);
+            default -> throw new UnsupportedOperationException("Unsupported encoding: " + this.encoding);
         }
     }
 

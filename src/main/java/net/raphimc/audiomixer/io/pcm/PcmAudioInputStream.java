@@ -37,10 +37,6 @@ public class PcmAudioInputStream extends AudioInputStream {
         this(inputStream, format.format(), format.encoding());
     }
 
-    public PcmAudioInputStream(final InputStream inputStream, final float sampleRate, final int channels, final PcmSampleEncoding encoding) {
-        this(inputStream, new AudioFormat(sampleRate, channels), encoding);
-    }
-
     public PcmAudioInputStream(final InputStream inputStream, final AudioFormat format, final PcmSampleEncoding encoding) {
         super(format);
         this.inputStream = new BinaryInputStream(inputStream);

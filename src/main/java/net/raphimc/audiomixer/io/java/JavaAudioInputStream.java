@@ -34,12 +34,7 @@ public class JavaAudioInputStream extends PcmAudioInputStream {
     }
 
     private JavaAudioInputStream(final CodeBeforeSuper codeBeforeSuper) {
-        super(new BlockInputStream(codeBeforeSuper.inputStream, codeBeforeSuper.inputStream.getFormat().getFrameSize()), codeBeforeSuper.inputStream.getFormat().getSampleRate(), codeBeforeSuper.inputStream.getFormat().getChannels(), codeBeforeSuper.encoding);
-    }
-
-    @Override
-    public float read() throws IOException {
-        return super.read();
+        super(new BlockInputStream(codeBeforeSuper.inputStream, codeBeforeSuper.inputStream.getFormat().getFrameSize()), JavaAudioFormatUtil.getAudioFormat(codeBeforeSuper.inputStream.getFormat()), codeBeforeSuper.encoding);
     }
 
     private static final class CodeBeforeSuper {

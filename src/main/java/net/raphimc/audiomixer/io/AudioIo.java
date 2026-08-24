@@ -18,8 +18,8 @@
 package net.raphimc.audiomixer.io;
 
 import net.raphimc.audiomixer.io.mp3.Mp3AudioInputStream;
-import net.raphimc.audiomixer.io.ogg.OggVorbisAudioInputStream;
-import net.raphimc.audiomixer.io.wav.WavPcmAudioInputStream;
+import net.raphimc.audiomixer.io.ogg.vorbis.OggVorbisAudioInputStream;
+import net.raphimc.audiomixer.io.wav.pcm.WavPcmAudioInputStream;
 import net.raphimc.audiomixer.resampler.impl.LinearResampler;
 import net.raphimc.audiomixer.util.AudioFormat;
 import net.raphimc.audiomixer.util.buffer.AudioBuffer;
@@ -32,7 +32,7 @@ import java.util.Arrays;
 
 public final class AudioIo {
 
-    private static final int BUFFER_SIZE = 1024 * 1024;
+    private static final int BUFFER_SIZE = 128 * 1024;
     private static final int MAGIC_LENGTH = 4;
     private static final byte[] WAV_MAGIC = new byte[]{(byte) 'R', (byte) 'I', (byte) 'F', (byte) 'F'};
     private static final byte[] OGG_MAGIC = new byte[]{(byte) 'O', (byte) 'g', (byte) 'g', (byte) 'S'};

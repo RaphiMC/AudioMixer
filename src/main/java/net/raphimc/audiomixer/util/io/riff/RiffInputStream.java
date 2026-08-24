@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.raphimc.audiomixer.io.wav.riff;
+package net.raphimc.audiomixer.util.io.riff;
 
 import net.raphimc.audiomixer.util.io.BinaryInputStream;
 import net.raphimc.audiomixer.util.io.BoundedInputStream;
@@ -39,7 +39,7 @@ public class RiffInputStream extends BinaryInputStream {
         this.rootChunk = new RiffListChunk(this.readFourCharCode(), chunk);
     }
 
-    public RiffChunk findNextChunk(final String identifier) throws IOException {
+    public RiffChunk readUntilChunk(final String identifier) throws IOException {
         while (true) {
             final RiffChunk chunk = this.readChunk();
             if (chunk.identifier().equals(identifier)) {

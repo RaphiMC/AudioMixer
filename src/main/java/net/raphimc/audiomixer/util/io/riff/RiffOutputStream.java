@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.raphimc.audiomixer.io.wav.riff;
+package net.raphimc.audiomixer.util.io.riff;
 
 import net.raphimc.audiomixer.util.io.BinaryOutputStream;
 import net.raphimc.audiomixer.util.io.BoundedOutputStream;

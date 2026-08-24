@@ -18,9 +18,8 @@
 
 import net.raphimc.audiomixer.AudioMixer;
 import net.raphimc.audiomixer.io.AudioIo;
-import net.raphimc.audiomixer.io.wav.WavPcmAudioOutputStream;
+import net.raphimc.audiomixer.io.wav.pcm.WavPcmAudioOutputStream;
 import net.raphimc.audiomixer.source.audio.impl.BufferedAudioSource;
-import net.raphimc.audiomixer.util.PcmAudioFormat;
 import net.raphimc.audiomixer.util.PcmSampleEncoding;
 import net.raphimc.audiomixer.util.buffer.AudioBuffer;
 import net.raphimc.audiomixer.util.buffer.AudioBufferBuilder;
@@ -59,7 +58,7 @@ public final class FileExample {
         // Trim trailing silence
         outputAudioBuffer = outputAudioBuffer.trimTrailingSilence();
         // Write the audio buffer to a file
-        final WavPcmAudioOutputStream wavOutputStream = new WavPcmAudioOutputStream(new BufferedOutputStream(new FileOutputStream(output)), new PcmAudioFormat(outputAudioBuffer.format(), PcmSampleEncoding.S16_LE), outputAudioBuffer.sampleCount());
+        final WavPcmAudioOutputStream wavOutputStream = new WavPcmAudioOutputStream(new BufferedOutputStream(new FileOutputStream(output)), outputAudioBuffer.format(), PcmSampleEncoding.S16_LE, outputAudioBuffer.sampleCount());
         wavOutputStream.write(outputAudioBuffer.samples());
         wavOutputStream.close();
     }
