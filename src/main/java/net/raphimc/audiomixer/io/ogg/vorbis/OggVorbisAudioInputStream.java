@@ -30,24 +30,28 @@ import net.raphimc.audiomixer.util.math.MathUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Arrays;
 
 public class OggVorbisAudioInputStream extends AudioInputStream {
 
+    private static final byte[] VORBIS_MAGIC = new byte[]{(byte) 0x01, (byte) 'v', (byte) 'o', (byte) 'r', (byte) 'b', (byte) 'i', (byte) 's'};
+
     private final OggInputStream oggInputStream;
+    private final int vorbisStreamId;
+    private final DspState dspState = new DspState();
+    private final Block block = new Block(this.dspState);
     private final FloatRingBuffer samplesBuffer;
-    private final DspState dspState;
-    private final Block block;
 
     public OggVorbisAudioInputStream(final InputStream inputStream) throws IOException {
         this(new CodeBeforeSuper(inputStream));
     }
 
-    private OggVorbisAudioInputStream(final CodeBeforeSuper codeBeforeSuper) {
+    private OggVorbisAudioInputStream(final CodeBeforeSuper codeBeforeSuper) throws IOException {
         super(new AudioFormat(codeBeforeSuper.info.rate, codeBeforeSuper.info.channels));
         this.oggInputStream = codeBeforeSuper.oggInputStream;
-        this.samplesBuffer = new FloatRingBuffer(OggInputStream.BUFFER_SIZE * this.getFormat().channels());
-        this.dspState = codeBeforeSuper.dspState;
-        this.block = new Block(this.dspState);
+        this.vorbisStreamId = codeBeforeSuper.vorbisStreamId;
+        checkResult(this.dspState.synthesis_init(codeBeforeSuper.info), "Failed to initialize dsp state");
+        this.samplesBuffer = new FloatRingBuffer(8192 * this.getFormat().channels());
     }
 
     @Override
@@ -64,13 +68,9 @@ public class OggVorbisAudioInputStream extends AudioInputStream {
     }
 
     private void decodeNextPacket() throws IOException {
-        final Packet packet = this.oggInputStream.readPacket();
-        if (this.block.synthesis(packet) < 0) {
-            throw new IOException("Failed to decode audio packet");
-        }
-        if (this.dspState.synthesis_blockin(this.block) < 0) {
-            throw new IOException("Failed to submit audio block to dsp state");
-        }
+        final Packet packet = convertPacket(this.oggInputStream.readUntilPacket(this.vorbisStreamId));
+        checkResult(this.block.synthesis(packet), "Failed to decode audio packet");
+        checkResult(this.dspState.synthesis_blockin(this.block), "Failed to process audio block");
 
         final int channels = this.getFormat().channels();
         final float[][][] samplesRef = new float[1][][];
@@ -83,30 +83,46 @@ public class OggVorbisAudioInputStream extends AudioInputStream {
                     this.samplesBuffer.write(MathUtil.clamp(allSamples[channel][offsets[channel] + i], -1F, 1F)); // jorbis seems to return out of range samples sometimes
                 }
             }
-            if (this.dspState.synthesis_read(frameCount) < 0) {
-                throw new IOException("Failed to update dsp state");
-            }
+            checkResult(this.dspState.synthesis_read(frameCount), "Failed to update dsp state");
+        }
+    }
+
+    private static Packet convertPacket(final OggInputStream.OggPacket inPacket) {
+        final Packet outPacket = new Packet();
+        outPacket.packet_base = inPacket.data();
+        outPacket.bytes = inPacket.data().length;
+        outPacket.b_o_s = inPacket.bos() ? 1 : 0;
+        outPacket.e_o_s = inPacket.eos() ? 1 : 0;
+        outPacket.granulepos = inPacket.granulePosition();
+        outPacket.packetno = inPacket.packetNumber();
+        return outPacket;
+    }
+
+    private static void checkResult(final int result, final String message) throws IOException {
+        if (result < 0) {
+            throw new IOException(message + " (error code: " + result + ")");
         }
     }
 
     private static final class CodeBeforeSuper {
 
         private final OggInputStream oggInputStream;
+        private final int vorbisStreamId;
         private final Info info = new Info();
         private final Comment comment = new Comment();
-        private final DspState dspState = new DspState();
 
         private CodeBeforeSuper(final InputStream inputStream) throws IOException {
             this.oggInputStream = new OggInputStream(inputStream);
-            for (int i = 0; i < 3; i++) {
-                final Packet packet = this.oggInputStream.readPacket();
-                if (this.info.synthesis_headerin(this.comment, packet) < 0) {
-                    throw new IOException("Invalid Ogg header packet " + i);
+            while (true) {
+                final OggInputStream.OggPacket packet = this.oggInputStream.readPacket();
+                if (packet.bos() && packet.data().length >= VORBIS_MAGIC.length && Arrays.equals(packet.data(), 0, VORBIS_MAGIC.length, VORBIS_MAGIC, 0, VORBIS_MAGIC.length)) {
+                    this.vorbisStreamId = packet.streamId();
+                    checkResult(this.info.synthesis_headerin(this.comment, convertPacket(packet)), "Failed to process info packet");
+                    break;
                 }
             }
-            if (this.dspState.synthesis_init(this.info) < 0) {
-                throw new IOException("Failed to initialize dsp state");
-            }
+            checkResult(this.info.synthesis_headerin(this.comment, convertPacket(this.oggInputStream.readUntilPacket(this.vorbisStreamId))), "Failed to process comment packet");
+            checkResult(this.info.synthesis_headerin(this.comment, convertPacket(this.oggInputStream.readUntilPacket(this.vorbisStreamId))), "Failed to process setup packet");
         }
 
     }
