@@ -146,6 +146,25 @@ public class Mp3AudioOutputStream extends AudioOutputStream {
         }
     }
 
+    private void flushSamplesBuffer() throws IOException {
+        final int channels = this.getFormat().channels();
+        final int sampleCount = this.samplesBuffer.read(this.interleavedSamples, 0, this.interleavedSamples.length);
+        final int frameCount = sampleCount / channels;
+        for (int channel = 0; channel < channels; channel++) {
+            final int[] channelSamples = this.channelSamples[channel];
+            for (int frame = 0; frame < frameCount; frame++) {
+                channelSamples[frame] = Math.round(this.interleavedSamples[frame * channels + channel] * Integer.MAX_VALUE);
+            }
+        }
+        final int length = checkResult(this.lame.lame_encode_buffer_int(this.instance, this.channelSamples[0], this.channelSamples[1], frameCount, this.encodeOutputBuffer, 0, this.encodeOutputBuffer.length), "Failed to encode buffer");
+        this.outputStream.write(this.encodeOutputBuffer, 0, length);
+    }
+
+    @Override
+    public void flush() throws IOException {
+        this.outputStream.flush();
+    }
+
     @Override
     public void close() throws IOException {
         try (this.outputStream) {
@@ -172,20 +191,6 @@ public class Mp3AudioOutputStream extends AudioOutputStream {
 
             checkResult(this.lame.lame_close(this.instance), "Failed to close LAME instance");
         }
-    }
-
-    private void flushSamplesBuffer() throws IOException {
-        final int channels = this.getFormat().channels();
-        final int sampleCount = this.samplesBuffer.read(this.interleavedSamples, 0, this.interleavedSamples.length);
-        final int frameCount = sampleCount / channels;
-        for (int channel = 0; channel < channels; channel++) {
-            final int[] channelSamples = this.channelSamples[channel];
-            for (int frame = 0; frame < frameCount; frame++) {
-                channelSamples[frame] = Math.round(this.interleavedSamples[frame * channels + channel] * Integer.MAX_VALUE);
-            }
-        }
-        final int length = checkResult(this.lame.lame_encode_buffer_int(this.instance, this.channelSamples[0], this.channelSamples[1], frameCount, this.encodeOutputBuffer, 0, this.encodeOutputBuffer.length), "Failed to encode buffer");
-        this.outputStream.write(this.encodeOutputBuffer, 0, length);
     }
 
     private static int checkResult(final int result, final String message) {

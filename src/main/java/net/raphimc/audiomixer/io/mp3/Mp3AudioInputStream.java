@@ -58,15 +58,6 @@ public class Mp3AudioInputStream extends AudioInputStream {
         return this.samplesBuffer.read();
     }
 
-    @Override
-    public void close() throws IOException {
-        try {
-            this.mp3InputStream.close();
-        } catch (final BitstreamException e) {
-            throw unwrapBitstreamException(e);
-        }
-    }
-
     private void decodeNextFrame() throws IOException {
         try {
             final Header frame = this.mp3InputStream.readFrame();
@@ -89,6 +80,15 @@ public class Mp3AudioInputStream extends AudioInputStream {
             throw unwrapBitstreamException(e);
         } catch (final DecoderException e) {
             throw new IOException("Failed to decode frame", e);
+        }
+    }
+
+    @Override
+    public void close() throws IOException {
+        try {
+            this.mp3InputStream.close();
+        } catch (final BitstreamException e) {
+            throw unwrapBitstreamException(e);
         }
     }
 

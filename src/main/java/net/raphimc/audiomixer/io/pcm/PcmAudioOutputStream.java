@@ -60,15 +60,6 @@ public class PcmAudioOutputStream extends AudioOutputStream {
         }
     }
 
-    @Override
-    public void close() throws IOException {
-        this.outputStream.close();
-    }
-
-    public PcmSampleEncoding getEncoding() {
-        return this.encoding;
-    }
-
     private void writeSignedByte(final float sample) throws IOException {
         final byte value;
         if (sample < 0F) {
@@ -131,6 +122,20 @@ public class PcmAudioOutputStream extends AudioOutputStream {
 
     private void writeUnsignedInt(final float sample, final ByteOrder byteOrder) throws IOException {
         this.outputStream.writeUnsignedInt(Math.round((sample + 1F) * (Integer.MAX_VALUE + 0.5D)), byteOrder);
+    }
+
+    @Override
+    public void flush() throws IOException {
+        this.outputStream.flush();
+    }
+
+    @Override
+    public void close() throws IOException {
+        this.outputStream.close();
+    }
+
+    public PcmSampleEncoding getEncoding() {
+        return this.encoding;
     }
 
 }

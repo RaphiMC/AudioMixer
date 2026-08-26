@@ -20,9 +20,10 @@ package net.raphimc.audiomixer.io;
 import net.raphimc.audiomixer.util.AudioFormat;
 
 import java.io.Closeable;
+import java.io.Flushable;
 import java.io.IOException;
 
-public abstract class AudioOutputStream implements Closeable {
+public abstract class AudioOutputStream implements Flushable, Closeable {
 
     private final AudioFormat format;
 

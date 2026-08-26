@@ -59,15 +59,6 @@ public class PcmAudioInputStream extends AudioInputStream {
         };
     }
 
-    @Override
-    public void close() throws IOException {
-        this.inputStream.close();
-    }
-
-    public PcmSampleEncoding getEncoding() {
-        return this.encoding;
-    }
-
     private float readSignedByte() throws IOException {
         final byte value = this.inputStream.readByte();
         if (value < 0) {
@@ -126,6 +117,15 @@ public class PcmAudioInputStream extends AudioInputStream {
 
     private float readUnsignedInt(final ByteOrder byteOrder) throws IOException {
         return (float) (this.inputStream.readUnsignedInt(byteOrder) / (Integer.MAX_VALUE + 0.5D)) - 1F;
+    }
+
+    @Override
+    public void close() throws IOException {
+        this.inputStream.close();
+    }
+
+    public PcmSampleEncoding getEncoding() {
+        return this.encoding;
     }
 
 }

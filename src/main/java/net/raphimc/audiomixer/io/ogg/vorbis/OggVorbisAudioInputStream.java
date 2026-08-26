@@ -63,11 +63,6 @@ public class OggVorbisAudioInputStream extends AudioInputStream {
         return this.samplesBuffer.read();
     }
 
-    @Override
-    public void close() throws IOException {
-        this.oggInputStream.close();
-    }
-
     private void decodeNextPacket() throws IOException {
         final Packet packet = convertPacket(this.oggInputStream.readUntilPacket(this.vorbisStreamId));
         checkResult(this.block.synthesis(packet), "Failed to decode audio packet");
@@ -86,6 +81,11 @@ public class OggVorbisAudioInputStream extends AudioInputStream {
             }
             checkResult(this.dspState.synthesis_read(frameCount), "Failed to update dsp state");
         }
+    }
+
+    @Override
+    public void close() throws IOException {
+        this.oggInputStream.close();
     }
 
     private static Packet convertPacket(final OggInputStream.OggPacket inPacket) {
