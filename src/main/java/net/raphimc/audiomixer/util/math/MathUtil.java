@@ -35,6 +35,10 @@ public final class MathUtil {
         return Math.max(min, Math.min(value, max));
     }
 
+    public static long clamp(final long value, final long min, final long max) {
+        return Math.max(min, Math.min(value, max));
+    }
+
     public static float clamp(final float value, final float min, final float max) {
         return Math.max(min, Math.min(value, max));
     }

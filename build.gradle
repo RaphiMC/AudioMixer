@@ -10,7 +10,8 @@ dependencies {
     compileOnly "org.jetbrains:annotations:26.1.0"
 
     // Optional dependencies
-    compileOnly "org.jcraft:jorbis:0.0.17" // OggVorbisAudioInputStream
+    compileOnly "org.jcraft:jorbis:0.0.17" // OggInputStream, OggVorbisAudioInputStream
+    compileOnly "com.plasmoverse:concentus:1.0.0" // OggOpusAudioInputStream
     compileOnly "javazoom:jlayer:1.0.1" // Mp3AudioInputStream
     compileOnly "de.sciss:jump3r:1.0.5" // Mp3AudioOutputStream
 }
