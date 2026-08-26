@@ -18,10 +18,10 @@
 package net.raphimc.audiomixer.io.ogg.opus;
 
 import net.raphimc.audiomixer.io.AudioInputStream;
-import net.raphimc.audiomixer.io.ogg.OggInputStream;
 import net.raphimc.audiomixer.util.AudioFormat;
 import net.raphimc.audiomixer.util.buffer.FloatRingBuffer;
 import net.raphimc.audiomixer.util.io.BinaryInputStream;
+import net.raphimc.audiomixer.util.io.ogg.OggInputStream;
 import net.raphimc.audiomixer.util.math.MathUtil;
 import org.concentus.OpusDecoder;
 import org.concentus.OpusException;

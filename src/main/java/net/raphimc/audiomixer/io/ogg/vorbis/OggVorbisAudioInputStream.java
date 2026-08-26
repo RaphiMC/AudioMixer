@@ -23,9 +23,9 @@ import com.jcraft.jorbis.Comment;
 import com.jcraft.jorbis.DspState;
 import com.jcraft.jorbis.Info;
 import net.raphimc.audiomixer.io.AudioInputStream;
-import net.raphimc.audiomixer.io.ogg.OggInputStream;
 import net.raphimc.audiomixer.util.AudioFormat;
 import net.raphimc.audiomixer.util.buffer.FloatRingBuffer;
+import net.raphimc.audiomixer.util.io.ogg.OggInputStream;
 import net.raphimc.audiomixer.util.math.MathUtil;
 
 import java.io.IOException;
