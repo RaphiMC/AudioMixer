@@ -139,12 +139,13 @@ public class OggInputStream implements Closeable {
 
     @Override
     public void close() throws IOException {
-        for (StreamState streamState : this.streamStates.values()) {
-            streamState.clear();
+        try (this.inputStream) {
+            for (StreamState streamState : this.streamStates.values()) {
+                streamState.clear();
+            }
+            this.streamStates.clear();
+            checkResult(this.syncState.clear(), "Failed to clear sync state");
         }
-        this.streamStates.clear();
-        this.syncState.clear();
-        this.inputStream.close();
     }
 
     private static void checkResult(final int result, final String message) throws IOException {

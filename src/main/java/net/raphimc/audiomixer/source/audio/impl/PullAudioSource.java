@@ -81,8 +81,9 @@ public class PullAudioSource extends StreamingAudioSource implements Closeable {
 
     @Override
     public void close() throws IOException {
-        this.readThread.interrupt();
-        this.inputStream.close();
+        try (this.inputStream) {
+            this.readThread.interrupt();
+        }
     }
 
 }

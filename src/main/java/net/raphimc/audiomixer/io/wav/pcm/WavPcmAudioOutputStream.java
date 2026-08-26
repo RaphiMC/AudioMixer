@@ -51,8 +51,11 @@ public class WavPcmAudioOutputStream extends PcmAudioOutputStream {
 
     @Override
     public void close() throws IOException {
-        this.dataChunk.close();
-        super.close();
+        try {
+            this.dataChunk.close();
+        } finally {
+            super.close();
+        }
     }
 
     private static final class CodeBeforeSuper {

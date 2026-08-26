@@ -101,8 +101,9 @@ public class SourceDataLineWriter implements AutoCloseable {
 
     @Override
     public void close() {
-        this.stop();
-        this.sourceDataLine.close();
+        try (this.sourceDataLine) {
+            this.stop();
+        }
     }
 
     public boolean isRunning() {

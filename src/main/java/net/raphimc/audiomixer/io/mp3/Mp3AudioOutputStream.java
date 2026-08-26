@@ -148,29 +148,30 @@ public class Mp3AudioOutputStream extends AudioOutputStream {
 
     @Override
     public void close() throws IOException {
-        if (!this.samplesBuffer.isEmpty()) {
-            this.flushSamplesBuffer();
-        }
-        final int length = checkResult(this.lame.lame_encode_flush(this.instance, this.encodeOutputBuffer, 0, this.encodeOutputBuffer.length), "Failed to flush encoder");
-        this.outputStream.write(this.encodeOutputBuffer, 0, length);
+        try (this.outputStream) {
+            if (!this.samplesBuffer.isEmpty()) {
+                this.flushSamplesBuffer();
+            }
+            final int length = checkResult(this.lame.lame_encode_flush(this.instance, this.encodeOutputBuffer, 0, this.encodeOutputBuffer.length), "Failed to flush encoder");
+            this.outputStream.write(this.encodeOutputBuffer, 0, length);
 
-        if (this.id3Tag != null) {
-            final byte[] id3v1Tag = new byte[this.id3Tag.lame_get_id3v1_tag(this.instance, null, 0)];
-            final int id3v1TagLength = checkResult(this.id3Tag.lame_get_id3v1_tag(this.instance, id3v1Tag, id3v1Tag.length), "Failed to get ID3v1 tag");
-            this.outputStream.write(id3v1Tag, 0, id3v1TagLength);
-        }
+            if (this.id3Tag != null) {
+                final byte[] id3v1Tag = new byte[this.id3Tag.lame_get_id3v1_tag(this.instance, null, 0)];
+                final int id3v1TagLength = checkResult(this.id3Tag.lame_get_id3v1_tag(this.instance, id3v1Tag, id3v1Tag.length), "Failed to get ID3v1 tag");
+                this.outputStream.write(id3v1Tag, 0, id3v1TagLength);
+            }
 
-        if (this.outputStream instanceof SeekableOutputStream seekableOutputStream) {
-            final byte[] lameTagFrame = new byte[this.vbrTag.getLameTagFrame(this.instance, new byte[0])];
-            final int lameTagFrameLength = checkResult(this.vbrTag.getLameTagFrame(this.instance, lameTagFrame), "Failed to get LAME tag frame");
-            final long previousPosition = seekableOutputStream.position();
-            seekableOutputStream.seek(this.dataStartPosition);
-            seekableOutputStream.write(lameTagFrame, 0, lameTagFrameLength);
-            seekableOutputStream.seek(previousPosition);
-        }
+            if (this.outputStream instanceof SeekableOutputStream seekableOutputStream) {
+                final byte[] lameTagFrame = new byte[this.vbrTag.getLameTagFrame(this.instance, new byte[0])];
+                final int lameTagFrameLength = checkResult(this.vbrTag.getLameTagFrame(this.instance, lameTagFrame), "Failed to get LAME tag frame");
+                final long previousPosition = seekableOutputStream.position();
+                seekableOutputStream.seek(this.dataStartPosition);
+                seekableOutputStream.write(lameTagFrame, 0, lameTagFrameLength);
+                seekableOutputStream.seek(previousPosition);
+            }
 
-        checkResult(this.lame.lame_close(this.instance), "Failed to close LAME instance");
-        this.outputStream.close();
+            checkResult(this.lame.lame_close(this.instance), "Failed to close LAME instance");
+        }
     }
 
     private void flushSamplesBuffer() throws IOException {

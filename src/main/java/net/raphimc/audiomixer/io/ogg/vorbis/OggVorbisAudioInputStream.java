@@ -35,6 +35,7 @@ import java.util.Arrays;
 public class OggVorbisAudioInputStream extends AudioInputStream {
 
     private static final byte[] VORBIS_MAGIC = new byte[]{(byte) 0x01, (byte) 'v', (byte) 'o', (byte) 'r', (byte) 'b', (byte) 'i', (byte) 's'};
+    private static final int MAX_FRAME_COUNT = 8192; // Hardcoded in JOrbis
 
     private final OggInputStream oggInputStream;
     private final int vorbisStreamId;
@@ -51,7 +52,7 @@ public class OggVorbisAudioInputStream extends AudioInputStream {
         this.oggInputStream = codeBeforeSuper.oggInputStream;
         this.vorbisStreamId = codeBeforeSuper.vorbisStreamId;
         checkResult(this.dspState.synthesis_init(codeBeforeSuper.info), "Failed to initialize dsp state");
-        this.samplesBuffer = new FloatRingBuffer(8192 * this.getFormat().channels());
+        this.samplesBuffer = new FloatRingBuffer(MAX_FRAME_COUNT * this.getFormat().channels());
     }
 
     @Override
@@ -78,9 +79,9 @@ public class OggVorbisAudioInputStream extends AudioInputStream {
         int frameCount;
         while ((frameCount = this.dspState.synthesis_pcmout(samplesRef, offsets)) > 0) {
             final float[][] allSamples = samplesRef[0];
-            for (int i = 0; i < frameCount; i++) {
+            for (int frame = 0; frame < frameCount; frame++) {
                 for (int channel = 0; channel < channels; channel++) {
-                    this.samplesBuffer.write(MathUtil.clamp(allSamples[channel][offsets[channel] + i], -1F, 1F)); // jorbis seems to return out of range samples sometimes
+                    this.samplesBuffer.write(MathUtil.clamp(allSamples[channel][offsets[channel] + frame], -1F, 1F)); // jorbis seems to return out of range samples sometimes
                 }
             }
             checkResult(this.dspState.synthesis_read(frameCount), "Failed to update dsp state");
