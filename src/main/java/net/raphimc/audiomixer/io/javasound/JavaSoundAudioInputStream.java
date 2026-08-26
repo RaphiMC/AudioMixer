@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.raphimc.audiomixer.io.java;
+package net.raphimc.audiomixer.io.javasound;
 
 import net.raphimc.audiomixer.io.pcm.PcmAudioInputStream;
 import net.raphimc.audiomixer.util.JavaAudioFormatUtil;
@@ -27,13 +27,13 @@ import javax.sound.sampled.AudioSystem;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class JavaAudioInputStream extends PcmAudioInputStream {
+public class JavaSoundAudioInputStream extends PcmAudioInputStream {
 
-    public JavaAudioInputStream(final AudioInputStream inputStream) {
+    public JavaSoundAudioInputStream(final AudioInputStream inputStream) {
         this(new CodeBeforeSuper(inputStream));
     }
 
-    private JavaAudioInputStream(final CodeBeforeSuper codeBeforeSuper) {
+    private JavaSoundAudioInputStream(final CodeBeforeSuper codeBeforeSuper) {
         super(new BlockInputStream(codeBeforeSuper.inputStream, codeBeforeSuper.inputStream.getFormat().getFrameSize()), JavaAudioFormatUtil.getAudioFormat(codeBeforeSuper.inputStream.getFormat()), codeBeforeSuper.encoding);
     }
 
