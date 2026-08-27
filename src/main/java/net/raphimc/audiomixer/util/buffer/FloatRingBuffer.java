@@ -83,10 +83,6 @@ public class FloatRingBuffer {
         return this.size == this.buffer.length;
     }
 
-    public int remaining() {
-        return this.buffer.length - this.size;
-    }
-
     public int capacity() {
         return this.buffer.length;
     }

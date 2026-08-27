@@ -23,6 +23,7 @@ import com.jcraft.jorbis.Comment;
 import com.jcraft.jorbis.DspState;
 import com.jcraft.jorbis.Info;
 import net.raphimc.audiomixer.io.AudioInputStream;
+import net.raphimc.audiomixer.util.ArrayUtil;
 import net.raphimc.audiomixer.util.AudioFormat;
 import net.raphimc.audiomixer.util.buffer.FloatRingBuffer;
 import net.raphimc.audiomixer.util.io.ogg.OggInputStream;
@@ -30,7 +31,6 @@ import net.raphimc.audiomixer.util.math.MathUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
 
 public class OggVorbisAudioInputStream extends AudioInputStream {
 
@@ -73,10 +73,10 @@ public class OggVorbisAudioInputStream extends AudioInputStream {
         final int[] offsets = new int[channels];
         int frameCount;
         while ((frameCount = this.dspState.synthesis_pcmout(samplesRef, offsets)) > 0) {
-            final float[][] allSamples = samplesRef[0];
+            final float[][] channelSamples = samplesRef[0];
             for (int frame = 0; frame < frameCount; frame++) {
                 for (int channel = 0; channel < channels; channel++) {
-                    this.samplesBuffer.write(MathUtil.clamp(allSamples[channel][offsets[channel] + frame], -1F, 1F)); // jorbis seems to return out of range samples sometimes
+                    this.samplesBuffer.write(MathUtil.clamp(channelSamples[channel][offsets[channel] + frame], -1F, 1F)); // JOrbis seems to return out of range samples sometimes
                 }
             }
             checkResult(this.dspState.synthesis_read(frameCount), "Failed to update dsp state");
@@ -116,7 +116,7 @@ public class OggVorbisAudioInputStream extends AudioInputStream {
             this.oggInputStream = new OggInputStream(inputStream);
             while (true) {
                 final OggInputStream.OggPacket packet = this.oggInputStream.readPacket();
-                if (packet.bos() && packet.data().length >= VORBIS_MAGIC.length && Arrays.equals(packet.data(), 0, VORBIS_MAGIC.length, VORBIS_MAGIC, 0, VORBIS_MAGIC.length)) {
+                if (packet.bos() && ArrayUtil.startsWith(packet.data(), VORBIS_MAGIC)) {
                     this.vorbisStreamId = packet.streamId();
                     checkResult(this.info.synthesis_headerin(this.comment, convertPacket(packet)), "Failed to process info packet");
                     break;

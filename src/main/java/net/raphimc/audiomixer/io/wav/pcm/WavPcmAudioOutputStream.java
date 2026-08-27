@@ -30,9 +30,8 @@ import java.io.OutputStream;
 public class WavPcmAudioOutputStream extends PcmAudioOutputStream {
 
     private static final int FMT_CHUNK_LENGTH = Short.BYTES + Short.BYTES + Integer.BYTES + Integer.BYTES + Short.BYTES + Short.BYTES;
-
-    private static final int WAVE_FORMAT_PCM = 0x0001;
-    private static final int WAVE_FORMAT_IEEE_FLOAT = 0x0003;
+    private static final int FORMAT_PCM = 0x0001;
+    private static final int FORMAT_IEEE_FLOAT = 0x0003;
 
     private final RiffChunk dataChunk;
 
@@ -69,16 +68,16 @@ public class WavPcmAudioOutputStream extends PcmAudioOutputStream {
             this.riffOutputStream = new RiffOutputStream(outputStream, "WAVE", Math.addExact(Math.addExact(RiffChunk.BYTES + FMT_CHUNK_LENGTH + RiffChunk.BYTES, dataChunkLength), dataChunkLength % 2));
             this.format = format;
             try (RiffChunk fmtChunk = this.riffOutputStream.writeChunk("fmt ", FMT_CHUNK_LENGTH)) {
-                this.riffOutputStream.writeUnsignedShort(switch (format.encoding()) {
-                    case U8, S16_LE, S24_LE, S32_LE -> WAVE_FORMAT_PCM;
-                    case F32_LE, F64_LE -> WAVE_FORMAT_IEEE_FLOAT;
-                    default -> throw new IllegalArgumentException("Unsupported encoding: " + format.encoding());
+                this.riffOutputStream.writeUnsignedShort(switch (this.format.encoding()) {
+                    case U8, S16_LE, S24_LE, S32_LE -> FORMAT_PCM;
+                    case F32_LE, F64_LE -> FORMAT_IEEE_FLOAT;
+                    default -> throw new IllegalArgumentException("Unsupported encoding: " + this.format.encoding());
                 });
-                this.riffOutputStream.writeUnsignedShort(format.format().channels());
-                this.riffOutputStream.writeUnsignedInt(Math.round(format.format().sampleRate()));
-                this.riffOutputStream.writeUnsignedInt(format.bytesPerSecond());
-                this.riffOutputStream.writeUnsignedShort(format.bytesPerFrame());
-                this.riffOutputStream.writeUnsignedShort(format.encoding().bytesPerSample() * Byte.SIZE);
+                this.riffOutputStream.writeUnsignedShort(this.format.format().channels());
+                this.riffOutputStream.writeUnsignedInt(Math.round(this.format.format().sampleRate()));
+                this.riffOutputStream.writeUnsignedInt(this.format.bytesPerSecond());
+                this.riffOutputStream.writeUnsignedShort(this.format.bytesPerFrame());
+                this.riffOutputStream.writeUnsignedShort(this.format.encoding().bytesPerSample() * Byte.SIZE);
             }
             this.dataChunk = this.riffOutputStream.writeChunk("data", dataChunkLength);
         }

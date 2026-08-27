@@ -18,6 +18,8 @@
 package net.raphimc.audiomixer.io.ogg.opus;
 
 import net.raphimc.audiomixer.io.AudioInputStream;
+import net.raphimc.audiomixer.io.ogg.opus.packet.OpusHeadPacket;
+import net.raphimc.audiomixer.util.ArrayUtil;
 import net.raphimc.audiomixer.util.AudioFormat;
 import net.raphimc.audiomixer.util.buffer.FloatRingBuffer;
 import net.raphimc.audiomixer.util.io.BinaryInputStream;
@@ -30,7 +32,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteOrder;
-import java.util.Arrays;
 
 public class OggOpusAudioInputStream extends AudioInputStream {
 
@@ -51,18 +52,18 @@ public class OggOpusAudioInputStream extends AudioInputStream {
     }
 
     private OggOpusAudioInputStream(final CodeBeforeSuper codeBeforeSuper) throws IOException {
-        super(new AudioFormat(SAMPLE_RATE, codeBeforeSuper.outputChannels));
+        super(new AudioFormat(SAMPLE_RATE, codeBeforeSuper.opusHead.outputChannels()));
         this.oggInputStream = codeBeforeSuper.oggInputStream;
         this.opusStreamId = codeBeforeSuper.opusStreamId;
         try {
             this.decoder = new OpusDecoder(Math.round(this.getFormat().sampleRate()), this.getFormat().channels());
-            this.decoder.setGain(codeBeforeSuper.outputGain);
+            this.decoder.setGain(codeBeforeSuper.opusHead.outputGain());
         } catch (final OpusException e) {
             throw new IOException("Failed to initialize decoder", e);
         }
         this.decodeOutputBuffer = new short[MAX_FRAME_COUNT * this.getFormat().channels()];
         this.samplesBuffer = new FloatRingBuffer(this.decodeOutputBuffer.length);
-        this.remainingPreSkipFrameCount = codeBeforeSuper.preSkip;
+        this.remainingPreSkipFrameCount = codeBeforeSuper.opusHead.preSkip();
     }
 
     @Override
@@ -76,7 +77,7 @@ public class OggOpusAudioInputStream extends AudioInputStream {
     private void decodeNextPacket() throws IOException {
         final OggInputStream.OggPacket packet = this.oggInputStream.readUntilPacket(this.opusStreamId);
         try {
-            final int frameCount = this.decoder.decode(packet.data(), 0, packet.data().length, this.decodeOutputBuffer, 0, MAX_FRAME_COUNT, false);
+            final int frameCount = this.decoder.decode(packet.data(), 0, packet.data().length, this.decodeOutputBuffer, 0, this.decodeOutputBuffer.length / this.getFormat().channels(), false);
             int firstFrameIndex = 0;
             if (this.remainingPreSkipFrameCount > 0) {
                 final int skipFrameCount = Math.min(this.remainingPreSkipFrameCount, frameCount);
@@ -119,36 +120,15 @@ public class OggOpusAudioInputStream extends AudioInputStream {
 
         private final OggInputStream oggInputStream;
         private final int opusStreamId;
-        private final int outputChannels;
-        private final int preSkip;
-        private final short outputGain;
+        private final OpusHeadPacket opusHead;
 
         private CodeBeforeSuper(final InputStream inputStream) throws IOException {
             this.oggInputStream = new OggInputStream(inputStream);
             while (true) {
                 final OggInputStream.OggPacket packet = this.oggInputStream.readPacket();
-                if (packet.bos() && packet.data().length >= OPUS_MAGIC.length && Arrays.equals(packet.data(), 0, OPUS_MAGIC.length, OPUS_MAGIC, 0, OPUS_MAGIC.length)) {
+                if (packet.bos() && ArrayUtil.startsWith(packet.data(), OPUS_MAGIC)) {
                     this.opusStreamId = packet.streamId();
-                    final BinaryInputStream identificationHeader = new BinaryInputStream(new ByteArrayInputStream(packet.data()), ByteOrder.LITTLE_ENDIAN);
-                    identificationHeader.skipNBytes(OPUS_MAGIC.length);
-                    final int version = identificationHeader.readUnsignedByte();
-                    final int minorVersion = version & 0xF;
-                    final int majorVersion = version >> 4;
-                    if (majorVersion > 0) {
-                        throw new IOException("Unsupported version: " + majorVersion + "." + minorVersion);
-                    }
-                    this.outputChannels = identificationHeader.readUnsignedByte();
-                    this.preSkip = identificationHeader.readUnsignedShort();
-                    identificationHeader.readUnsignedInt(); // input sample rate
-                    this.outputGain = identificationHeader.readShort();
-                    final int channelMappingFamily = identificationHeader.readUnsignedByte();
-                    if (channelMappingFamily == 0) {
-                        if (this.outputChannels < 1 || this.outputChannels > 2) {
-                            throw new IOException("Unsupported output channel count: " + this.outputChannels);
-                        }
-                    } else {
-                        throw new IOException("Unsupported channel mapping family: " + channelMappingFamily);
-                    }
+                    this.opusHead = new OpusHeadPacket(new BinaryInputStream(new ByteArrayInputStream(packet.data()), ByteOrder.LITTLE_ENDIAN));
                     break;
                 }
             }

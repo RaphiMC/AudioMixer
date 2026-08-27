@@ -50,7 +50,7 @@ public class JavaSoundAudioInputStream extends PcmAudioInputStream {
                 inputStream = AudioSystem.getAudioInputStream(targetFormat, inputStream);
             }
             this.inputStream = inputStream;
-            this.encoding = JavaAudioFormatUtil.getPcmSampleEncoding(inputStream.getFormat());
+            this.encoding = JavaAudioFormatUtil.getPcmSampleEncoding(this.inputStream.getFormat());
         }
 
     }

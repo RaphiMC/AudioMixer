@@ -59,7 +59,7 @@ public final class FileExample {
         outputAudioBuffer = outputAudioBuffer.trimTrailingSilence();
         // Write the audio buffer to a file
         final WavPcmAudioOutputStream wavOutputStream = new WavPcmAudioOutputStream(new BufferedOutputStream(new FileOutputStream(output)), outputAudioBuffer.format(), PcmSampleEncoding.S16_LE, outputAudioBuffer.sampleCount());
-        wavOutputStream.write(outputAudioBuffer.samples());
+        wavOutputStream.write(outputAudioBuffer);
         wavOutputStream.close();
     }
 

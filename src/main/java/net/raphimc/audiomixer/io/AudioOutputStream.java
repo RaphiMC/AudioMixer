@@ -18,6 +18,7 @@
 package net.raphimc.audiomixer.io;
 
 import net.raphimc.audiomixer.util.AudioFormat;
+import net.raphimc.audiomixer.util.buffer.AudioBuffer;
 
 import java.io.Closeable;
 import java.io.Flushable;
@@ -41,6 +42,13 @@ public abstract class AudioOutputStream implements Flushable, Closeable {
         for (int i = 0; i < length; i++) {
             this.write(samples[offset + i]);
         }
+    }
+
+    public void write(final AudioBuffer buffer) throws IOException {
+        if (!buffer.format().equals(this.format)) {
+            throw new IllegalArgumentException("Format mismatch: " + buffer.format() + " != " + this.format);
+        }
+        this.write(buffer.samples());
     }
 
     public AudioFormat getFormat() {

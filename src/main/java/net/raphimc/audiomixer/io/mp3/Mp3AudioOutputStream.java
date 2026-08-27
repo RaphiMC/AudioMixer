@@ -46,8 +46,7 @@ public class Mp3AudioOutputStream extends AudioOutputStream {
     private final ID3Tag id3Tag;
     private final LameGlobalFlags instance;
     private final FloatRingBuffer samplesBuffer;
-    private final float[] interleavedSamples;
-    private final int[][] channelSamples;
+    private final int[][] encodeInputBuffer;
     private final byte[] encodeOutputBuffer;
     private final long dataStartPosition;
 
@@ -58,8 +57,8 @@ public class Mp3AudioOutputStream extends AudioOutputStream {
     public Mp3AudioOutputStream(final OutputStream outputStream, final AudioFormat format, final float quality, final VbrMode vbrMode, final Id3Metadata id3Metadata) throws IOException {
         super(format);
         this.outputStream = outputStream;
-        if (format.channels() <= 0 || format.channels() > 2) {
-            throw new IllegalArgumentException("Unsupported channel count: " + format.channels());
+        if (this.getFormat().channels() < 1 || this.getFormat().channels() > 2) {
+            throw new IllegalArgumentException("Unsupported channel count: " + this.getFormat().channels());
         }
         if (quality < 0F || quality > 1F) {
             throw new IllegalArgumentException("Quality must be in [0, 1]: " + quality);
@@ -89,15 +88,15 @@ public class Mp3AudioOutputStream extends AudioOutputStream {
 
         this.instance = this.lame.lame_init();
         if (this.instance == null) {
-            throw new RuntimeException("Failed to create LAME instance");
+            throw new IOException("Failed to create LAME instance");
         }
         this.instance.quality = 2;
-        this.instance.num_channels = format.channels();
-        this.instance.in_samplerate = Math.round(format.sampleRate());
+        this.instance.num_channels = this.getFormat().channels();
+        this.instance.in_samplerate = Math.round(this.getFormat().sampleRate());
         this.instance.write_id3tag_automatic = false;
-        this.instance.bWriteVbrTag = outputStream instanceof SeekableOutputStream;
+        this.instance.bWriteVbrTag = this.outputStream instanceof SeekableOutputStream;
         this.instance.VBR = vbrMode;
-        switch (vbrMode) {
+        switch (this.instance.VBR) {
             case vbr_off -> this.instance.brate = Math.round(MathUtil.map(quality, 0F, 1F, 8F, 320F));
             case vbr_abr -> this.instance.VBR_mean_bitrate_kbps = Math.round(MathUtil.map(quality, 0F, 1F, 8F, 320F));
             case vbr_mt, vbr_rh, vbr_mtrh -> {
@@ -105,7 +104,7 @@ public class Mp3AudioOutputStream extends AudioOutputStream {
                 this.instance.VBR_q = (int) vbrQuality;
                 this.instance.VBR_q_frac = vbrQuality % 1;
             }
-            default -> throw new IllegalArgumentException("Unsupported VBR mode: " + vbrMode);
+            default -> throw new IllegalArgumentException("Unsupported VBR mode: " + this.instance.VBR);
         }
         if (this.id3Tag != null) {
             this.id3Tag.id3tag_init(this.instance);
@@ -120,22 +119,21 @@ public class Mp3AudioOutputStream extends AudioOutputStream {
             checkResult(this.id3Tag.id3tag_set_track(this.instance, id3Metadata.track()), "Failed to set ID3 track");
             checkResult(this.id3Tag.id3tag_set_genre(this.instance, id3Metadata.genre()), "Failed to set ID3 genre");
             if (id3Metadata.albumArt() != null && !this.id3Tag.id3tag_set_albumart(this.instance, id3Metadata.albumArt(), id3Metadata.albumArt().length)) {
-                throw new RuntimeException("Failed to set ID3 album art");
+                throw new IOException("Failed to set ID3 album art");
             }
         }
         checkResult(this.lame.lame_init_params(this.instance), "Failed to set parameters");
 
-        this.samplesBuffer = new FloatRingBuffer(this.instance.framesize * this.instance.num_channels);
-        this.interleavedSamples = new float[this.samplesBuffer.capacity()];
-        this.channelSamples = new int[2][this.instance.framesize];
+        this.samplesBuffer = new FloatRingBuffer(this.instance.framesize * this.getFormat().channels());
+        this.encodeInputBuffer = new int[2][this.instance.framesize];
         this.encodeOutputBuffer = new byte[(int) Math.ceil(1.25F * this.instance.framesize + 7200)];
 
         if (this.id3Tag != null) {
             final byte[] id3v2Tag = new byte[this.id3Tag.lame_get_id3v2_tag(this.instance, null, 0)];
             final int id3v2TagLength = checkResult(this.id3Tag.lame_get_id3v2_tag(this.instance, id3v2Tag, id3v2Tag.length), "Failed to get ID3v2 tag");
-            outputStream.write(id3v2Tag, 0, id3v2TagLength);
+            this.outputStream.write(id3v2Tag, 0, id3v2TagLength);
         }
-        this.dataStartPosition = outputStream instanceof SeekableOutputStream seekableOutputStream ? seekableOutputStream.position() : 0;
+        this.dataStartPosition = this.outputStream instanceof SeekableOutputStream seekableOutputStream ? seekableOutputStream.position() : 0;
     }
 
     @Override
@@ -148,15 +146,13 @@ public class Mp3AudioOutputStream extends AudioOutputStream {
 
     private void flushSamplesBuffer() throws IOException {
         final int channels = this.getFormat().channels();
-        final int sampleCount = this.samplesBuffer.read(this.interleavedSamples, 0, this.interleavedSamples.length);
-        final int frameCount = sampleCount / channels;
-        for (int channel = 0; channel < channels; channel++) {
-            final int[] channelSamples = this.channelSamples[channel];
-            for (int frame = 0; frame < frameCount; frame++) {
-                channelSamples[frame] = Math.round(this.interleavedSamples[frame * channels + channel] * Integer.MAX_VALUE);
+        final int frameCount = this.samplesBuffer.size() / channels;
+        for (int frame = 0; frame < frameCount; frame++) {
+            for (int channel = 0; channel < channels; channel++) {
+                this.encodeInputBuffer[channel][frame] = Math.round(this.samplesBuffer.read() * Integer.MAX_VALUE);
             }
         }
-        final int length = checkResult(this.lame.lame_encode_buffer_int(this.instance, this.channelSamples[0], this.channelSamples[1], frameCount, this.encodeOutputBuffer, 0, this.encodeOutputBuffer.length), "Failed to encode buffer");
+        final int length = checkResult(this.lame.lame_encode_buffer_int(this.instance, this.encodeInputBuffer[0], this.encodeInputBuffer[1], frameCount, this.encodeOutputBuffer, 0, this.encodeOutputBuffer.length), "Failed to encode buffer");
         this.outputStream.write(this.encodeOutputBuffer, 0, length);
     }
 
@@ -179,7 +175,6 @@ public class Mp3AudioOutputStream extends AudioOutputStream {
                 final int id3v1TagLength = checkResult(this.id3Tag.lame_get_id3v1_tag(this.instance, id3v1Tag, id3v1Tag.length), "Failed to get ID3v1 tag");
                 this.outputStream.write(id3v1Tag, 0, id3v1TagLength);
             }
-
             if (this.outputStream instanceof SeekableOutputStream seekableOutputStream) {
                 final byte[] lameTagFrame = new byte[this.vbrTag.getLameTagFrame(this.instance, new byte[0])];
                 final int lameTagFrameLength = checkResult(this.vbrTag.getLameTagFrame(this.instance, lameTagFrame), "Failed to get LAME tag frame");
@@ -188,14 +183,13 @@ public class Mp3AudioOutputStream extends AudioOutputStream {
                 seekableOutputStream.write(lameTagFrame, 0, lameTagFrameLength);
                 seekableOutputStream.seek(previousPosition);
             }
-
             checkResult(this.lame.lame_close(this.instance), "Failed to close LAME instance");
         }
     }
 
-    private static int checkResult(final int result, final String message) {
+    private static int checkResult(final int result, final String message) throws IOException {
         if (result < 0) {
-            throw new RuntimeException(message + " (error code: " + result + ")");
+            throw new IOException(message + " (error code: " + result + ")");
         } else {
             return result;
         }

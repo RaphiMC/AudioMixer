@@ -58,7 +58,7 @@ public class SourceDataLineWriter implements AutoCloseable {
                         final AudioBuffer buffer = this.callback.renderAudio(this.format.byteCountToFrameCount(this.sourceDataLine.available()));
                         final ByteArrayOutputStream baos = new ByteArrayOutputStream(this.format.frameCountToByteCount(buffer.frameCount()));
                         try (PcmAudioOutputStream aos = new PcmAudioOutputStream(baos, this.format)) {
-                            aos.write(buffer.samples());
+                            aos.write(buffer);
                         }
                         final byte[] pcmData = baos.toByteArray();
                         if (!this.sourceDataLine.isActive()) {
