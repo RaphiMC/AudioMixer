@@ -17,25 +17,40 @@
  */
 package net.raphimc.audiomixer.io;
 
+import net.raphimc.audiomixer.io.javasound.JavaSoundAudioInputStream;
 import net.raphimc.audiomixer.io.mp3.Mp3AudioInputStream;
+import net.raphimc.audiomixer.io.ogg.opus.OggOpusAudioInputStream;
 import net.raphimc.audiomixer.io.ogg.vorbis.OggVorbisAudioInputStream;
+import net.raphimc.audiomixer.io.wav.WavInputStream;
 import net.raphimc.audiomixer.io.wav.pcm.WavPcmAudioInputStream;
 import net.raphimc.audiomixer.resampler.impl.LinearResampler;
 import net.raphimc.audiomixer.util.ArrayUtil;
 import net.raphimc.audiomixer.util.AudioFormat;
 import net.raphimc.audiomixer.util.buffer.AudioBuffer;
-import net.raphimc.audiomixer.util.io.BinaryInputStream;
+import net.raphimc.audiomixer.util.io.ogg.OggInputStream;
+import net.raphimc.audiomixer.util.io.riff.RiffInputStream;
 
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.UUID;
 
 public final class AudioIo {
 
     private static final int BUFFER_SIZE = 128 * 1024;
-    private static final int MAX_MAGIC_LENGTH = 4;
-    private static final byte[] WAV_MAGIC = new byte[]{(byte) 'R', (byte) 'I', (byte) 'F', (byte) 'F'};
+
+    private static final byte[] RIFF_MAGIC = new byte[]{(byte) 'R', (byte) 'I', (byte) 'F', (byte) 'F'};
+    private static final String WAV_MAGIC = "WAVE";
+    private static final UUID WAV_FORMAT_PCM = UUID.fromString("00000001-0000-0010-8000-00aa00389b71");
+    private static final UUID WAV_FORMAT_IEEE_FLOAT = UUID.fromString("00000003-0000-0010-8000-00aa00389b71");
+
     private static final byte[] OGG_MAGIC = new byte[]{(byte) 'O', (byte) 'g', (byte) 'g', (byte) 'S'};
+    private static final byte[] OGG_VORBIS_MAGIC = new byte[]{(byte) 0x01, (byte) 'v', (byte) 'o', (byte) 'r', (byte) 'b', (byte) 'i', (byte) 's'};
+    private static final byte[] OGG_OPUS_MAGIC = new byte[]{(byte) 'O', (byte) 'p', (byte) 'u', (byte) 's', (byte) 'H', (byte) 'e', (byte) 'a', (byte) 'd'};
+
     private static final byte[] TAGGED_MP3_MAGIC = new byte[]{(byte) 'I', (byte) 'D', (byte) '3'};
 
     private AudioIo() {
@@ -52,20 +67,41 @@ public final class AudioIo {
     }
 
     public static AudioInputStream open(final InputStream inputStream) throws IOException {
-        final BinaryInputStream bis = new BinaryInputStream(new BufferedInputStream(inputStream, BUFFER_SIZE));
-        bis.mark(MAX_MAGIC_LENGTH);
-        final byte[] magic = bis.readBytes(MAX_MAGIC_LENGTH);
+        final BufferedInputStream bis = new BufferedInputStream(inputStream, BUFFER_SIZE);
+        bis.mark(BUFFER_SIZE);
+        final byte[] buffer = bis.readNBytes(BUFFER_SIZE);
         bis.reset();
-        if (ArrayUtil.startsWith(magic, WAV_MAGIC)) {
-            return new WavPcmAudioInputStream(bis);
-        } else if (ArrayUtil.startsWith(magic, OGG_MAGIC)) {
-            return new OggVorbisAudioInputStream(bis);
-        } else if (ArrayUtil.startsWith(magic, TAGGED_MP3_MAGIC)) {
+        if (ArrayUtil.startsWith(buffer, RIFF_MAGIC)) {
+            final RiffInputStream riffInputStream = new RiffInputStream(new ByteArrayInputStream(buffer));
+            if (riffInputStream.getRootChunk().identifier().equals(WAV_MAGIC)) {
+                final WavInputStream wavInputStream = new WavInputStream(new ByteArrayInputStream(buffer));
+                if (wavInputStream.getFormat().equals(WAV_FORMAT_PCM) || wavInputStream.getFormat().equals(WAV_FORMAT_IEEE_FLOAT)) {
+                    return new WavPcmAudioInputStream(bis);
+                }
+            }
+        } else if (ArrayUtil.startsWith(buffer, OGG_MAGIC)) {
+            final OggInputStream oggInputStream = new OggInputStream(new ByteArrayInputStream(buffer));
+            while (true) {
+                final OggInputStream.OggPacket packet = oggInputStream.readPacket();
+                if (packet.bos()) {
+                    if (ArrayUtil.startsWith(packet.data(), OGG_VORBIS_MAGIC)) {
+                        return new OggVorbisAudioInputStream(bis);
+                    } else if (ArrayUtil.startsWith(packet.data(), OGG_OPUS_MAGIC)) {
+                        return new OggOpusAudioInputStream(bis);
+                    }
+                } else {
+                    break;
+                }
+            }
+        } else if (ArrayUtil.startsWith(buffer, TAGGED_MP3_MAGIC)) {
             return new Mp3AudioInputStream(bis);
-        } else if (magic[0] == (byte) 0xFF && (magic[1] & 0xE0) == 0xE0 && ((magic[1] >> 3) & 0x03) == 0x01) { // Untagged MP3
+        } else if (buffer.length >= 2 && buffer[0] == (byte) 0xFF && (buffer[1] & 0xE0) == 0xE0 && ((buffer[1] >> 3) & 0x03) == 0x01) { // Untagged MP3
             return new Mp3AudioInputStream(bis);
-        } else {
-            throw new IOException("Unsupported audio file format");
+        }
+        try {
+            return new JavaSoundAudioInputStream(AudioSystem.getAudioInputStream(bis));
+        } catch (final UnsupportedAudioFileException e) {
+            throw new IOException("Unsupported audio file format", e);
         }
     }
 
