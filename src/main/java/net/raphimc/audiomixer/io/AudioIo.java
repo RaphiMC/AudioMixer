@@ -23,6 +23,7 @@ import net.raphimc.audiomixer.io.ogg.opus.OggOpusAudioInputStream;
 import net.raphimc.audiomixer.io.ogg.vorbis.OggVorbisAudioInputStream;
 import net.raphimc.audiomixer.io.wav.WavInputStream;
 import net.raphimc.audiomixer.io.wav.pcm.WavPcmAudioInputStream;
+import net.raphimc.audiomixer.resampler.Resampler;
 import net.raphimc.audiomixer.resampler.impl.LinearResampler;
 import net.raphimc.audiomixer.util.ArrayUtil;
 import net.raphimc.audiomixer.util.AudioFormat;
@@ -63,7 +64,11 @@ public final class AudioIo {
     }
 
     public static AudioBuffer read(final InputStream inputStream, final AudioFormat targetFormat) throws IOException {
-        return LinearResampler.INSTANCE.resample(read(inputStream), targetFormat);
+        return read(inputStream, targetFormat, new LinearResampler());
+    }
+
+    public static AudioBuffer read(final InputStream inputStream, final AudioFormat targetFormat, final Resampler resampler) throws IOException {
+        return resampler.resample(read(inputStream), targetFormat);
     }
 
     public static AudioInputStream open(final InputStream inputStream) throws IOException {

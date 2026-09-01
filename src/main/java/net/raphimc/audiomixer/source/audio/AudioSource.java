@@ -34,7 +34,7 @@ public abstract class AudioSource extends FiniteSource {
     protected double position;
 
     public AudioSource(final AudioBuffer buffer) {
-        this(buffer, LinearResampler.INSTANCE);
+        this(buffer, new LinearResampler());
     }
 
     public AudioSource(final AudioBuffer buffer, final Resampler resampler) {

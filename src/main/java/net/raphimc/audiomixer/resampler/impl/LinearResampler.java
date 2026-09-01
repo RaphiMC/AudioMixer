@@ -18,81 +18,63 @@
 package net.raphimc.audiomixer.resampler.impl;
 
 import net.raphimc.audiomixer.resampler.Resampler;
+import net.raphimc.audiomixer.util.math.MathUtil;
 
-public final class LinearResampler implements Resampler {
+public final class LinearResampler extends Resampler {
 
-    public static final LinearResampler INSTANCE = new LinearResampler();
-
-    private LinearResampler() {
+    public LinearResampler() {
+        super(0, 1);
     }
 
     @Override
-    public double resampleMonoToMono(final float[] src, final float[] dst, final float pitch, double srcPosition) {
-        final int srcLastIndex = src.length - 1;
-        for (int dstPosition = 0; dstPosition < dst.length && srcPosition < src.length; dstPosition++) {
-            final float f = (float) (srcPosition - (int) srcPosition);
-            final int i0 = (int) srcPosition;
-            final int i1 = Math.min(i0 + 1, srcLastIndex);
-            final float s0 = src[i0];
-            final float s1 = src[i1];
-            dst[dstPosition] = s0 + (s1 - s0) * f;
-            srcPosition += pitch;
+    protected void resampleMonoToMono(final float[] src, final float[] dst, final int outputFrameCount, final double srcStep, final double baseSrcFramePosition) {
+        for (int dstFrameIndex = 0; dstFrameIndex < outputFrameCount; dstFrameIndex++) {
+            final double srcFramePosition = MathUtil.multiplyAndAdd(dstFrameIndex, srcStep, baseSrcFramePosition);
+            final float fraction = (float) (srcFramePosition - (int) srcFramePosition);
+            final int srcIndex = (int) srcFramePosition;
+            dst[dstFrameIndex] = MathUtil.lerp(src[srcIndex], sampleOrZero(src, srcIndex + 1), fraction);
         }
-        return srcPosition;
     }
 
     @Override
-    public double resampleStereoToStereo(final float[] src, final float[] dst, final float pitch, double srcPosition) {
-        final int srcFrameLength = src.length / 2;
-        final int srcLastIndex = src.length - 2;
-        for (int dstPosition = 0; dstPosition < dst.length && srcPosition < srcFrameLength; dstPosition += 2) {
-            final float f = (float) (srcPosition - (int) srcPosition);
-            final int i0 = (int) srcPosition * 2;
-            final int i1 = Math.min(i0 + 2, srcLastIndex);
-            {
-                final float s0 = src[i0];
-                final float s1 = src[i1];
-                dst[dstPosition] = s0 + (s1 - s0) * f;
-            }
-            {
-                final float s0 = src[i0 + 1];
-                final float s1 = src[i1 + 1];
-                dst[dstPosition + 1] = s0 + (s1 - s0) * f;
-            }
-            srcPosition += pitch;
+    protected void resampleStereoToStereo(final float[] src, final float[] dst, final int outputFrameCount, final double srcStep, final double baseSrcFramePosition) {
+        for (int dstFrameIndex = 0; dstFrameIndex < outputFrameCount; dstFrameIndex++) {
+            final double srcFramePosition = MathUtil.multiplyAndAdd(dstFrameIndex, srcStep, baseSrcFramePosition);
+            final float fraction = (float) (srcFramePosition - (int) srcFramePosition);
+            final int srcIndex = (int) srcFramePosition * 2;
+            dst[dstFrameIndex * 2] = MathUtil.lerp(src[srcIndex], sampleOrZero(src, srcIndex + 2), fraction);
+            dst[dstFrameIndex * 2 + 1] = MathUtil.lerp(src[srcIndex + 1], sampleOrZero(src, srcIndex + 3), fraction);
         }
-        return srcPosition;
     }
 
     @Override
-    public double resampleMonoToStereo(final float[] src, final float[] dst, final float pitch, double srcPosition) {
-        final int srcLastIndex = src.length - 1;
-        for (int dstPosition = 0; dstPosition < dst.length && srcPosition < src.length; dstPosition += 2) {
-            final float f = (float) (srcPosition - (int) srcPosition);
-            final int i0 = (int) srcPosition;
-            final int i1 = Math.min(i0 + 1, srcLastIndex);
-            final float s0 = src[i0];
-            final float s1 = src[i1];
-            dst[dstPosition] = dst[dstPosition + 1] = s0 + (s1 - s0) * f;
-            srcPosition += pitch;
+    protected void resampleMonoToStereo(final float[] src, final float[] dst, final int outputFrameCount, final double srcStep, final double baseSrcFramePosition) {
+        for (int dstFrameIndex = 0; dstFrameIndex < outputFrameCount; dstFrameIndex++) {
+            final double srcFramePosition = MathUtil.multiplyAndAdd(dstFrameIndex, srcStep, baseSrcFramePosition);
+            final float fraction = (float) (srcFramePosition - (int) srcFramePosition);
+            final int srcIndex = (int) srcFramePosition;
+            final float sample = MathUtil.lerp(src[srcIndex], sampleOrZero(src, srcIndex + 1), fraction);
+            dst[dstFrameIndex * 2] = sample;
+            dst[dstFrameIndex * 2 + 1] = sample;
         }
-        return srcPosition;
     }
 
     @Override
-    public double resampleStereoToMono(final float[] src, final float[] dst, final float pitch, double srcPosition) {
-        final int srcFrameLength = src.length / 2;
-        final int srcLastIndex = src.length - 2;
-        for (int dstPosition = 0; dstPosition < dst.length && srcPosition < srcFrameLength; dstPosition++) {
-            final float f = (float) (srcPosition - (int) srcPosition);
-            final int i0 = (int) srcPosition * 2;
-            final int i1 = Math.min(i0 + 2, srcLastIndex);
-            final float s0 = (src[i0] + src[i0 + 1]) / 2F;
-            final float s1 = (src[i1] + src[i1 + 1]) / 2F;
-            dst[dstPosition] = s0 + (s1 - s0) * f;
-            srcPosition += pitch;
+    protected void resampleStereoToMono(final float[] src, final float[] dst, final int outputFrameCount, final double srcStep, final double baseSrcFramePosition) {
+        for (int dstFrameIndex = 0; dstFrameIndex < outputFrameCount; dstFrameIndex++) {
+            final double srcFramePosition = MathUtil.multiplyAndAdd(dstFrameIndex, srcStep, baseSrcFramePosition);
+            final float fraction = (float) (srcFramePosition - (int) srcFramePosition);
+            final int srcIndex = (int) srcFramePosition * 2;
+            dst[dstFrameIndex] = MathUtil.lerp(
+                (src[srcIndex] + src[srcIndex + 1]) / 2F,
+                (sampleOrZero(src, srcIndex + 2) + sampleOrZero(src, srcIndex + 3)) / 2F,
+                fraction
+            );
         }
-        return srcPosition;
+    }
+
+    private static float sampleOrZero(final float[] src, final int index) {
+        return index >= 0 && index < src.length ? src[index] : 0F;
     }
 
 }

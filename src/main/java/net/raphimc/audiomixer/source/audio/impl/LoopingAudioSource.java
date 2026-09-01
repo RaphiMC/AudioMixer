@@ -18,13 +18,12 @@
 package net.raphimc.audiomixer.source.audio.impl;
 
 import net.raphimc.audiomixer.resampler.Resampler;
+import net.raphimc.audiomixer.resampler.impl.LinearResampler;
 import net.raphimc.audiomixer.util.buffer.AudioBuffer;
 
 import java.util.Arrays;
 
 public class LoopingAudioSource extends BufferedAudioSource {
-
-    private static final int MARGIN_FRAME_COUNT = 4;
 
     private final LoopBuffer loopBuffer = new LoopBuffer();
     private boolean loopEnabled = true;
@@ -32,17 +31,16 @@ public class LoopingAudioSource extends BufferedAudioSource {
     private int loopEndPosition;
 
     public LoopingAudioSource(final AudioBuffer buffer) {
-        super(buffer);
-        if (this.getFrameCount() == 0) {
-            throw new IllegalArgumentException("Buffer must not be empty");
-        }
-        this.loopEndPosition = this.getFrameCount() - 1;
+        this(buffer, new LinearResampler());
     }
 
     public LoopingAudioSource(final AudioBuffer buffer, final Resampler resampler) {
         super(buffer, resampler);
         if (this.getFrameCount() == 0) {
             throw new IllegalArgumentException("Buffer must not be empty");
+        }
+        if (this.resampler.getLookBehindFrameCount() > 0) {
+            throw new IllegalArgumentException("Resampler must not require look behind frames");
         }
         this.loopEndPosition = this.getFrameCount() - 1;
     }
@@ -51,8 +49,7 @@ public class LoopingAudioSource extends BufferedAudioSource {
     protected void renderInternal(final AudioBuffer buffer) {
         this.loopBuffer.clear();
         int sourcePosition = (int) this.position;
-        final float pitch = this.getFormat().sampleRate() / buffer.format().sampleRate();
-        int neededFrameCount = (int) Math.ceil((double) buffer.frameCount() * pitch) + MARGIN_FRAME_COUNT;
+        int neededFrameCount = Resampler.computeMaxRequiredInputFrameCount(this.getFormat(), buffer.format(), buffer.frameCount()) + this.resampler.getLookAheadFrameCount();
         if (sourcePosition < this.loopStartPosition && neededFrameCount > 0) { // Intro
             final int frameCount = Math.min(neededFrameCount, this.loopStartPosition - sourcePosition);
             this.loopBuffer.append(this.buffer, sourcePosition, frameCount);
@@ -74,7 +71,7 @@ public class LoopingAudioSource extends BufferedAudioSource {
             this.loopBuffer.append(this.buffer, sourcePosition, frameCount);
             neededFrameCount -= frameCount;
             if (neededFrameCount > 0) { // Reached end of source buffer
-                this.loopBuffer.trimToSize();
+                this.loopBuffer.trimToLength();
             }
         }
 
@@ -150,26 +147,26 @@ public class LoopingAudioSource extends BufferedAudioSource {
     private static final class LoopBuffer {
 
         private float[] array = new float[0];
-        private int size;
+        private int length;
 
         private void append(final AudioBuffer buffer, final int offset, final int length) {
             final int sampleCount = length * buffer.format().channels();
-            if (this.size + sampleCount > this.array.length) {
-                this.array = Arrays.copyOf(this.array, this.size + Math.max(sampleCount, this.size));
+            if (this.length + sampleCount > this.array.length) {
+                this.array = Arrays.copyOf(this.array, this.length + Math.max(sampleCount, this.length));
             }
-            System.arraycopy(buffer.samples(), offset * buffer.format().channels(), this.array, this.size, sampleCount);
-            this.size += sampleCount;
+            System.arraycopy(buffer.samples(), offset * buffer.format().channels(), this.array, this.length, sampleCount);
+            this.length += sampleCount;
         }
 
-        private void trimToSize() {
-            if (this.size < this.array.length) {
-                this.array = Arrays.copyOf(this.array, this.size);
+        private void trimToLength() {
+            if (this.length < this.array.length) {
+                this.array = Arrays.copyOf(this.array, this.length);
             }
         }
 
         private void clear() {
-            Arrays.fill(this.array, 0, this.size, 0);
-            this.size = 0;
+            Arrays.fill(this.array, 0, this.length, 0);
+            this.length = 0;
         }
 
     }

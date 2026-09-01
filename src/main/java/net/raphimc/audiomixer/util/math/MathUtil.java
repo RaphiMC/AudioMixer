@@ -17,6 +17,10 @@
  */
 package net.raphimc.audiomixer.util.math;
 
+import com.sun.management.HotSpotDiagnosticMXBean;
+
+import java.lang.management.ManagementFactory;
+
 public final class MathUtil {
 
     public static final int MEDIUM_BYTES = 3;
@@ -28,7 +32,36 @@ public final class MathUtil {
     public static final double INV_SQRT_2 = 1D / Math.sqrt(2D);
     public static final float BUTTERWORTH_Q = (float) INV_SQRT_2;
 
+    private static final boolean SUPPORTS_FMA;
+
+    static {
+        boolean supportsFma = false;
+        try {
+            if (!Boolean.parseBoolean(System.getProperty("audioMixer.disableFma", "false"))) {
+                supportsFma = Boolean.parseBoolean(ManagementFactory.getPlatformMXBean(HotSpotDiagnosticMXBean.class).getVMOption("UseFMA").getValue());
+            }
+        } catch (final Throwable ignored) {
+        }
+        SUPPORTS_FMA = supportsFma;
+    }
+
     private MathUtil() {
+    }
+
+    public static int floor(final float value) {
+        return Math.toIntExact((long) Math.floor(value));
+    }
+
+    public static int floor(final double value) {
+        return Math.toIntExact((long) Math.floor(value));
+    }
+
+    public static int ceil(final float value) {
+        return Math.toIntExact((long) Math.ceil(value));
+    }
+
+    public static int ceil(final double value) {
+        return Math.toIntExact((long) Math.ceil(value));
     }
 
     public static int clamp(final int value, final int min, final int max) {
@@ -47,12 +80,32 @@ public final class MathUtil {
         return (value - inMin) / (inMax - inMin) * (outMax - outMin) + outMin;
     }
 
+    public static float lerp(final float a, final float b, final float t) {
+        return multiplyAndAdd(b - a, t, a);
+    }
+
+    public static float multiplyAndAdd(final float a, final float b, final float c) {
+        if (SUPPORTS_FMA) {
+            return Math.fma(a, b, c);
+        } else {
+            return a * b + c;
+        }
+    }
+
+    public static double multiplyAndAdd(final double a, final double b, final double c) {
+        if (SUPPORTS_FMA) {
+            return Math.fma(a, b, c);
+        } else {
+            return a * b + c;
+        }
+    }
+
     public static int roundDownToMultiple(final int value, final int multiple) {
         return (value / multiple) * multiple;
     }
 
     public static int roundUpToMultiple(final int value, final int multiple) {
-        return (int) (Math.ceil((double) value / multiple) * multiple);
+        return Math.multiplyExact(ceil((double) value / multiple), multiple);
     }
 
     public static float dbToGain(final float db) {

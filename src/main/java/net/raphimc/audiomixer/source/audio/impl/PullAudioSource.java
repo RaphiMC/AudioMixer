@@ -36,13 +36,13 @@ public class PullAudioSource extends StreamingAudioSource implements Closeable {
     }
 
     public PullAudioSource(final AudioInputStream inputStream, final int bufferMillis) {
-        this(inputStream, bufferMillis, LinearResampler.INSTANCE);
+        this(inputStream, bufferMillis, new LinearResampler());
     }
 
     public PullAudioSource(final AudioInputStream inputStream, final int bufferMillis, final Resampler resampler) {
         super(inputStream.getFormat(), resampler);
         if (bufferMillis <= 0) {
-            throw new IllegalArgumentException("Buffer millis must be greater than 0");
+            throw new IllegalArgumentException("Buffer millis must be > 0");
         }
 
         this.inputStream = inputStream;

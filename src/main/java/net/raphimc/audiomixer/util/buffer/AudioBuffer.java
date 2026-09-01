@@ -114,8 +114,8 @@ public record AudioBuffer(AudioFormat format, float[] samples) {
     }
 
     public AudioBuffer slice(final int from, final int to) {
-        if (from != 0 || to != this.samples.length) {
-            return new AudioBuffer(this.format, Arrays.copyOfRange(this.samples, from, to));
+        if (from != 0 || to != this.frameCount()) {
+            return new AudioBuffer(this.format, Arrays.copyOfRange(this.samples, from * this.format.channels(), to * this.format.channels()));
         } else {
             return this;
         }
@@ -127,7 +127,7 @@ public record AudioBuffer(AudioFormat format, float[] samples) {
             i++;
         }
         i = MathUtil.roundDownToMultiple(i, this.format.channels());
-        return this.slice(i, this.samples.length);
+        return this.slice(i / this.format.channels(), this.frameCount());
     }
 
     public AudioBuffer trimTrailingSilence() {
@@ -135,8 +135,8 @@ public record AudioBuffer(AudioFormat format, float[] samples) {
         while (i >= 0 && this.samples[i] == 0) {
             i--;
         }
-        i = MathUtil.roundUpToMultiple(i + 1, this.format.channels()) - 1;
-        return this.slice(0, i + 1);
+        i = MathUtil.roundUpToMultiple(i + 1, this.format.channels());
+        return this.slice(0, i / this.format.channels());
     }
 
 }

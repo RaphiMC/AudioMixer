@@ -18,138 +18,97 @@
 package net.raphimc.audiomixer.resampler.impl;
 
 import net.raphimc.audiomixer.resampler.Resampler;
+import net.raphimc.audiomixer.util.math.MathUtil;
 
 // Catmull-Rom cubic resampler
-public final class CubicResampler implements Resampler {
+public final class CubicResampler extends Resampler {
 
-    public static final CubicResampler INSTANCE = new CubicResampler();
-
-    private CubicResampler() {
+    public CubicResampler() {
+        super(1, 2);
     }
 
     @Override
-    public double resampleMonoToMono(final float[] src, final float[] dst, final float pitch, double srcPosition) {
-        final int srcLastIndex = src.length - 1;
-        for (int dstPosition = 0; dstPosition < dst.length && srcPosition < src.length; dstPosition++) {
-            final float f = (float) (srcPosition - (int) srcPosition);
-            final float f2 = f * f;
-            final float f3 = f2 * f;
-            final int i1 = (int) srcPosition;
-            final int i0 = reflectIfNeeded(i1 - 1, srcLastIndex);
-            final int i2 = reflectIfNeeded(i1 + 1, srcLastIndex);
-            final int i3 = reflectIfNeeded(i1 + 2, srcLastIndex);
-            final float s0 = src[i0];
-            final float s1 = src[i1];
-            final float s2 = src[i2];
-            final float s3 = src[i3];
-            final float c0 = 2F * s1;
-            final float c1 = (-s0 + s2) * f;
-            final float c2 = (2F * s0 - 5F * s1 + 4F * s2 - s3) * f2;
-            final float c3 = (-s0 + 3F * s1 - 3F * s2 + s3) * f3;
-            dst[dstPosition] = 0.5F * (c0 + c1 + c2 + c3);
-            srcPosition += pitch;
+    protected void resampleMonoToMono(final float[] src, final float[] dst, final int outputFrameCount, final double srcStep, final double baseSrcFramePosition) {
+        for (int dstFrameIndex = 0; dstFrameIndex < outputFrameCount; dstFrameIndex++) {
+            final double srcFramePosition = MathUtil.multiplyAndAdd(dstFrameIndex, srcStep, baseSrcFramePosition);
+            final float fraction = (float) (srcFramePosition - (int) srcFramePosition);
+            final int srcIndex = (int) srcFramePosition;
+            dst[dstFrameIndex] = interpolate(
+                sampleOrZero(src, srcIndex - 1),
+                src[srcIndex],
+                sampleOrZero(src, srcIndex + 1),
+                sampleOrZero(src, srcIndex + 2),
+                fraction
+            );
         }
-        return srcPosition;
     }
 
     @Override
-    public double resampleStereoToStereo(final float[] src, final float[] dst, final float pitch, double srcPosition) {
-        final int srcFrameLength = src.length / 2;
-        final int srcLastIndex = src.length - 2;
-        for (int dstPosition = 0; dstPosition < dst.length && srcPosition < srcFrameLength; dstPosition += 2) {
-            final float f = (float) (srcPosition - (int) srcPosition);
-            final float f2 = f * f;
-            final float f3 = f2 * f;
-            final int i1 = (int) srcPosition * 2;
-            final int i0 = reflectIfNeeded(i1 - 2, srcLastIndex);
-            final int i2 = reflectIfNeeded(i1 + 2, srcLastIndex);
-            final int i3 = reflectIfNeeded(i1 + 4, srcLastIndex);
-            {
-                final float s0 = src[i0];
-                final float s1 = src[i1];
-                final float s2 = src[i2];
-                final float s3 = src[i3];
-                final float c0 = 2F * s1;
-                final float c1 = (-s0 + s2) * f;
-                final float c2 = (2F * s0 - 5F * s1 + 4F * s2 - s3) * f2;
-                final float c3 = (-s0 + 3F * s1 - 3F * s2 + s3) * f3;
-                dst[dstPosition] = 0.5F * (c0 + c1 + c2 + c3);
-            }
-            {
-                final float s0 = src[i0 + 1];
-                final float s1 = src[i1 + 1];
-                final float s2 = src[i2 + 1];
-                final float s3 = src[i3 + 1];
-                final float c0 = 2F * s1;
-                final float c1 = (-s0 + s2) * f;
-                final float c2 = (2F * s0 - 5F * s1 + 4F * s2 - s3) * f2;
-                final float c3 = (-s0 + 3F * s1 - 3F * s2 + s3) * f3;
-                dst[dstPosition + 1] = 0.5F * (c0 + c1 + c2 + c3);
-            }
-            srcPosition += pitch;
+    protected void resampleStereoToStereo(final float[] src, final float[] dst, final int outputFrameCount, final double srcStep, final double baseSrcFramePosition) {
+        for (int dstFrameIndex = 0; dstFrameIndex < outputFrameCount; dstFrameIndex++) {
+            final double srcFramePosition = MathUtil.multiplyAndAdd(dstFrameIndex, srcStep, baseSrcFramePosition);
+            final float fraction = (float) (srcFramePosition - (int) srcFramePosition);
+            final int srcIndex = (int) srcFramePosition * 2;
+            dst[dstFrameIndex * 2] = interpolate(
+                sampleOrZero(src, srcIndex - 2),
+                src[srcIndex],
+                sampleOrZero(src, srcIndex + 2),
+                sampleOrZero(src, srcIndex + 4),
+                fraction
+            );
+            dst[dstFrameIndex * 2 + 1] = interpolate(
+                sampleOrZero(src, srcIndex - 1),
+                src[srcIndex + 1],
+                sampleOrZero(src, srcIndex + 3),
+                sampleOrZero(src, srcIndex + 5),
+                fraction
+            );
         }
-        return srcPosition;
     }
 
     @Override
-    public double resampleMonoToStereo(final float[] src, final float[] dst, final float pitch, double srcPosition) {
-        final int srcLastIndex = src.length - 1;
-        for (int dstPosition = 0; dstPosition < dst.length && srcPosition < src.length; dstPosition += 2) {
-            final float f = (float) (srcPosition - (int) srcPosition);
-            final float f2 = f * f;
-            final float f3 = f2 * f;
-            final int i1 = (int) srcPosition;
-            final int i0 = reflectIfNeeded(i1 - 1, srcLastIndex);
-            final int i2 = reflectIfNeeded(i1 + 1, srcLastIndex);
-            final int i3 = reflectIfNeeded(i1 + 2, srcLastIndex);
-            final float s0 = src[i0];
-            final float s1 = src[i1];
-            final float s2 = src[i2];
-            final float s3 = src[i3];
-            final float c0 = 2F * s1;
-            final float c1 = (-s0 + s2) * f;
-            final float c2 = (2F * s0 - 5F * s1 + 4F * s2 - s3) * f2;
-            final float c3 = (-s0 + 3F * s1 - 3F * s2 + s3) * f3;
-            dst[dstPosition] = dst[dstPosition + 1] = 0.5F * (c0 + c1 + c2 + c3);
-            srcPosition += pitch;
+    protected void resampleMonoToStereo(final float[] src, final float[] dst, final int outputFrameCount, final double srcStep, final double baseSrcFramePosition) {
+        for (int dstFrameIndex = 0; dstFrameIndex < outputFrameCount; dstFrameIndex++) {
+            final double srcFramePosition = MathUtil.multiplyAndAdd(dstFrameIndex, srcStep, baseSrcFramePosition);
+            final float fraction = (float) (srcFramePosition - (int) srcFramePosition);
+            final int srcIndex = (int) srcFramePosition;
+            final float sample = interpolate(
+                sampleOrZero(src, srcIndex - 1),
+                src[srcIndex],
+                sampleOrZero(src, srcIndex + 1),
+                sampleOrZero(src, srcIndex + 2),
+                fraction
+            );
+            dst[dstFrameIndex * 2] = sample;
+            dst[dstFrameIndex * 2 + 1] = sample;
         }
-        return srcPosition;
     }
 
     @Override
-    public double resampleStereoToMono(final float[] src, final float[] dst, final float pitch, double srcPosition) {
-        final int srcFrameLength = src.length / 2;
-        final int srcLastIndex = src.length - 2;
-        for (int dstPosition = 0; dstPosition < dst.length && srcPosition < srcFrameLength; dstPosition++) {
-            final float f = (float) (srcPosition - (int) srcPosition);
-            final float f2 = f * f;
-            final float f3 = f2 * f;
-            final int i1 = (int) srcPosition * 2;
-            final int i0 = reflectIfNeeded(i1 - 2, srcLastIndex);
-            final int i2 = reflectIfNeeded(i1 + 2, srcLastIndex);
-            final int i3 = reflectIfNeeded(i1 + 4, srcLastIndex);
-            final float s0 = (src[i0] + src[i0 + 1]) / 2F;
-            final float s1 = (src[i1] + src[i1 + 1]) / 2F;
-            final float s2 = (src[i2] + src[i2 + 1]) / 2F;
-            final float s3 = (src[i3] + src[i3 + 1]) / 2F;
-            final float c0 = 2F * s1;
-            final float c1 = (-s0 + s2) * f;
-            final float c2 = (2F * s0 - 5F * s1 + 4F * s2 - s3) * f2;
-            final float c3 = (-s0 + 3F * s1 - 3F * s2 + s3) * f3;
-            dst[dstPosition] = 0.5F * (c0 + c1 + c2 + c3);
-            srcPosition += pitch;
+    protected void resampleStereoToMono(final float[] src, final float[] dst, final int outputFrameCount, final double srcStep, final double baseSrcFramePosition) {
+        for (int dstFrameIndex = 0; dstFrameIndex < outputFrameCount; dstFrameIndex++) {
+            final double srcFramePosition = MathUtil.multiplyAndAdd(dstFrameIndex, srcStep, baseSrcFramePosition);
+            final float fraction = (float) (srcFramePosition - (int) srcFramePosition);
+            final int srcIndex = (int) srcFramePosition * 2;
+            dst[dstFrameIndex] = interpolate(
+                (sampleOrZero(src, srcIndex - 2) + sampleOrZero(src, srcIndex - 1)) / 2F,
+                (src[srcIndex] + src[srcIndex + 1]) / 2F,
+                (sampleOrZero(src, srcIndex + 2) + sampleOrZero(src, srcIndex + 3)) / 2F,
+                (sampleOrZero(src, srcIndex + 4) + sampleOrZero(src, srcIndex + 5)) / 2F,
+                fraction
+            );
         }
-        return srcPosition;
     }
 
-    private static int reflectIfNeeded(int index, final int lastIndex) {
-        if (lastIndex <= 0) {
-            return 0;
-        }
-        while (index < 0 || index > lastIndex) {
-            index = index < 0 ? -index : (lastIndex << 1) - index;
-        }
-        return index;
+    private static float interpolate(final float s0, final float s1, final float s2, final float s3, final float t) {
+        final float c1 = s2 - s0;
+        final float c2 = MathUtil.multiplyAndAdd(4F, s2, MathUtil.multiplyAndAdd(-5F, s1, 2F * s0)) - s3;
+        final float c3 = MathUtil.multiplyAndAdd(-3F, s2, MathUtil.multiplyAndAdd(3F, s1, -s0)) + s3;
+        return MathUtil.multiplyAndAdd(0.5F * t, MathUtil.multiplyAndAdd(t, MathUtil.multiplyAndAdd(t, c3, c2), c1), s1);
+    }
+
+    private static float sampleOrZero(final float[] src, final int index) {
+        return index >= 0 && index < src.length ? src[index] : 0F;
     }
 
 }

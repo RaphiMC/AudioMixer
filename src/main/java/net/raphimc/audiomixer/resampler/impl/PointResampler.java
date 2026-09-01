@@ -18,55 +18,43 @@
 package net.raphimc.audiomixer.resampler.impl;
 
 import net.raphimc.audiomixer.resampler.Resampler;
+import net.raphimc.audiomixer.util.math.MathUtil;
 
-public final class PointResampler implements Resampler {
+public final class PointResampler extends Resampler {
 
-    public static final PointResampler INSTANCE = new PointResampler();
-
-    private PointResampler() {
+    public PointResampler() {
+        super(0, 0);
     }
 
     @Override
-    public double resampleMonoToMono(final float[] src, final float[] dst, final float pitch, double srcPosition) {
-        for (int dstPosition = 0; dstPosition < dst.length && srcPosition < src.length; dstPosition++) {
-            final int index = (int) srcPosition;
-            dst[dstPosition] = src[index];
-            srcPosition += pitch;
+    protected void resampleMonoToMono(final float[] src, final float[] dst, final int outputFrameCount, final double srcStep, final double baseSrcFramePosition) {
+        for (int dstFrameIndex = 0; dstFrameIndex < outputFrameCount; dstFrameIndex++) {
+            dst[dstFrameIndex] = src[(int) MathUtil.multiplyAndAdd(dstFrameIndex, srcStep, baseSrcFramePosition)];
         }
-        return srcPosition;
     }
 
     @Override
-    public double resampleStereoToStereo(final float[] src, final float[] dst, final float pitch, double srcPosition) {
-        final int srcFrameLength = src.length / 2;
-        for (int dstPosition = 0; dstPosition < dst.length && srcPosition < srcFrameLength; dstPosition += 2) {
-            final int index = (int) srcPosition * 2;
-            dst[dstPosition] = src[index];
-            dst[dstPosition + 1] = src[index + 1];
-            srcPosition += pitch;
+    protected void resampleStereoToStereo(final float[] src, final float[] dst, final int outputFrameCount, final double srcStep, final double baseSrcFramePosition) {
+        for (int dstFrameIndex = 0; dstFrameIndex < outputFrameCount; dstFrameIndex++) {
+            final int srcIndex = (int) MathUtil.multiplyAndAdd(dstFrameIndex, srcStep, baseSrcFramePosition) * 2;
+            dst[dstFrameIndex * 2] = src[srcIndex];
+            dst[dstFrameIndex * 2 + 1] = src[srcIndex + 1];
         }
-        return srcPosition;
     }
 
     @Override
-    public double resampleMonoToStereo(final float[] src, final float[] dst, final float pitch, double srcPosition) {
-        for (int dstPosition = 0; dstPosition < dst.length && srcPosition < src.length; dstPosition += 2) {
-            final int index = (int) srcPosition;
-            dst[dstPosition] = dst[dstPosition + 1] = src[index];
-            srcPosition += pitch;
+    protected void resampleMonoToStereo(final float[] src, final float[] dst, final int outputFrameCount, final double srcStep, final double baseSrcFramePosition) {
+        for (int dstFrameIndex = 0; dstFrameIndex < outputFrameCount; dstFrameIndex++) {
+            dst[dstFrameIndex * 2] = dst[dstFrameIndex * 2 + 1] = src[(int) MathUtil.multiplyAndAdd(dstFrameIndex, srcStep, baseSrcFramePosition)];
         }
-        return srcPosition;
     }
 
     @Override
-    public double resampleStereoToMono(final float[] src, final float[] dst, final float pitch, double srcPosition) {
-        final int srcFrameLength = src.length / 2;
-        for (int dstPosition = 0; dstPosition < dst.length && srcPosition < srcFrameLength; dstPosition++) {
-            final int index = (int) srcPosition * 2;
-            dst[dstPosition] = (src[index] + src[index + 1]) / 2F;
-            srcPosition += pitch;
+    protected void resampleStereoToMono(final float[] src, final float[] dst, final int outputFrameCount, final double srcStep, final double baseSrcFramePosition) {
+        for (int dstFrameIndex = 0; dstFrameIndex < outputFrameCount; dstFrameIndex++) {
+            final int srcIndex = (int) MathUtil.multiplyAndAdd(dstFrameIndex, srcStep, baseSrcFramePosition) * 2;
+            dst[dstFrameIndex] = (src[srcIndex] + src[srcIndex + 1]) / 2F;
         }
-        return srcPosition;
     }
 
 }

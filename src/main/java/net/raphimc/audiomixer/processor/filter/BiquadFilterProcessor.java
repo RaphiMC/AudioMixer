@@ -20,6 +20,7 @@ package net.raphimc.audiomixer.processor.filter;
 import net.raphimc.audiomixer.processor.FormatDependentProcessor;
 import net.raphimc.audiomixer.util.AudioFormat;
 import net.raphimc.audiomixer.util.buffer.AudioBuffer;
+import net.raphimc.audiomixer.util.math.MathUtil;
 
 // Direct Form 2 Transposed Biquad filter
 public abstract class BiquadFilterProcessor<IP extends BiquadFilterProcessor.InternalProcessor> extends FormatDependentProcessor<IP> {
@@ -52,9 +53,9 @@ public abstract class BiquadFilterProcessor<IP extends BiquadFilterProcessor.Int
             for (int sampleIndex = 0; sampleIndex < samples.length; sampleIndex += channels) {
                 for (int channel = 0; channel < channels; channel++) {
                     final float x0 = samples[sampleIndex + channel];
-                    final float y0 = b0 * x0 + this.s1[channel];
-                    this.s1[channel] = b1 * x0 + this.s2[channel] - a1 * y0;
-                    this.s2[channel] = b2 * x0 - a2 * y0;
+                    final float y0 = MathUtil.multiplyAndAdd(b0, x0, this.s1[channel]);
+                    this.s1[channel] = MathUtil.multiplyAndAdd(-a1, y0, MathUtil.multiplyAndAdd(b1, x0, this.s2[channel]));
+                    this.s2[channel] = MathUtil.multiplyAndAdd(-a2, y0, b2 * x0);
                     samples[sampleIndex + channel] = y0;
                 }
             }

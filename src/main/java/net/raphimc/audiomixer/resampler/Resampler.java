@@ -19,52 +19,113 @@ package net.raphimc.audiomixer.resampler;
 
 import net.raphimc.audiomixer.util.AudioFormat;
 import net.raphimc.audiomixer.util.buffer.AudioBuffer;
+import net.raphimc.audiomixer.util.math.MathUtil;
 
-public interface Resampler {
+public abstract class Resampler {
 
-    default AudioBuffer resample(final AudioBuffer src, final AudioFormat dstFormat) {
-        if (!src.format().equals(dstFormat)) {
-            final float pitch = src.format().sampleRate() / dstFormat.sampleRate();
-            final AudioBuffer dst = new AudioBuffer(dstFormat, (int) Math.ceil((double) src.frameCount() / pitch));
+    private final int lookBehindFrameCount;
+    private final int lookAheadFrameCount;
+    private int lastOutputFrameCount;
+
+    protected Resampler(final int lookBehindFrameCount, final int lookAheadFrameCount) {
+        if (lookBehindFrameCount < 0) {
+            throw new IllegalArgumentException("Look behind frame count must be >= 0");
+        }
+        if (lookAheadFrameCount < 0) {
+            throw new IllegalArgumentException("Look ahead frame count must be >= 0");
+        }
+        this.lookBehindFrameCount = lookBehindFrameCount;
+        this.lookAheadFrameCount = lookAheadFrameCount;
+    }
+
+    public AudioBuffer resample(final AudioBuffer src, final AudioFormat dstFormat) {
+        if (!src.format().equals(dstFormat) && src.frameCount() > 0) {
+            final double srcStep = (double) src.format().sampleRate() / (double) dstFormat.sampleRate();
+            final AudioBuffer dst = new AudioBuffer(dstFormat, computeOutputFrameCount(src.frameCount(), Integer.MAX_VALUE, srcStep, 0));
             this.resample(src, dst, 0);
             return dst;
         } else {
+            this.lastOutputFrameCount = src.frameCount();
             return src;
         }
     }
 
-    default double resample(final AudioBuffer src, final AudioBuffer dst, final double srcPosition) {
-        return this.resample(src.samples(), src.format(), dst.samples(), dst.format(), srcPosition);
+    public double resample(final AudioBuffer src, final AudioBuffer dst, final double srcFramePosition) {
+        return this.resample(src.samples(), src.format(), dst.samples(), dst.format(), srcFramePosition);
     }
 
-    default double resample(final float[] src, final AudioFormat srcFormat, final float[] dst, final AudioFormat dstFormat, final double srcPosition) {
-        if (!srcFormat.equals(dstFormat) || srcPosition % 1 != 0) {
-            final float pitch = srcFormat.sampleRate() / dstFormat.sampleRate();
+    public double resample(final float[] src, final AudioFormat srcFormat, final float[] dst, final AudioFormat dstFormat, final double srcFramePosition) {
+        if (!srcFormat.equals(dstFormat) || srcFramePosition % 1 != 0) {
+            final int srcFrameCount = srcFormat.sampleCountToFrameCount(src.length);
+            final int dstFrameCount = dstFormat.sampleCountToFrameCount(dst.length);
+            final double srcStep = (double) srcFormat.sampleRate() / (double) dstFormat.sampleRate();
+            this.lastOutputFrameCount = computeOutputFrameCount(srcFrameCount, dstFrameCount, srcStep, srcFramePosition);
             if (srcFormat.channels() == 1 && dstFormat.channels() == 1) {
-                return this.resampleMonoToMono(src, dst, pitch, srcPosition);
+                this.resampleMonoToMono(src, dst, this.lastOutputFrameCount, srcStep, srcFramePosition);
             } else if (srcFormat.channels() == 2 && dstFormat.channels() == 2) {
-                return this.resampleStereoToStereo(src, dst, pitch, srcPosition);
+                this.resampleStereoToStereo(src, dst, this.lastOutputFrameCount, srcStep, srcFramePosition);
             } else if (srcFormat.channels() == 1 && dstFormat.channels() == 2) {
-                return this.resampleMonoToStereo(src, dst, pitch, srcPosition);
+                this.resampleMonoToStereo(src, dst, this.lastOutputFrameCount, srcStep, srcFramePosition);
             } else if (srcFormat.channels() == 2 && dstFormat.channels() == 1) {
-                return this.resampleStereoToMono(src, dst, pitch, srcPosition);
+                this.resampleStereoToMono(src, dst, this.lastOutputFrameCount, srcStep, srcFramePosition);
             } else {
                 throw new IllegalArgumentException("Unsupported channel configuration: " + srcFormat.channels() + " -> " + dstFormat.channels());
             }
+            return MathUtil.multiplyAndAdd(this.lastOutputFrameCount, srcStep, srcFramePosition);
         } else {
-            final int offset = (int) srcPosition * srcFormat.channels();
-            final int count = Math.min(dst.length, Math.max(src.length - offset, 0));
-            System.arraycopy(src, offset, dst, 0, count);
-            return srcPosition + srcFormat.sampleCountToFrameCount(count);
+            final int offset = (int) srcFramePosition * srcFormat.channels();
+            final int length = MathUtil.clamp(src.length - offset, 0, dst.length);
+            System.arraycopy(src, offset, dst, 0, length);
+            this.lastOutputFrameCount = srcFormat.sampleCountToFrameCount(length);
+            return srcFramePosition + this.lastOutputFrameCount;
         }
     }
 
-    double resampleMonoToMono(final float[] src, final float[] dst, final float pitch, final double srcPosition);
+    protected abstract void resampleMonoToMono(final float[] src, final float[] dst, final int outputFrameCount, final double srcStep, final double srcFramePosition);
 
-    double resampleStereoToStereo(final float[] src, final float[] dst, final float pitch, final double srcPosition);
+    protected abstract void resampleStereoToStereo(final float[] src, final float[] dst, final int outputFrameCount, final double srcStep, final double srcFramePosition);
 
-    double resampleMonoToStereo(final float[] src, final float[] dst, final float pitch, final double srcPosition);
+    protected abstract void resampleMonoToStereo(final float[] src, final float[] dst, final int outputFrameCount, final double srcStep, final double srcFramePosition);
 
-    double resampleStereoToMono(final float[] src, final float[] dst, final float pitch, final double srcPosition);
+    protected abstract void resampleStereoToMono(final float[] src, final float[] dst, final int outputFrameCount, final double srcStep, final double srcFramePosition);
+
+    public int getLookBehindFrameCount() {
+        return this.lookBehindFrameCount;
+    }
+
+    public int getLookAheadFrameCount() {
+        return this.lookAheadFrameCount;
+    }
+
+    public int getLastOutputFrameCount() {
+        return this.lastOutputFrameCount;
+    }
+
+    public static int computeMaxRequiredInputFrameCount(final AudioFormat srcFormat, final AudioFormat dstFormat, final int outputFrameCount) {
+        if (outputFrameCount > 0) {
+            final double srcStep = (double) srcFormat.sampleRate() / (double) dstFormat.sampleRate();
+            final double maxLastSrcFramePosition = MathUtil.multiplyAndAdd(outputFrameCount - 1, srcStep, Math.nextDown(1D));
+            return Math.addExact(MathUtil.floor(maxLastSrcFramePosition), 1);
+        } else if (outputFrameCount == 0) {
+            return 0;
+        } else {
+            throw new IllegalArgumentException("Output frame count must be >= 0");
+        }
+    }
+
+    private static int computeOutputFrameCount(final int srcFrameCount, final int dstFrameCount, final double srcStep, final double srcFramePosition) {
+        if (dstFrameCount > 0 && srcFramePosition < srcFrameCount) {
+            int outputFrameCount = MathUtil.ceil(Math.min((srcFrameCount - srcFramePosition) / srcStep, dstFrameCount));
+            while (outputFrameCount > 0 && MathUtil.multiplyAndAdd(outputFrameCount - 1, srcStep, srcFramePosition) >= srcFrameCount) {
+                outputFrameCount--;
+            }
+            while (outputFrameCount < dstFrameCount && MathUtil.multiplyAndAdd(outputFrameCount, srcStep, srcFramePosition) < srcFrameCount) {
+                outputFrameCount++;
+            }
+            return outputFrameCount;
+        } else {
+            return 0;
+        }
+    }
 
 }

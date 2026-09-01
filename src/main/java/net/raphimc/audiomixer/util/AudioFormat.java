@@ -17,11 +17,13 @@
  */
 package net.raphimc.audiomixer.util;
 
+import net.raphimc.audiomixer.util.math.MathUtil;
+
 public record AudioFormat(float sampleRate, int channels) {
 
     public AudioFormat {
-        if (sampleRate <= 0) {
-            throw new IllegalArgumentException("Sample rate must be > 0");
+        if (!Float.isFinite(sampleRate) || sampleRate <= 0) {
+            throw new IllegalArgumentException("Sample rate must be finite and > 0");
         }
         if (channels <= 0) {
             throw new IllegalArgumentException("Channel count must be > 0");
@@ -37,7 +39,7 @@ public record AudioFormat(float sampleRate, int channels) {
     }
 
     public int millisToFrameCount(final float millis) {
-        return (int) Math.ceil(this.sampleRate / 1000F * millis);
+        return MathUtil.ceil(this.sampleRate / 1000F * millis);
     }
 
     public float frameCountToMillis(final int frameCount) {

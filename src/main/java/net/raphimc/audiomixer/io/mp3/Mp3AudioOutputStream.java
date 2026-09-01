@@ -126,7 +126,7 @@ public class Mp3AudioOutputStream extends AudioOutputStream {
 
         this.samplesBuffer = new FloatRingBuffer(this.instance.framesize * this.getFormat().channels());
         this.encodeInputBuffer = new int[2][this.instance.framesize];
-        this.encodeOutputBuffer = new byte[(int) Math.ceil(1.25F * this.instance.framesize + 7200)];
+        this.encodeOutputBuffer = new byte[MathUtil.ceil(1.25F * this.instance.framesize + 7200)];
 
         if (this.id3Tag != null) {
             final byte[] id3v2Tag = new byte[this.id3Tag.lame_get_id3v2_tag(this.instance, null, 0)];

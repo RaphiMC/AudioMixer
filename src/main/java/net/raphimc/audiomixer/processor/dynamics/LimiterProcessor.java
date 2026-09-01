@@ -61,7 +61,7 @@ public class LimiterProcessor extends Processor {
             final float peakAhead = window.getMax(frame);
             final float targetGain = peakAhead > 1F ? 1F / peakAhead : 1F;
             final float coefficient = targetGain < this.currentGain ? attackCoefficient : releaseCoefficient;
-            this.currentGain += (targetGain - this.currentGain) * coefficient;
+            this.currentGain = MathUtil.multiplyAndAdd(targetGain - this.currentGain, coefficient, this.currentGain);
             for (int channel = 0; channel < channels; channel++) {
                 samples[frame * channels + channel] *= this.currentGain;
             }

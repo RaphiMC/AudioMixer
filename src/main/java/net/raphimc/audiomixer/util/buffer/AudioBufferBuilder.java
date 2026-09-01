@@ -25,7 +25,7 @@ public class AudioBufferBuilder {
 
     private final AudioFormat format;
     private float[] array;
-    private int size;
+    private int length;
 
     public AudioBufferBuilder(final AudioFormat format) {
         this(format, 128 * 1024);
@@ -38,7 +38,7 @@ public class AudioBufferBuilder {
 
     public void append(final float value) {
         this.ensureHasEnoughSpace(1);
-        this.array[this.size++] = value;
+        this.array[this.length++] = value;
     }
 
     public void append(final float[] samples) {
@@ -47,8 +47,8 @@ public class AudioBufferBuilder {
 
     public void append(final float[] samples, final int offset, final int length) {
         this.ensureHasEnoughSpace(length);
-        System.arraycopy(samples, offset, this.array, this.size, length);
-        this.size += length;
+        System.arraycopy(samples, offset, this.array, this.length, length);
+        this.length += length;
     }
 
     public void append(final AudioBuffer buffer) {
@@ -59,16 +59,16 @@ public class AudioBufferBuilder {
     }
 
     public AudioBuffer build() {
-        return new AudioBuffer(this.format, Arrays.copyOf(this.array, this.size));
+        return new AudioBuffer(this.format, Arrays.copyOf(this.array, this.length));
     }
 
-    public int size() {
-        return this.size;
+    public int length() {
+        return this.length;
     }
 
     private void ensureHasEnoughSpace(final int length) {
-        if (this.size + length > this.array.length) {
-            this.array = Arrays.copyOf(this.array, this.size + Math.max(length, this.size));
+        if (this.length + length > this.array.length) {
+            this.array = Arrays.copyOf(this.array, this.length + Math.max(length, this.length));
         }
     }
 
