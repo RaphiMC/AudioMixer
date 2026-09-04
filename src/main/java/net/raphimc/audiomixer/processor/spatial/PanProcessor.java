@@ -47,9 +47,9 @@ public class PanProcessor extends Processor {
     }
 
     private void applyPan() {
-        final float normalizedPan = (this.pan.get() + 1F) / 2F;
-        this.internalProcessor.leftGain().set((float) Math.cos(normalizedPan * MathUtil.HALF_PI));
-        this.internalProcessor.rightGain().set((float) Math.sin(normalizedPan * MathUtil.HALF_PI));
+        final double normalizedPan = (this.pan.get() + 1D) / 2D;
+        this.internalProcessor.leftGain().set((float) MathUtil.cos(normalizedPan * MathUtil.HALF_PI));
+        this.internalProcessor.rightGain().set((float) MathUtil.sin(normalizedPan * MathUtil.HALF_PI));
     }
 
 }

@@ -82,18 +82,18 @@ public class LowShelfFilterProcessor extends BiquadFilterProcessor<LowShelfFilte
 
         private void applyParameters(final float frequency, final float gain, final float slope) {
             final double omega = MathUtil.TWO_PI * (frequency / this.format.sampleRate());
-            final float sin = (float) Math.sin(omega);
-            final float cos = (float) Math.cos(omega);
-            final float a = (float) Math.sqrt(gain);
-            final float sqrtA = (float) Math.sqrt(a);
-            final float alpha = sin * 0.5F * (float) Math.sqrt((a + 1F / a) * (1F / slope - 1F) + 2F);
+            final double sin = MathUtil.sin(omega);
+            final double cos = MathUtil.cos(omega);
+            final double a = Math.sqrt(gain);
+            final double sqrtA = Math.sqrt(a);
+            final double alpha = sin * 0.5D * Math.sqrt((a + 1D / a) * (1D / slope - 1D) + 2D);
 
-            final float b0 = a * ((a + 1F) - (a - 1F) * cos + 2F * sqrtA * alpha);
-            final float b1 = 2F * a * ((a - 1F) - (a + 1F) * cos);
-            final float b2 = a * ((a + 1F) - (a - 1F) * cos - 2F * sqrtA * alpha);
-            final float a0 = (a + 1F) + (a - 1F) * cos + 2F * sqrtA * alpha;
-            final float a1 = -2F * ((a - 1F) + (a + 1F) * cos);
-            final float a2 = (a + 1F) + (a - 1F) * cos - 2F * sqrtA * alpha;
+            final double b0 = a * ((a + 1D) - (a - 1D) * cos + 2D * sqrtA * alpha);
+            final double b1 = 2D * a * ((a - 1D) - (a + 1D) * cos);
+            final double b2 = a * ((a + 1D) - (a - 1D) * cos - 2D * sqrtA * alpha);
+            final double a0 = (a + 1D) + (a - 1D) * cos + 2D * sqrtA * alpha;
+            final double a1 = -2D * ((a - 1D) + (a + 1D) * cos);
+            final double a2 = (a + 1D) + (a - 1D) * cos - 2D * sqrtA * alpha;
             this.setCoefficients(b0, b1, b2, a0, a1, a2);
         }
 

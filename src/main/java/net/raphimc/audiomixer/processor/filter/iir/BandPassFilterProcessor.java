@@ -66,16 +66,16 @@ public class BandPassFilterProcessor extends BiquadFilterProcessor<BandPassFilte
 
         private void applyParameters(final float frequency, final float q) {
             final double omega = MathUtil.TWO_PI * (frequency / this.format.sampleRate());
-            final float sin = (float) Math.sin(omega);
-            final float cos = (float) Math.cos(omega);
-            final float alpha = sin / (2F * q);
+            final double sin = MathUtil.sin(omega);
+            final double cos = MathUtil.cos(omega);
+            final double alpha = sin / (2D * q);
 
-            final float b0 = alpha;
-            final float b1 = 0F;
-            final float b2 = -alpha;
-            final float a0 = 1F + alpha;
-            final float a1 = -2F * cos;
-            final float a2 = 1F - alpha;
+            final double b0 = alpha;
+            final double b1 = 0D;
+            final double b2 = -alpha;
+            final double a0 = 1D + alpha;
+            final double a1 = -2D * cos;
+            final double a2 = 1D - alpha;
             this.setCoefficients(b0, b1, b2, a0, a1, a2);
         }
 

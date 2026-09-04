@@ -51,7 +51,7 @@ public class BufferedAudioSource extends AudioSource {
     }
 
     public void setProgress(final float progress) {
-        this.setPosition((int) ((double) progress * this.getFrameCount()));
+        this.setPosition((long) ((double) progress * this.getFrameCount()));
     }
 
 }

@@ -35,7 +35,7 @@ public class SineOscillatorSource extends OscillatorSource {
         final int channels = buffer.format().channels();
         final float[] samples = buffer.samples();
         for (int sampleIndex = 0; sampleIndex < samples.length; sampleIndex += channels) {
-            final float sample = (float) Math.sin(this.phase);
+            final float sample = (float) MathUtil.sin(this.phase);
             for (int channel = 0; channel < channels; channel++) {
                 samples[sampleIndex + channel] = sample;
             }

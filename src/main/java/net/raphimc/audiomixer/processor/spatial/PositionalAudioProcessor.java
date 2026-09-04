@@ -21,6 +21,7 @@ import net.raphimc.audiomixer.parameter.FloatParameter;
 import net.raphimc.audiomixer.parameter.GenericParameter;
 import net.raphimc.audiomixer.processor.Processor;
 import net.raphimc.audiomixer.util.buffer.AudioBuffer;
+import net.raphimc.audiomixer.util.math.MathUtil;
 import net.raphimc.audiomixer.util.math.Vector3f;
 
 public class PositionalAudioProcessor extends Processor {
@@ -59,20 +60,19 @@ public class PositionalAudioProcessor extends Processor {
     private void applyParameters() {
         final float maxDistance = this.maxDistance.get();
         final Vector3f worldDelta = this.sourcePosition.get().subtract(this.listenerPosition.get());
-        final float yaw = (float) Math.toRadians(this.listenerYaw.get());
         final float worldDistance = worldDelta.length();
         if (worldDistance == 0F) {
             this.internalProcessor.gain().set(1F);
             this.internalProcessor.pan().set(0F);
         } else if (worldDistance < maxDistance) {
-            final float gain = 1F - (worldDistance / maxDistance);
-            final float sin = (float) Math.sin(yaw);
-            final float cos = (float) Math.cos(yaw);
-            final float localX = worldDelta.x() * cos - worldDelta.z() * sin;
-            final float localZ = worldDelta.x() * sin + worldDelta.z() * cos;
-            final float azimuth = (float) Math.atan2(localX, localZ);
-            this.internalProcessor.gain().set(gain);
-            this.internalProcessor.pan().set((float) Math.sin(azimuth));
+            final double yaw = Math.toRadians(this.listenerYaw.get());
+            final double sin = MathUtil.sin(yaw);
+            final double cos = MathUtil.cos(yaw);
+            final double localX = worldDelta.x() * cos - worldDelta.z() * sin;
+            final double localZ = worldDelta.x() * sin + worldDelta.z() * cos;
+            final double azimuth = Math.atan2(localX, localZ);
+            this.internalProcessor.gain().set(1F - (worldDistance / maxDistance));
+            this.internalProcessor.pan().set((float) MathUtil.sin(azimuth));
         } else {
             this.internalProcessor.gain().set(0F);
             this.internalProcessor.pan().set(0F);

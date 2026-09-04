@@ -19,6 +19,7 @@ package net.raphimc.audiomixer.automation.finite.ramp.impl;
 
 import net.raphimc.audiomixer.automation.finite.ramp.RampAutomation;
 import net.raphimc.audiomixer.parameter.FloatParameter;
+import net.raphimc.audiomixer.util.math.MathUtil;
 
 public class LinearRampAutomation extends RampAutomation {
 
@@ -32,7 +33,7 @@ public class LinearRampAutomation extends RampAutomation {
 
     @Override
     public void apply() {
-        this.parameter().set(this.getStartValue() + (this.getEndValue() - this.getStartValue()) * this.getProgress());
+        this.parameter().set(MathUtil.lerp(this.getStartValue(), this.getEndValue(), this.getProgress()));
     }
 
 }

@@ -82,17 +82,17 @@ public class PeakingFilterProcessor extends BiquadFilterProcessor<PeakingFilterP
 
         private void applyParameters(final float frequency, final float gain, final float q) {
             final double omega = MathUtil.TWO_PI * (frequency / this.format.sampleRate());
-            final float sin = (float) Math.sin(omega);
-            final float cos = (float) Math.cos(omega);
-            final float a = (float) Math.sqrt(gain);
-            final float alpha = sin / (2F * q);
+            final double sin = MathUtil.sin(omega);
+            final double cos = MathUtil.cos(omega);
+            final double a = Math.sqrt(gain);
+            final double alpha = sin / (2D * q);
 
-            final float b0 = 1F + alpha * a;
-            final float b1 = -2F * cos;
-            final float b2 = 1F - alpha * a;
-            final float a0 = 1F + alpha / a;
-            final float a1 = -2F * cos;
-            final float a2 = 1F - alpha / a;
+            final double b0 = 1D + alpha * a;
+            final double b1 = -2D * cos;
+            final double b2 = 1D - alpha * a;
+            final double a0 = 1D + alpha / a;
+            final double a1 = -2D * cos;
+            final double a2 = 1D - alpha / a;
             this.setCoefficients(b0, b1, b2, a0, a1, a2);
         }
 

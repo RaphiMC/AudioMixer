@@ -61,22 +61,22 @@ public abstract class BiquadFilterProcessor<IP extends BiquadFilterProcessor.Int
             }
         }
 
-        protected void setCoefficients(final float b0, final float b1, final float b2, final float a0, final float a1, final float a2) {
+        protected void setCoefficients(final double b0, final double b1, final double b2, final double a0, final double a1, final double a2) {
             this.setCoefficients(b0 / a0, b1 / a0, b2 / a0, a1 / a0, a2 / a0);
         }
 
-        protected void setCoefficients(final float b0, final float b1, final float b2, final float a1, final float a2) {
-            if (!Float.isFinite(b0) || !Float.isFinite(b1) || !Float.isFinite(b2) || !Float.isFinite(a1) || !Float.isFinite(a2)) {
+        protected void setCoefficients(final double b0, final double b1, final double b2, final double a1, final double a2) {
+            if (!Double.isFinite(b0) || !Double.isFinite(b1) || !Double.isFinite(b2) || !Double.isFinite(a1) || !Double.isFinite(a2)) {
                 throw new IllegalArgumentException("Coefficients must be finite");
             }
-            if ((1F + a1 + a2) <= 0F || (1F - a1 + a2) <= 0F || (1F - a2) <= 0F) {
+            if ((1D + a1 + a2) <= 0D || (1D - a1 + a2) <= 0D || (1D - a2) <= 0D) {
                 throw new IllegalArgumentException("Unstable coefficients (poles outside the unit circle)");
             }
-            this.b0 = b0;
-            this.b1 = b1;
-            this.b2 = b2;
-            this.a1 = a1;
-            this.a2 = a2;
+            this.b0 = (float) b0;
+            this.b1 = (float) b1;
+            this.b2 = (float) b2;
+            this.a1 = (float) a1;
+            this.a2 = (float) a2;
         }
 
     }

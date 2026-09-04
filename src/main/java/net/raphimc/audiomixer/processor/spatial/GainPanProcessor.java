@@ -59,9 +59,9 @@ public class GainPanProcessor extends Processor {
 
     private void applyParameters() {
         final float gain = this.gain.get();
-        final float normalizedPan = (this.pan.get() + 1F) / 2F;
-        this.internalProcessor.leftGain().set(gain * (float) Math.cos(normalizedPan * MathUtil.HALF_PI));
-        this.internalProcessor.rightGain().set(gain * (float) Math.sin(normalizedPan * MathUtil.HALF_PI));
+        final double normalizedPan = (this.pan.get() + 1D) / 2D;
+        this.internalProcessor.leftGain().set((float) MathUtil.cos(normalizedPan * MathUtil.HALF_PI) * gain);
+        this.internalProcessor.rightGain().set((float) MathUtil.sin(normalizedPan * MathUtil.HALF_PI) * gain);
     }
 
 }

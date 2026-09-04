@@ -66,16 +66,16 @@ public class NotchFilterProcessor extends BiquadFilterProcessor<NotchFilterProce
 
         private void applyParameters(final float frequency, final float q) {
             final double omega = MathUtil.TWO_PI * (frequency / this.format.sampleRate());
-            final float sin = (float) Math.sin(omega);
-            final float cos = (float) Math.cos(omega);
-            final float alpha = sin / (2F * q);
+            final double sin = MathUtil.sin(omega);
+            final double cos = MathUtil.cos(omega);
+            final double alpha = sin / (2D * q);
 
-            final float b0 = 1F;
-            final float b1 = -2F * cos;
-            final float b2 = 1F;
-            final float a0 = 1F + alpha;
-            final float a1 = -2F * cos;
-            final float a2 = 1F - alpha;
+            final double b0 = 1D;
+            final double b1 = -2D * cos;
+            final double b2 = 1D;
+            final double a0 = 1D + alpha;
+            final double a1 = -2D * cos;
+            final double a2 = 1D - alpha;
             this.setCoefficients(b0, b1, b2, a0, a1, a2);
         }
 
