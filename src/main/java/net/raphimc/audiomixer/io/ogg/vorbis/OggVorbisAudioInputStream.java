@@ -27,7 +27,6 @@ import net.raphimc.audiomixer.util.ArrayUtil;
 import net.raphimc.audiomixer.util.AudioFormat;
 import net.raphimc.audiomixer.util.buffer.FloatRingBuffer;
 import net.raphimc.audiomixer.util.io.ogg.OggInputStream;
-import net.raphimc.audiomixer.util.math.MathUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -76,7 +75,7 @@ public class OggVorbisAudioInputStream extends AudioInputStream {
             final float[][] channelSamples = samplesRef[0];
             for (int frameIndex = 0; frameIndex < frameCount; frameIndex++) {
                 for (int channelIndex = 0; channelIndex < channelCount; channelIndex++) {
-                    this.samplesBuffer.write(MathUtil.clamp(channelSamples[channelIndex][offsets[channelIndex] + frameIndex], -1F, 1F)); // JOrbis seems to return out of range samples sometimes
+                    this.samplesBuffer.write(channelSamples[channelIndex][offsets[channelIndex] + frameIndex]);
                 }
             }
             checkResult(this.dspState.synthesis_read(frameCount), "Failed to update dsp state");
