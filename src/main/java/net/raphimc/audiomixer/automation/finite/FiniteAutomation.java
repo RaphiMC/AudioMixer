@@ -29,8 +29,8 @@ public abstract class FiniteAutomation extends Automation {
 
     public FiniteAutomation(final FloatParameter parameter, final float duration) {
         super(parameter);
-        if (duration <= 0) {
-            throw new IllegalArgumentException("Duration must be > 0");
+        if (!Float.isFinite(duration) || duration <= 0) {
+            throw new IllegalArgumentException("Duration must be finite and > 0");
         }
         this.duration = duration;
     }

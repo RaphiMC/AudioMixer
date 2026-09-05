@@ -138,6 +138,9 @@ public class Mp3AudioOutputStream extends AudioOutputStream {
 
     @Override
     public void write(final float sample) throws IOException {
+        if (!Float.isFinite(sample) || sample < -1F || sample > 1F) {
+            throw new IOException("Sample must be finite and in [-1, 1]");
+        }
         this.samplesBuffer.write(sample);
         if (this.samplesBuffer.isFull()) {
             this.flushSamplesBuffer();

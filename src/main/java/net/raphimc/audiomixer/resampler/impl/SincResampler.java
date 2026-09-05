@@ -50,8 +50,8 @@ public abstract class SincResampler extends Resampler {
         if (phaseCount <= 0) {
             throw new IllegalArgumentException("Phase count must be > 0");
         }
-        if (rolloff <= 0D || rolloff > 1D) {
-            throw new IllegalArgumentException("Rolloff must be in (0, 1]");
+        if (!Double.isFinite(rolloff) || rolloff <= 0D || rolloff > 1D) {
+            throw new IllegalArgumentException("Rolloff must be finite and in (0, 1]");
         }
         this.tapCount = tapCount;
         this.phaseCount = phaseCount;
