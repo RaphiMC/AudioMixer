@@ -51,14 +51,18 @@ public class Mp3AudioOutputStream extends AudioOutputStream {
     private final long dataStartPosition;
 
     public Mp3AudioOutputStream(final OutputStream outputStream, final AudioFormat format) throws IOException {
-        this(outputStream, format, 0.6F, VbrMode.vbr_off, null);
+        this(outputStream, format, 0.6F);
+    }
+
+    public Mp3AudioOutputStream(final OutputStream outputStream, final AudioFormat format, final float quality) throws IOException {
+        this(outputStream, format, quality, VbrMode.vbr_off, null);
     }
 
     public Mp3AudioOutputStream(final OutputStream outputStream, final AudioFormat format, final float quality, final VbrMode vbrMode, final Id3Metadata id3Metadata) throws IOException {
         super(format);
         this.outputStream = outputStream;
         if (this.getFormat().channelCount() < 1 || this.getFormat().channelCount() > 2) {
-            throw new IllegalArgumentException("Unsupported channel count: " + this.getFormat().channelCount());
+            throw new IllegalArgumentException("Channel count must be 1 or 2: " + this.getFormat().channelCount());
         }
         if (quality < 0F || quality > 1F) {
             throw new IllegalArgumentException("Quality must be in [0, 1]: " + quality);

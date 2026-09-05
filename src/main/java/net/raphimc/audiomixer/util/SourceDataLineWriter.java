@@ -35,7 +35,7 @@ public class SourceDataLineWriter implements AutoCloseable {
 
     public SourceDataLineWriter(final SourceDataLine sourceDataLine, final int bufferMillis, final Callback callback) throws LineUnavailableException {
         if (bufferMillis <= 0) {
-            throw new IllegalArgumentException("Buffer millis must be > 0");
+            throw new IllegalArgumentException("Buffer millis must be > 0: " + bufferMillis);
         }
         this.sourceDataLine = sourceDataLine;
         this.format = JavaAudioFormatUtil.getPcmAudioFormat(this.sourceDataLine.getFormat());

@@ -26,12 +26,12 @@ public record AudioBuffer(AudioFormat format, float[] samples) {
 
     public AudioBuffer {
         if (samples.length % format.channelCount() != 0) {
-            throw new IllegalArgumentException("Sample count must be a multiple of the channel count");
+            throw new IllegalArgumentException("Sample count must be a multiple of the channel count: " + samples.length + " % " + format.channelCount() + " != 0");
         }
     }
 
     public AudioBuffer(final AudioFormat format, final int frameCount) {
-        this(format, new float[frameCount * format.channelCount()]);
+        this(format, new float[Math.multiplyExact(frameCount, format.channelCount())]);
     }
 
     public void add(final AudioBuffer other) {
@@ -115,7 +115,7 @@ public record AudioBuffer(AudioFormat format, float[] samples) {
 
     public AudioBuffer slice(final int from, final int to) {
         if (from != 0 || to != this.frameCount()) {
-            return new AudioBuffer(this.format, Arrays.copyOfRange(this.samples, from * this.format.channelCount(), to * this.format.channelCount()));
+            return new AudioBuffer(this.format, Arrays.copyOfRange(this.samples, Math.multiplyExact(from, this.format.channelCount()), Math.multiplyExact(to, this.format.channelCount())));
         } else {
             return this;
         }

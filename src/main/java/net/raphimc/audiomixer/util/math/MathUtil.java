@@ -157,7 +157,7 @@ public final class MathUtil {
     public static double fastSin(final double v) {
         final double i = Math.rint(v * INV_PI);
         final double x0 = multiplyAndAdd(-i, Math.PI, v);
-        final double sign = 1D - 2D * ((int) i & 1);
+        final double sign = 1D - 2D * ((long) i & 1);
         final double x = sign * x0;
         final double x2 = x * x;
         double r = SIN_C7;

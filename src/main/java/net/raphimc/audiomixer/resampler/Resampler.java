@@ -29,10 +29,10 @@ public abstract class Resampler {
 
     protected Resampler(final int lookBehindFrameCount, final int lookAheadFrameCount) {
         if (lookBehindFrameCount < 0) {
-            throw new IllegalArgumentException("Look behind frame count must be >= 0");
+            throw new IllegalArgumentException("Look behind frame count must be >= 0: " + lookBehindFrameCount);
         }
         if (lookAheadFrameCount < 0) {
-            throw new IllegalArgumentException("Look ahead frame count must be >= 0");
+            throw new IllegalArgumentException("Look ahead frame count must be >= 0: " + lookAheadFrameCount);
         }
         this.lookBehindFrameCount = lookBehindFrameCount;
         this.lookAheadFrameCount = lookAheadFrameCount;
@@ -69,7 +69,7 @@ public abstract class Resampler {
             } else if (srcFormat.channelCount() == 2 && dstFormat.channelCount() == 1) {
                 this.resampleStereoToMono(src, dst, this.lastOutputFrameCount, srcStep, srcFramePosition);
             } else {
-                throw new IllegalArgumentException("Unsupported channel configuration: " + srcFormat.channelCount() + " -> " + dstFormat.channelCount());
+                throw new IllegalArgumentException("Unsupported channel conversion: " + srcFormat.channelCount() + " -> " + dstFormat.channelCount());
             }
             return MathUtil.multiplyAndAdd(this.lastOutputFrameCount, srcStep, srcFramePosition);
         } else {
@@ -109,7 +109,7 @@ public abstract class Resampler {
         } else if (outputFrameCount == 0) {
             return 0;
         } else {
-            throw new IllegalArgumentException("Output frame count must be >= 0");
+            throw new IllegalArgumentException("Output frame count must be >= 0: " + outputFrameCount);
         }
     }
 

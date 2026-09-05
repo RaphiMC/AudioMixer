@@ -23,10 +23,10 @@ public record AudioFormat(float sampleRate, int channelCount) {
 
     public AudioFormat {
         if (!Float.isFinite(sampleRate) || sampleRate <= 0) {
-            throw new IllegalArgumentException("Sample rate must be finite and > 0");
+            throw new IllegalArgumentException("Sample rate must be finite and > 0: " + sampleRate);
         }
         if (channelCount <= 0) {
-            throw new IllegalArgumentException("Channel count must be > 0");
+            throw new IllegalArgumentException("Channel count must be > 0: " + channelCount);
         }
     }
 
@@ -47,7 +47,7 @@ public record AudioFormat(float sampleRate, int channelCount) {
     }
 
     public int millisToSampleCount(final float millis) {
-        return this.millisToFrameCount(millis) * this.channelCount;
+        return Math.multiplyExact(this.millisToFrameCount(millis), this.channelCount);
     }
 
     public float sampleCountToMillis(final int sampleCount) {
@@ -56,7 +56,7 @@ public record AudioFormat(float sampleRate, int channelCount) {
 
     public int sampleCountToFrameCount(final int sampleCount) {
         if (sampleCount % this.channelCount != 0) {
-            throw new IllegalArgumentException("Sample count must be a multiple of the channel count");
+            throw new IllegalArgumentException("Sample count must be a multiple of the channel count: " + sampleCount + " % " + this.channelCount + " != 0");
         }
         return sampleCount / this.channelCount;
     }

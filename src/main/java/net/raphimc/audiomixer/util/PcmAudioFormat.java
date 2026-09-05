@@ -28,12 +28,12 @@ public record PcmAudioFormat(AudioFormat format, PcmSampleEncoding encoding) {
     }
 
     public int frameCountToByteCount(final int frameCount) {
-        return frameCount * this.bytesPerFrame();
+        return Math.multiplyExact(frameCount, this.bytesPerFrame());
     }
 
     public int byteCountToFrameCount(final int byteCount) {
         if (byteCount % this.bytesPerFrame() != 0) {
-            throw new IllegalArgumentException("Byte count must be a multiple of the frame size");
+            throw new IllegalArgumentException("Byte count must be a multiple of the frame size: " + byteCount + " % " + this.bytesPerFrame() + " != 0");
         }
         return byteCount / this.bytesPerFrame();
     }

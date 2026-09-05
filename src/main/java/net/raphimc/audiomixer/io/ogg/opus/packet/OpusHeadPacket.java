@@ -52,7 +52,7 @@ public class OpusHeadPacket {
         final int channelMappingFamily = inputStream.readUnsignedByte();
         if (channelMappingFamily == 0) {
             if (this.outputChannelCount < 1 || this.outputChannelCount > 2) {
-                throw new IOException("Unsupported output channel count: " + this.outputChannelCount);
+                throw new IOException("Invalid output channel count: " + this.outputChannelCount);
             }
         } else {
             throw new IOException("Unsupported channel mapping family: " + channelMappingFamily);

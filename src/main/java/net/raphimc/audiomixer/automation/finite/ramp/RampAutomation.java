@@ -32,10 +32,10 @@ public abstract class RampAutomation extends FiniteAutomation {
     public RampAutomation(final FloatParameter parameter, final float startValue, final float endValue, final float duration) {
         super(parameter, duration);
         if (!Float.isFinite(startValue)) {
-            throw new IllegalArgumentException("Start value must be finite");
+            throw new IllegalArgumentException("Start value must be finite: " + startValue);
         }
         if (!Float.isFinite(endValue)) {
-            throw new IllegalArgumentException("End value must be finite");
+            throw new IllegalArgumentException("End value must be finite: " + endValue);
         }
         this.startValue = startValue;
         this.endValue = endValue;

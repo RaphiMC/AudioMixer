@@ -23,7 +23,7 @@ public record Vector3f(float x, float y, float z) {
 
     public Vector3f {
         if (!Float.isFinite(x) || !Float.isFinite(y) || !Float.isFinite(z)) {
-            throw new IllegalArgumentException("Components must be finite");
+            throw new IllegalArgumentException("Components must be finite: " + x + ", " + y + ", " + z);
         }
     }
 

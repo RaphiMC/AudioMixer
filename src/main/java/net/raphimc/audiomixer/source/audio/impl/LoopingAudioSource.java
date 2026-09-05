@@ -110,7 +110,7 @@ public class LoopingAudioSource extends BufferedAudioSource {
 
     public void setLoopStartPosition(final int loopStartPosition) {
         if (loopStartPosition < 0 || loopStartPosition >= this.getFrameCount()) {
-            throw new IllegalArgumentException("Loop start position must be in [0, frame count)");
+            throw new IllegalArgumentException("Loop start position must be in [0, frame count): " + loopStartPosition);
         }
         this.loopStartPosition = loopStartPosition;
         if (loopStartPosition > this.loopEndPosition) {
@@ -124,7 +124,7 @@ public class LoopingAudioSource extends BufferedAudioSource {
 
     public void setLoopEndPosition(final int loopEndPosition) {
         if (loopEndPosition < 0 || loopEndPosition >= this.getFrameCount()) {
-            throw new IllegalArgumentException("Loop end position must be in [0, frame count)");
+            throw new IllegalArgumentException("Loop end position must be in [0, frame count): " + loopEndPosition);
         }
         this.loopEndPosition = loopEndPosition;
         if (loopEndPosition < this.loopStartPosition) {
@@ -134,7 +134,7 @@ public class LoopingAudioSource extends BufferedAudioSource {
 
     public void setLoopRange(final int loopStartPosition, final int loopEndPosition) {
         if (loopStartPosition > loopEndPosition) {
-            throw new IllegalArgumentException("Loop start position must be <= loop end position");
+            throw new IllegalArgumentException("Loop start position must be <= loop end position: " + loopStartPosition + " > " + loopEndPosition);
         }
         this.setLoopStartPosition(loopStartPosition);
         this.setLoopEndPosition(loopEndPosition);

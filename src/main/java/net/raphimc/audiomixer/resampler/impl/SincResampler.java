@@ -45,13 +45,13 @@ public abstract class SincResampler extends Resampler {
     public SincResampler(final int tapCount, final int phaseCount, final double rolloff) {
         super(tapCount / 2 - 1, tapCount / 2);
         if (tapCount % 2 != 0 || tapCount < 2) {
-            throw new IllegalArgumentException("Tap count must be even and >= 2");
+            throw new IllegalArgumentException("Tap count must be even and >= 2: " + tapCount);
         }
         if (phaseCount <= 0) {
-            throw new IllegalArgumentException("Phase count must be > 0");
+            throw new IllegalArgumentException("Phase count must be > 0: " + phaseCount);
         }
         if (!Double.isFinite(rolloff) || rolloff <= 0D || rolloff > 1D) {
-            throw new IllegalArgumentException("Rolloff must be finite and in (0, 1]");
+            throw new IllegalArgumentException("Rolloff must be finite and in (0, 1]: " + rolloff);
         }
         this.tapCount = tapCount;
         this.phaseCount = phaseCount;

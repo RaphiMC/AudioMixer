@@ -23,12 +23,14 @@ import java.util.Arrays;
 
 public class AudioBufferBuilder {
 
+    private static final int INITIAL_CAPACITY = 128 * 1024;
+
     private final AudioFormat format;
     private float[] array;
     private int length;
 
     public AudioBufferBuilder(final AudioFormat format) {
-        this(format, 128 * 1024);
+        this(format, INITIAL_CAPACITY);
     }
 
     public AudioBufferBuilder(final AudioFormat format, final int initialCapacity) {
