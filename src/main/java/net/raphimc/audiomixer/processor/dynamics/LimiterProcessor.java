@@ -47,23 +47,23 @@ public class LimiterProcessor extends Processor {
         final float attackCoefficient = computeCoefficient(millisPerFrame, this.attackMillis.get());
         final float releaseCoefficient = computeCoefficient(millisPerFrame, this.releaseMillis.get());
         final int lookaheadFrameCount = buffer.format().millisToFrameCount(this.lookaheadMillis.get());
-        final int channels = buffer.format().channels();
+        final int channelCount = buffer.format().channelCount();
         final float[] samples = buffer.samples();
 
         final float[] framePeaks = new float[buffer.frameCount()];
-        for (int frame = 0; frame < framePeaks.length; frame++) {
-            for (int channel = 0; channel < channels; channel++) {
-                framePeaks[frame] = Math.max(Math.abs(samples[frame * channels + channel]), framePeaks[frame]);
+        for (int frameIndex = 0; frameIndex < framePeaks.length; frameIndex++) {
+            for (int channelIndex = 0; channelIndex < channelCount; channelIndex++) {
+                framePeaks[frameIndex] = Math.max(Math.abs(samples[frameIndex * channelCount + channelIndex]), framePeaks[frameIndex]);
             }
         }
         final LookaheadPeakWindow window = new LookaheadPeakWindow(framePeaks, lookaheadFrameCount);
-        for (int frame = 0; frame < framePeaks.length; frame++) {
-            final float peakAhead = window.getMax(frame);
+        for (int frameIndex = 0; frameIndex < framePeaks.length; frameIndex++) {
+            final float peakAhead = window.getMax(frameIndex);
             final float targetGain = peakAhead > 1F ? 1F / peakAhead : 1F;
             final float coefficient = targetGain < this.currentGain ? attackCoefficient : releaseCoefficient;
             this.currentGain = MathUtil.multiplyAndAdd(targetGain - this.currentGain, coefficient, this.currentGain);
-            for (int channel = 0; channel < channels; channel++) {
-                samples[frame * channels + channel] *= this.currentGain;
+            for (int channelIndex = 0; channelIndex < channelCount; channelIndex++) {
+                samples[frameIndex * channelCount + channelIndex] *= this.currentGain;
             }
         }
     }

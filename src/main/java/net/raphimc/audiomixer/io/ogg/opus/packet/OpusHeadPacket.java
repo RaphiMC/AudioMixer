@@ -29,7 +29,7 @@ public class OpusHeadPacket {
 
     private final byte majorVersion;
     private final byte minorVersion;
-    private final int outputChannels;
+    private final int outputChannelCount;
     private final int preSkip;
     private final long inputSampleRate;
     private final short outputGain;
@@ -45,34 +45,34 @@ public class OpusHeadPacket {
         if (this.majorVersion > 0) {
             throw new IOException("Unsupported version: " + this.majorVersion + "." + this.minorVersion);
         }
-        this.outputChannels = inputStream.readUnsignedByte();
+        this.outputChannelCount = inputStream.readUnsignedByte();
         this.preSkip = inputStream.readUnsignedShort();
         this.inputSampleRate = inputStream.readUnsignedInt();
         this.outputGain = inputStream.readShort();
         final int channelMappingFamily = inputStream.readUnsignedByte();
         if (channelMappingFamily == 0) {
-            if (this.outputChannels < 1 || this.outputChannels > 2) {
-                throw new IOException("Unsupported output channel count: " + this.outputChannels);
+            if (this.outputChannelCount < 1 || this.outputChannelCount > 2) {
+                throw new IOException("Unsupported output channel count: " + this.outputChannelCount);
             }
         } else {
             throw new IOException("Unsupported channel mapping family: " + channelMappingFamily);
         }
     }
 
-    public OpusHeadPacket(final int outputChannels, final int preSkip, final long inputSampleRate) {
-        this((byte) 0, (byte) 1, outputChannels, preSkip, inputSampleRate, (short) 0);
+    public OpusHeadPacket(final int outputChannelCount, final int preSkip, final long inputSampleRate) {
+        this((byte) 0, (byte) 1, outputChannelCount, preSkip, inputSampleRate, (short) 0);
     }
 
-    public OpusHeadPacket(final byte majorVersion, final byte minorVersion, final int outputChannels, final int preSkip, final long inputSampleRate, final short outputGain) {
+    public OpusHeadPacket(final byte majorVersion, final byte minorVersion, final int outputChannelCount, final int preSkip, final long inputSampleRate, final short outputGain) {
         if (majorVersion > 0) {
             throw new IllegalArgumentException("Unsupported version: " + majorVersion + "." + minorVersion);
         }
-        if (outputChannels < 1 || outputChannels > 2) {
-            throw new IllegalArgumentException("Unsupported output channel count: " + outputChannels);
+        if (outputChannelCount < 1 || outputChannelCount > 2) {
+            throw new IllegalArgumentException("Unsupported output channel count: " + outputChannelCount);
         }
         this.majorVersion = majorVersion;
         this.minorVersion = minorVersion;
-        this.outputChannels = outputChannels;
+        this.outputChannelCount = outputChannelCount;
         this.preSkip = preSkip;
         this.inputSampleRate = inputSampleRate;
         this.outputGain = outputGain;
@@ -81,7 +81,7 @@ public class OpusHeadPacket {
     public void write(final BinaryOutputStream outputStream) throws IOException {
         outputStream.write(MAGIC);
         outputStream.writeUnsignedByte((this.majorVersion << 4) | (this.minorVersion & 0xF));
-        outputStream.writeUnsignedByte(this.outputChannels);
+        outputStream.writeUnsignedByte(this.outputChannelCount);
         outputStream.writeUnsignedShort(this.preSkip);
         outputStream.writeUnsignedInt(this.inputSampleRate);
         outputStream.writeShort(this.outputGain);
@@ -96,8 +96,8 @@ public class OpusHeadPacket {
         return this.minorVersion;
     }
 
-    public int outputChannels() {
-        return this.outputChannels;
+    public int outputChannelCount() {
+        return this.outputChannelCount;
     }
 
     public int preSkip() {

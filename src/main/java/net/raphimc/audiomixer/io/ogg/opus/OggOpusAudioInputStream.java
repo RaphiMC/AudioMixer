@@ -52,16 +52,16 @@ public class OggOpusAudioInputStream extends AudioInputStream {
     }
 
     private OggOpusAudioInputStream(final CodeBeforeSuper codeBeforeSuper) throws IOException {
-        super(new AudioFormat(SAMPLE_RATE, codeBeforeSuper.opusHead.outputChannels()));
+        super(new AudioFormat(SAMPLE_RATE, codeBeforeSuper.opusHead.outputChannelCount()));
         this.oggInputStream = codeBeforeSuper.oggInputStream;
         this.opusStreamId = codeBeforeSuper.opusStreamId;
         try {
-            this.decoder = new OpusDecoder(Math.round(this.getFormat().sampleRate()), this.getFormat().channels());
+            this.decoder = new OpusDecoder(Math.round(this.getFormat().sampleRate()), this.getFormat().channelCount());
             this.decoder.setGain(codeBeforeSuper.opusHead.outputGain());
         } catch (final OpusException e) {
             throw new IOException("Failed to initialize decoder", e);
         }
-        this.decodeOutputBuffer = new short[MAX_FRAME_COUNT * this.getFormat().channels()];
+        this.decodeOutputBuffer = new short[MAX_FRAME_COUNT * this.getFormat().channelCount()];
         this.samplesBuffer = new FloatRingBuffer(this.decodeOutputBuffer.length);
         this.remainingPreSkipFrameCount = codeBeforeSuper.opusHead.preSkip();
     }
@@ -77,7 +77,7 @@ public class OggOpusAudioInputStream extends AudioInputStream {
     private void decodeNextPacket() throws IOException {
         final OggInputStream.OggPacket packet = this.oggInputStream.readUntilPacket(this.opusStreamId);
         try {
-            final int frameCount = this.decoder.decode(packet.data(), 0, packet.data().length, this.decodeOutputBuffer, 0, this.decodeOutputBuffer.length / this.getFormat().channels(), false);
+            final int frameCount = this.decoder.decode(packet.data(), 0, packet.data().length, this.decodeOutputBuffer, 0, this.decodeOutputBuffer.length / this.getFormat().channelCount(), false);
             int firstFrameIndex = 0;
             if (this.remainingPreSkipFrameCount > 0) {
                 final int skipFrameCount = Math.min(this.remainingPreSkipFrameCount, frameCount);
@@ -89,8 +89,8 @@ public class OggOpusAudioInputStream extends AudioInputStream {
                 final long remainingFrameCount = packet.granulePosition() - this.previousGranulePosition;
                 lastFrameIndex = Math.toIntExact(MathUtil.clamp(remainingFrameCount, 0, lastFrameIndex));
             }
-            final int firstSampleIndex = firstFrameIndex * this.getFormat().channels();
-            final int lastSampleIndex = lastFrameIndex * this.getFormat().channels();
+            final int firstSampleIndex = firstFrameIndex * this.getFormat().channelCount();
+            final int lastSampleIndex = lastFrameIndex * this.getFormat().channelCount();
             for (int sampleIndex = firstSampleIndex; sampleIndex < lastSampleIndex; sampleIndex++) {
                 final short sample = this.decodeOutputBuffer[sampleIndex];
                 if (sample < 0) {

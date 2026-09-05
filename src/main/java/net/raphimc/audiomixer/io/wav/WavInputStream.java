@@ -35,7 +35,7 @@ public class WavInputStream extends RiffInputStream {
     private static final long WAVEFORMATEX_GUID_LSB = 0x800000AA00389B71L;
 
     private final UUID format;
-    private final int channels;
+    private final int channelCount;
     private final long sampleRate;
     private final long byteRate;
     private final int blockAlign;
@@ -51,7 +51,7 @@ public class WavInputStream extends RiffInputStream {
         }
         try (RiffChunk fmtChunk = this.readUntilChunk("fmt ")) {
             final int formatTag = this.readUnsignedShort();
-            this.channels = this.readUnsignedShort();
+            this.channelCount = this.readUnsignedShort();
             this.sampleRate = this.readUnsignedInt();
             this.byteRate = this.readUnsignedInt();
             this.blockAlign = this.readUnsignedShort();
@@ -77,8 +77,8 @@ public class WavInputStream extends RiffInputStream {
         return this.format;
     }
 
-    public int getChannels() {
-        return this.channels;
+    public int getChannelCount() {
+        return this.channelCount;
     }
 
     public long getSampleRate() {

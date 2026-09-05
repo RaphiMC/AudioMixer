@@ -24,16 +24,16 @@ public class MonoProcessor extends Processor {
 
     @Override
     protected void processInternal(final AudioBuffer buffer) {
-        final int channels = buffer.format().channels();
+        final int channelCount = buffer.format().channelCount();
         final float[] samples = buffer.samples();
-        for (int sampleIndex = 0; sampleIndex < samples.length; sampleIndex += channels) {
+        for (int sampleIndex = 0; sampleIndex < samples.length; sampleIndex += channelCount) {
             float sample = 0F;
-            for (int channel = 0; channel < channels; channel++) {
-                sample += samples[sampleIndex + channel];
+            for (int channelIndex = 0; channelIndex < channelCount; channelIndex++) {
+                sample += samples[sampleIndex + channelIndex];
             }
-            sample /= channels;
-            for (int channel = 0; channel < channels; channel++) {
-                samples[sampleIndex + channel] = sample;
+            sample /= channelCount;
+            for (int channelIndex = 0; channelIndex < channelCount; channelIndex++) {
+                samples[sampleIndex + channelIndex] = sample;
             }
         }
     }

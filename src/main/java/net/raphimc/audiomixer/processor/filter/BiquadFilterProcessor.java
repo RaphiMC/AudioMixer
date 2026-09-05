@@ -37,8 +37,8 @@ public abstract class BiquadFilterProcessor<IP extends BiquadFilterProcessor.Int
 
         protected InternalProcessor(final AudioFormat format) {
             super(format);
-            this.s1 = new float[format.channels()];
-            this.s2 = new float[format.channels()];
+            this.s1 = new float[format.channelCount()];
+            this.s2 = new float[format.channelCount()];
         }
 
         @Override
@@ -48,15 +48,15 @@ public abstract class BiquadFilterProcessor<IP extends BiquadFilterProcessor.Int
             final float b2 = this.b2;
             final float a1 = this.a1;
             final float a2 = this.a2;
-            final int channels = buffer.format().channels();
+            final int channelCount = buffer.format().channelCount();
             final float[] samples = buffer.samples();
-            for (int sampleIndex = 0; sampleIndex < samples.length; sampleIndex += channels) {
-                for (int channel = 0; channel < channels; channel++) {
-                    final float x0 = samples[sampleIndex + channel];
-                    final float y0 = MathUtil.multiplyAndAdd(b0, x0, this.s1[channel]);
-                    this.s1[channel] = MathUtil.multiplyAndAdd(-a1, y0, MathUtil.multiplyAndAdd(b1, x0, this.s2[channel]));
-                    this.s2[channel] = MathUtil.multiplyAndAdd(-a2, y0, b2 * x0);
-                    samples[sampleIndex + channel] = y0;
+            for (int sampleIndex = 0; sampleIndex < samples.length; sampleIndex += channelCount) {
+                for (int channelIndex = 0; channelIndex < channelCount; channelIndex++) {
+                    final float x0 = samples[sampleIndex + channelIndex];
+                    final float y0 = MathUtil.multiplyAndAdd(b0, x0, this.s1[channelIndex]);
+                    this.s1[channelIndex] = MathUtil.multiplyAndAdd(-a1, y0, MathUtil.multiplyAndAdd(b1, x0, this.s2[channelIndex]));
+                    this.s2[channelIndex] = MathUtil.multiplyAndAdd(-a2, y0, b2 * x0);
+                    samples[sampleIndex + channelIndex] = y0;
                 }
             }
         }

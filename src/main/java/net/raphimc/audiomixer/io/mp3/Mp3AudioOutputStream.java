@@ -57,8 +57,8 @@ public class Mp3AudioOutputStream extends AudioOutputStream {
     public Mp3AudioOutputStream(final OutputStream outputStream, final AudioFormat format, final float quality, final VbrMode vbrMode, final Id3Metadata id3Metadata) throws IOException {
         super(format);
         this.outputStream = outputStream;
-        if (this.getFormat().channels() < 1 || this.getFormat().channels() > 2) {
-            throw new IllegalArgumentException("Unsupported channel count: " + this.getFormat().channels());
+        if (this.getFormat().channelCount() < 1 || this.getFormat().channelCount() > 2) {
+            throw new IllegalArgumentException("Unsupported channel count: " + this.getFormat().channelCount());
         }
         if (quality < 0F || quality > 1F) {
             throw new IllegalArgumentException("Quality must be in [0, 1]: " + quality);
@@ -91,7 +91,7 @@ public class Mp3AudioOutputStream extends AudioOutputStream {
             throw new IOException("Failed to create LAME instance");
         }
         this.instance.quality = 2;
-        this.instance.num_channels = this.getFormat().channels();
+        this.instance.num_channels = this.getFormat().channelCount();
         this.instance.in_samplerate = Math.round(this.getFormat().sampleRate());
         this.instance.write_id3tag_automatic = false;
         this.instance.bWriteVbrTag = this.outputStream instanceof SeekableOutputStream;
@@ -124,7 +124,7 @@ public class Mp3AudioOutputStream extends AudioOutputStream {
         }
         checkResult(this.lame.lame_init_params(this.instance), "Failed to set parameters");
 
-        this.samplesBuffer = new FloatRingBuffer(this.instance.framesize * this.getFormat().channels());
+        this.samplesBuffer = new FloatRingBuffer(this.instance.framesize * this.getFormat().channelCount());
         this.encodeInputBuffer = new int[2][this.instance.framesize];
         this.encodeOutputBuffer = new byte[MathUtil.ceil(1.25F * this.instance.framesize + 7200)];
 
@@ -145,11 +145,11 @@ public class Mp3AudioOutputStream extends AudioOutputStream {
     }
 
     private void flushSamplesBuffer() throws IOException {
-        final int channels = this.getFormat().channels();
-        final int frameCount = this.samplesBuffer.size() / channels;
-        for (int frame = 0; frame < frameCount; frame++) {
-            for (int channel = 0; channel < channels; channel++) {
-                this.encodeInputBuffer[channel][frame] = Math.round(this.samplesBuffer.read() * Integer.MAX_VALUE);
+        final int channelCount = this.getFormat().channelCount();
+        final int frameCount = this.samplesBuffer.size() / channelCount;
+        for (int frameIndex = 0; frameIndex < frameCount; frameIndex++) {
+            for (int channelIndex = 0; channelIndex < channelCount; channelIndex++) {
+                this.encodeInputBuffer[channelIndex][frameIndex] = Math.round(this.samplesBuffer.read() * Integer.MAX_VALUE);
             }
         }
         final int length = checkResult(this.lame.lame_encode_buffer_int(this.instance, this.encodeInputBuffer[0], this.encodeInputBuffer[1], frameCount, this.encodeOutputBuffer, 0, this.encodeOutputBuffer.length), "Failed to encode buffer");

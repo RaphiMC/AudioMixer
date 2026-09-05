@@ -25,13 +25,13 @@ import java.util.Arrays;
 public record AudioBuffer(AudioFormat format, float[] samples) {
 
     public AudioBuffer {
-        if (samples.length % format.channels() != 0) {
+        if (samples.length % format.channelCount() != 0) {
             throw new IllegalArgumentException("Sample count must be a multiple of the channel count");
         }
     }
 
     public AudioBuffer(final AudioFormat format, final int frameCount) {
-        this(format, new float[frameCount * format.channels()]);
+        this(format, new float[frameCount * format.channelCount()]);
     }
 
     public void add(final AudioBuffer other) {
@@ -104,8 +104,8 @@ public record AudioBuffer(AudioFormat format, float[] samples) {
     }
 
     public AudioBuffer append(final AudioBuffer other) {
-        if (other.format().channels() != this.format.channels()) {
-            throw new IllegalArgumentException("Channel count mismatch: " + other.format().channels() + " != " + this.format.channels());
+        if (other.format().channelCount() != this.format.channelCount()) {
+            throw new IllegalArgumentException("Channel count mismatch: " + other.format().channelCount() + " != " + this.format.channelCount());
         }
         final float[] newSamples = new float[this.samples.length + other.samples().length];
         System.arraycopy(this.samples, 0, newSamples, 0, this.samples.length);
@@ -115,7 +115,7 @@ public record AudioBuffer(AudioFormat format, float[] samples) {
 
     public AudioBuffer slice(final int from, final int to) {
         if (from != 0 || to != this.frameCount()) {
-            return new AudioBuffer(this.format, Arrays.copyOfRange(this.samples, from * this.format.channels(), to * this.format.channels()));
+            return new AudioBuffer(this.format, Arrays.copyOfRange(this.samples, from * this.format.channelCount(), to * this.format.channelCount()));
         } else {
             return this;
         }
@@ -126,8 +126,8 @@ public record AudioBuffer(AudioFormat format, float[] samples) {
         while (i < this.samples.length && this.samples[i] == 0) {
             i++;
         }
-        i = MathUtil.roundDownToMultiple(i, this.format.channels());
-        return this.slice(i / this.format.channels(), this.frameCount());
+        i = MathUtil.roundDownToMultiple(i, this.format.channelCount());
+        return this.slice(i / this.format.channelCount(), this.frameCount());
     }
 
     public AudioBuffer trimTrailingSilence() {
@@ -135,8 +135,8 @@ public record AudioBuffer(AudioFormat format, float[] samples) {
         while (i >= 0 && this.samples[i] == 0) {
             i--;
         }
-        i = MathUtil.roundUpToMultiple(i + 1, this.format.channels());
-        return this.slice(0, i / this.format.channels());
+        i = MathUtil.roundUpToMultiple(i + 1, this.format.channelCount());
+        return this.slice(0, i / this.format.channelCount());
     }
 
 }

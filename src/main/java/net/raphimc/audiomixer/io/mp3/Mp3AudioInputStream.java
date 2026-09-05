@@ -45,7 +45,7 @@ public class Mp3AudioInputStream extends AudioInputStream {
     private Mp3AudioInputStream(final CodeBeforeSuper codeBeforeSuper) {
         super(new AudioFormat(codeBeforeSuper.firstFrame.frequency(), codeBeforeSuper.firstFrame.mode() == Header.SINGLE_CHANNEL ? 1 : 2));
         this.mp3InputStream = codeBeforeSuper.mp3InputStream;
-        this.decodeOutputBuffer = new SampleBuffer(Math.round(this.getFormat().sampleRate()), this.getFormat().channels());
+        this.decodeOutputBuffer = new SampleBuffer(Math.round(this.getFormat().sampleRate()), this.getFormat().channelCount());
         this.samplesBuffer = new FloatRingBuffer(this.decodeOutputBuffer.getBuffer().length);
         this.decoder.setOutputBuffer(this.decodeOutputBuffer);
     }

@@ -73,7 +73,7 @@ public class WavPcmAudioOutputStream extends PcmAudioOutputStream {
                     case F32_LE, F64_LE -> FORMAT_IEEE_FLOAT;
                     default -> throw new IllegalArgumentException("Unsupported encoding: " + this.format.encoding());
                 });
-                this.riffOutputStream.writeUnsignedShort(this.format.format().channels());
+                this.riffOutputStream.writeUnsignedShort(this.format.format().channelCount());
                 this.riffOutputStream.writeUnsignedInt(Math.round(this.format.format().sampleRate()));
                 this.riffOutputStream.writeUnsignedInt(this.format.bytesPerSecond());
                 this.riffOutputStream.writeUnsignedShort(this.format.bytesPerFrame());

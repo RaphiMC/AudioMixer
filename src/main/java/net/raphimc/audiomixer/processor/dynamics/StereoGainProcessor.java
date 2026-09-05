@@ -39,7 +39,7 @@ public class StereoGainProcessor extends Processor {
 
     @Override
     protected void processInternal(final AudioBuffer buffer) {
-        if (buffer.format().channels() != 2) {
+        if (buffer.format().channelCount() != 2) {
             throw new IllegalArgumentException("Target audio format must have 2 channels");
         }
         final float leftGain = this.leftGain.get();

@@ -60,20 +60,20 @@ public abstract class Resampler {
             final int dstFrameCount = dstFormat.sampleCountToFrameCount(dst.length);
             final double srcStep = (double) srcFormat.sampleRate() / (double) dstFormat.sampleRate();
             this.lastOutputFrameCount = computeOutputFrameCount(srcFrameCount, dstFrameCount, srcStep, srcFramePosition);
-            if (srcFormat.channels() == 1 && dstFormat.channels() == 1) {
+            if (srcFormat.channelCount() == 1 && dstFormat.channelCount() == 1) {
                 this.resampleMonoToMono(src, dst, this.lastOutputFrameCount, srcStep, srcFramePosition);
-            } else if (srcFormat.channels() == 2 && dstFormat.channels() == 2) {
+            } else if (srcFormat.channelCount() == 2 && dstFormat.channelCount() == 2) {
                 this.resampleStereoToStereo(src, dst, this.lastOutputFrameCount, srcStep, srcFramePosition);
-            } else if (srcFormat.channels() == 1 && dstFormat.channels() == 2) {
+            } else if (srcFormat.channelCount() == 1 && dstFormat.channelCount() == 2) {
                 this.resampleMonoToStereo(src, dst, this.lastOutputFrameCount, srcStep, srcFramePosition);
-            } else if (srcFormat.channels() == 2 && dstFormat.channels() == 1) {
+            } else if (srcFormat.channelCount() == 2 && dstFormat.channelCount() == 1) {
                 this.resampleStereoToMono(src, dst, this.lastOutputFrameCount, srcStep, srcFramePosition);
             } else {
-                throw new IllegalArgumentException("Unsupported channel configuration: " + srcFormat.channels() + " -> " + dstFormat.channels());
+                throw new IllegalArgumentException("Unsupported channel configuration: " + srcFormat.channelCount() + " -> " + dstFormat.channelCount());
             }
             return MathUtil.multiplyAndAdd(this.lastOutputFrameCount, srcStep, srcFramePosition);
         } else {
-            final int offset = (int) srcFramePosition * srcFormat.channels();
+            final int offset = (int) srcFramePosition * srcFormat.channelCount();
             final int length = MathUtil.clamp(src.length - offset, 0, dst.length);
             System.arraycopy(src, offset, dst, 0, length);
             this.lastOutputFrameCount = srcFormat.sampleCountToFrameCount(length);

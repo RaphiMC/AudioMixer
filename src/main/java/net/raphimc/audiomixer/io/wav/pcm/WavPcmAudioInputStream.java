@@ -36,7 +36,7 @@ public class WavPcmAudioInputStream extends PcmAudioInputStream {
     }
 
     private WavPcmAudioInputStream(final CodeBeforeSuper codeBeforeSuper) {
-        super(codeBeforeSuper.wavInputStream, new AudioFormat(codeBeforeSuper.wavInputStream.getSampleRate(), codeBeforeSuper.wavInputStream.getChannels()), codeBeforeSuper.encoding);
+        super(codeBeforeSuper.wavInputStream, new AudioFormat(codeBeforeSuper.wavInputStream.getSampleRate(), codeBeforeSuper.wavInputStream.getChannelCount()), codeBeforeSuper.encoding);
     }
 
     private static final class CodeBeforeSuper {

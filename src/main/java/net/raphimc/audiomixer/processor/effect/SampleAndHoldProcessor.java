@@ -49,24 +49,24 @@ public class SampleAndHoldProcessor extends FormatDependentProcessor<SampleAndHo
 
         private InternalProcessor(final AudioFormat format) {
             super(format);
-            this.heldSamples = new float[format.channels()];
+            this.heldSamples = new float[format.channelCount()];
         }
 
         @Override
         protected void processInternal(final AudioBuffer buffer) {
             final int holdFrameCount = buffer.format().millisToFrameCount(SampleAndHoldProcessor.this.holdMillis.get());
-            final int channels = buffer.format().channels();
+            final int channelCount = buffer.format().channelCount();
             final float[] samples = buffer.samples();
-            for (int sampleIndex = 0; sampleIndex < samples.length; sampleIndex += channels) {
+            for (int sampleIndex = 0; sampleIndex < samples.length; sampleIndex += channelCount) {
                 if (this.holdFramesRemaining == 0) {
                     this.holdFramesRemaining = holdFrameCount - 1;
-                    for (int channel = 0; channel < channels; channel++) {
-                        this.heldSamples[channel] = samples[sampleIndex + channel];
+                    for (int channelIndex = 0; channelIndex < channelCount; channelIndex++) {
+                        this.heldSamples[channelIndex] = samples[sampleIndex + channelIndex];
                     }
                 } else {
                     this.holdFramesRemaining--;
-                    for (int channel = 0; channel < channels; channel++) {
-                        samples[sampleIndex + channel] = this.heldSamples[channel];
+                    for (int channelIndex = 0; channelIndex < channelCount; channelIndex++) {
+                        samples[sampleIndex + channelIndex] = this.heldSamples[channelIndex];
                     }
                 }
             }
@@ -74,7 +74,7 @@ public class SampleAndHoldProcessor extends FormatDependentProcessor<SampleAndHo
 
         @Override
         protected boolean supports(final AudioFormat other) {
-            return this.format.channels() == other.channels();
+            return this.format.channelCount() == other.channelCount();
         }
 
     }

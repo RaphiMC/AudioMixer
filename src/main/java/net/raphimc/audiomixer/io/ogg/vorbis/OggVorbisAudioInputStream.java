@@ -52,7 +52,7 @@ public class OggVorbisAudioInputStream extends AudioInputStream {
         this.oggInputStream = codeBeforeSuper.oggInputStream;
         this.vorbisStreamId = codeBeforeSuper.vorbisStreamId;
         checkResult(this.dspState.synthesis_init(codeBeforeSuper.info), "Failed to initialize dsp state");
-        this.samplesBuffer = new FloatRingBuffer(MAX_FRAME_COUNT * this.getFormat().channels());
+        this.samplesBuffer = new FloatRingBuffer(MAX_FRAME_COUNT * this.getFormat().channelCount());
     }
 
     @Override
@@ -68,15 +68,15 @@ public class OggVorbisAudioInputStream extends AudioInputStream {
         checkResult(this.block.synthesis(packet), "Failed to decode audio packet");
         checkResult(this.dspState.synthesis_blockin(this.block), "Failed to process audio block");
 
-        final int channels = this.getFormat().channels();
+        final int channelCount = this.getFormat().channelCount();
         final float[][][] samplesRef = new float[1][][];
-        final int[] offsets = new int[channels];
+        final int[] offsets = new int[channelCount];
         int frameCount;
         while ((frameCount = this.dspState.synthesis_pcmout(samplesRef, offsets)) > 0) {
             final float[][] channelSamples = samplesRef[0];
-            for (int frame = 0; frame < frameCount; frame++) {
-                for (int channel = 0; channel < channels; channel++) {
-                    this.samplesBuffer.write(MathUtil.clamp(channelSamples[channel][offsets[channel] + frame], -1F, 1F)); // JOrbis seems to return out of range samples sometimes
+            for (int frameIndex = 0; frameIndex < frameCount; frameIndex++) {
+                for (int channelIndex = 0; channelIndex < channelCount; channelIndex++) {
+                    this.samplesBuffer.write(MathUtil.clamp(channelSamples[channelIndex][offsets[channelIndex] + frameIndex], -1F, 1F)); // JOrbis seems to return out of range samples sometimes
                 }
             }
             checkResult(this.dspState.synthesis_read(frameCount), "Failed to update dsp state");

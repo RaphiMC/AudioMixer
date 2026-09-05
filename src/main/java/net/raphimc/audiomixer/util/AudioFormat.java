@@ -19,23 +19,23 @@ package net.raphimc.audiomixer.util;
 
 import net.raphimc.audiomixer.util.math.MathUtil;
 
-public record AudioFormat(float sampleRate, int channels) {
+public record AudioFormat(float sampleRate, int channelCount) {
 
     public AudioFormat {
         if (!Float.isFinite(sampleRate) || sampleRate <= 0) {
             throw new IllegalArgumentException("Sample rate must be finite and > 0");
         }
-        if (channels <= 0) {
+        if (channelCount <= 0) {
             throw new IllegalArgumentException("Channel count must be > 0");
         }
     }
 
     public AudioFormat withSampleRate(final float sampleRate) {
-        return new AudioFormat(sampleRate, this.channels);
+        return new AudioFormat(sampleRate, this.channelCount);
     }
 
-    public AudioFormat withChannels(final int channels) {
-        return new AudioFormat(this.sampleRate, channels);
+    public AudioFormat withChannelCount(final int channelCount) {
+        return new AudioFormat(this.sampleRate, channelCount);
     }
 
     public int millisToFrameCount(final float millis) {
@@ -47,7 +47,7 @@ public record AudioFormat(float sampleRate, int channels) {
     }
 
     public int millisToSampleCount(final float millis) {
-        return this.millisToFrameCount(millis) * this.channels;
+        return this.millisToFrameCount(millis) * this.channelCount;
     }
 
     public float sampleCountToMillis(final int sampleCount) {
@@ -55,10 +55,10 @@ public record AudioFormat(float sampleRate, int channels) {
     }
 
     public int sampleCountToFrameCount(final int sampleCount) {
-        if (sampleCount % this.channels != 0) {
+        if (sampleCount % this.channelCount != 0) {
             throw new IllegalArgumentException("Sample count must be a multiple of the channel count");
         }
-        return sampleCount / this.channels;
+        return sampleCount / this.channelCount;
     }
 
 }

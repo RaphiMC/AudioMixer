@@ -150,11 +150,11 @@ public class LoopingAudioSource extends BufferedAudioSource {
         private int length;
 
         private void append(final AudioBuffer buffer, final int offset, final int length) {
-            final int sampleCount = length * buffer.format().channels();
+            final int sampleCount = length * buffer.format().channelCount();
             if (this.length + sampleCount > this.array.length) {
                 this.array = Arrays.copyOf(this.array, this.length + Math.max(sampleCount, this.length));
             }
-            System.arraycopy(buffer.samples(), offset * buffer.format().channels(), this.array, this.length, sampleCount);
+            System.arraycopy(buffer.samples(), offset * buffer.format().channelCount(), this.array, this.length, sampleCount);
             this.length += sampleCount;
         }
 

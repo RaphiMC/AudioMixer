@@ -30,7 +30,7 @@ public final class Benchmark {
 
     public static void main(final String[] args) {
         final AudioFormat outputFormat = new AudioFormat(48000, 2);
-        final AudioBuffer buffer = new AudioBuffer(outputFormat.withChannels(1), 48000 * 10);
+        final AudioBuffer buffer = new AudioBuffer(outputFormat.withChannelCount(1), 48000 * 10);
         final float[] samples = buffer.samples();
         final Random random = new Random();
         for (int i = 0; i < samples.length; i++) {
