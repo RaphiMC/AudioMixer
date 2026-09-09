@@ -28,21 +28,27 @@ import java.io.IOException;
 
 public class PullAudioSource extends StreamingAudioSource implements Closeable {
 
+    private static final float DEFAULT_BUFFER_MILLIS = 1000F;
+
     private final AudioInputStream inputStream;
     private final Thread readThread;
 
     public PullAudioSource(final AudioInputStream inputStream) {
-        this(inputStream, 1000);
+        this(inputStream, DEFAULT_BUFFER_MILLIS);
     }
 
-    public PullAudioSource(final AudioInputStream inputStream, final int bufferMillis) {
+    public PullAudioSource(final AudioInputStream inputStream, final Resampler resampler) {
+        this(inputStream, DEFAULT_BUFFER_MILLIS, resampler);
+    }
+
+    public PullAudioSource(final AudioInputStream inputStream, final float bufferMillis) {
         this(inputStream, bufferMillis, new LinearResampler());
     }
 
-    public PullAudioSource(final AudioInputStream inputStream, final int bufferMillis, final Resampler resampler) {
+    public PullAudioSource(final AudioInputStream inputStream, final float bufferMillis, final Resampler resampler) {
         super(inputStream.getFormat(), resampler);
-        if (bufferMillis <= 0) {
-            throw new IllegalArgumentException("Buffer millis must be > 0: " + bufferMillis);
+        if (!Float.isFinite(bufferMillis) || bufferMillis <= 0F) {
+            throw new IllegalArgumentException("Buffer millis must be finite and > 0: " + bufferMillis);
         }
 
         this.inputStream = inputStream;
