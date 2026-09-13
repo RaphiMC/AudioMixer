@@ -23,7 +23,6 @@ import net.raphimc.audiomixer.io.ogg.opus.packet.OpusTagsPacket;
 import net.raphimc.audiomixer.util.AudioFormat;
 import net.raphimc.audiomixer.util.buffer.FloatRingBuffer;
 import net.raphimc.audiomixer.util.io.ogg.OggOutputStream;
-import net.raphimc.audiomixer.util.math.MathUtil;
 import org.concentus.OpusApplication;
 import org.concentus.OpusEncoder;
 import org.concentus.OpusException;
@@ -39,6 +38,7 @@ import java.util.concurrent.ThreadLocalRandom;
 
 public class OggOpusAudioOutputStream extends AudioOutputStream {
 
+    private static final Encoding DEFAULT_ENCODING = Encoding.vbr(128);
     private static final int GRANULE_SAMPLE_RATE = 48000; // Opus granule position and pre-skip always use 48kHz units
     private static final int MAX_FRAME_MILLIS = 60; // 60ms is the maximum Opus frame size
 
@@ -52,18 +52,19 @@ public class OggOpusAudioOutputStream extends AudioOutputStream {
     private long granulePosition;
 
     public OggOpusAudioOutputStream(final OutputStream outputStream, final AudioFormat format) throws IOException {
-        this(outputStream, format, 0.6F);
+        this(outputStream, format, DEFAULT_ENCODING);
     }
 
-    public OggOpusAudioOutputStream(final OutputStream outputStream, final AudioFormat format, final float quality) throws IOException {
-        this(outputStream, format, quality, OpusSignal.OPUS_SIGNAL_AUTO, Collections.emptyMap());
+    public OggOpusAudioOutputStream(final OutputStream outputStream, final AudioFormat format, final OpusSignal signalType, final Map<String, List<String>> tags) throws IOException {
+        this(outputStream, format, DEFAULT_ENCODING, signalType, tags);
     }
 
-    public OggOpusAudioOutputStream(final OutputStream outputStream, final AudioFormat format, final float quality, final OpusSignal signalType, final Map<String, List<String>> tags) throws IOException {
+    public OggOpusAudioOutputStream(final OutputStream outputStream, final AudioFormat format, final Encoding encoding) throws IOException {
+        this(outputStream, format, encoding, OpusSignal.OPUS_SIGNAL_AUTO, Collections.emptyMap());
+    }
+
+    public OggOpusAudioOutputStream(final OutputStream outputStream, final AudioFormat format, final Encoding encoding, final OpusSignal signalType, final Map<String, List<String>> tags) throws IOException {
         super(format);
-        if (!Float.isFinite(quality) || quality < 0F || quality > 1F) {
-            throw new IllegalArgumentException("Quality must be finite and in [0, 1]: " + quality);
-        }
         this.oggOutputStream = new OggOutputStream(outputStream);
         this.opusStreamId = ThreadLocalRandom.current().nextInt();
         try {
@@ -71,9 +72,14 @@ public class OggOpusAudioOutputStream extends AudioOutputStream {
         } catch (final OpusException e) {
             throw new IOException("Failed to initialize encoder", e);
         }
-        this.encoder.setBitrate(Math.round(MathUtil.interpolateExponential(32F, 256F, quality)) * 1000);
+        this.encoder.setBitrate(encoding.kbps() * 1000);
         this.encoder.setComplexity(10);
-        this.encoder.setUseConstrainedVBR(false);
+        if (encoding instanceof Encoding.Vbr vbr) {
+            this.encoder.setUseVBR(true);
+            this.encoder.setUseConstrainedVBR(vbr.constrained());
+        } else {
+            this.encoder.setUseVBR(false);
+        }
         this.encoder.setSignalType(signalType);
         this.encoder.setEnableAnalysis(true);
         this.granuleScale = GRANULE_SAMPLE_RATE / this.encoder.getSampleRate();
@@ -82,7 +88,7 @@ public class OggOpusAudioOutputStream extends AudioOutputStream {
 
         final OpusHeadPacket opusHead = new OpusHeadPacket(this.getFormat().channelCount(), Math.multiplyExact(this.encoder.getLookahead(), this.granuleScale), this.encoder.getSampleRate());
         this.oggOutputStream.writePacket(this.opusStreamId, opusHead.write(), false, this.granulePosition);
-        final OpusTagsPacket opusTags = new OpusTagsPacket("Concentus (libopus 1.1.2)", tags.entrySet().stream().flatMap(entry -> entry.getValue().stream().map(value -> entry.getKey() + "=" + value)).toList());
+        final OpusTagsPacket opusTags = new OpusTagsPacket("Concentus (libopus 1.1.2)", tags.entrySet().stream().flatMap(entry -> entry.getValue().stream().map(value -> entry.getKey() + '=' + value)).toList());
         this.oggOutputStream.writePacket(this.opusStreamId, opusTags.write(), false, this.granulePosition);
         this.oggOutputStream.flushStream(this.opusStreamId);
     }
@@ -133,6 +139,44 @@ public class OggOpusAudioOutputStream extends AudioOutputStream {
             this.write(new float[Math.multiplyExact(this.encoder.getLookahead(), this.getFormat().channelCount())]); // Flush the encoder
             this.flushSamplesBuffer(true);
         }
+    }
+
+    public sealed interface Encoding permits Encoding.Cbr, Encoding.Vbr {
+
+        static Encoding cbr(final int kbps) {
+            return new Cbr(kbps);
+        }
+
+        static Encoding abr(final int kbps) {
+            return new Vbr(kbps, true);
+        }
+
+        static Encoding vbr(final int kbps) {
+            return new Vbr(kbps, false);
+        }
+
+        int kbps();
+
+        record Cbr(int kbps) implements Encoding {
+
+            public Cbr {
+                if (kbps < 6 || kbps > 512) {
+                    throw new IllegalArgumentException("Bitrate must be in [6, 512]: " + kbps);
+                }
+            }
+
+        }
+
+        record Vbr(int kbps, boolean constrained) implements Encoding {
+
+            public Vbr {
+                if (kbps < 6 || kbps > 512) {
+                    throw new IllegalArgumentException("Bitrate must be in [6, 512]: " + kbps);
+                }
+            }
+
+        }
+
     }
 
 }

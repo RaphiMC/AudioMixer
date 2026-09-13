@@ -40,6 +40,8 @@ import java.io.OutputStream;
 
 public class Mp3AudioOutputStream extends AudioOutputStream {
 
+    private static final Encoding DEFAULT_ENCODING = Encoding.cbr(224);
+
     private final OutputStream outputStream;
     private final Lame lame;
     private final VBRTag vbrTag;
@@ -51,20 +53,21 @@ public class Mp3AudioOutputStream extends AudioOutputStream {
     private final long dataStartPosition;
 
     public Mp3AudioOutputStream(final OutputStream outputStream, final AudioFormat format) throws IOException {
-        this(outputStream, format, 0.6F);
+        this(outputStream, format, DEFAULT_ENCODING);
     }
 
-    public Mp3AudioOutputStream(final OutputStream outputStream, final AudioFormat format, final float quality) throws IOException {
-        this(outputStream, format, quality, VbrMode.vbr_off, null);
+    public Mp3AudioOutputStream(final OutputStream outputStream, final AudioFormat format, final Id3Tags id3Tags) throws IOException {
+        this(outputStream, format, DEFAULT_ENCODING, id3Tags);
     }
 
-    public Mp3AudioOutputStream(final OutputStream outputStream, final AudioFormat format, final float quality, final VbrMode vbrMode, final Id3Tags id3Tags) throws IOException {
+    public Mp3AudioOutputStream(final OutputStream outputStream, final AudioFormat format, final Encoding encoding) throws IOException {
+        this(outputStream, format, encoding, null);
+    }
+
+    public Mp3AudioOutputStream(final OutputStream outputStream, final AudioFormat format, final Encoding encoding, final Id3Tags id3Tags) throws IOException {
         super(format);
         if (this.getFormat().channelCount() < 1 || this.getFormat().channelCount() > 2) {
             throw new IllegalArgumentException("Channel count must be 1 or 2: " + this.getFormat().channelCount());
-        }
-        if (!Float.isFinite(quality) || quality < 0F || quality > 1F) {
-            throw new IllegalArgumentException("Quality must be finite and in [0, 1]: " + quality);
         }
         this.outputStream = outputStream;
 
@@ -99,17 +102,21 @@ public class Mp3AudioOutputStream extends AudioOutputStream {
         this.instance.in_samplerate = Math.round(this.getFormat().sampleRate());
         this.instance.write_id3tag_automatic = false;
         this.instance.bWriteVbrTag = this.outputStream instanceof SeekableOutputStream;
-        this.instance.VBR = vbrMode;
-        switch (this.instance.VBR) {
-            case vbr_off -> this.instance.brate = Math.round(MathUtil.interpolateExponential(32F, 320F, quality));
-            case vbr_abr -> this.instance.VBR_mean_bitrate_kbps = Math.round(MathUtil.interpolateExponential(32F, 320F, quality));
-            case vbr_mt, vbr_rh, vbr_mtrh -> {
-                final float vbrQuality = Math.min(((1F - quality) * 10F), 9.999F);
-                this.instance.VBR_q = (int) vbrQuality;
-                this.instance.VBR_q_frac = vbrQuality % 1;
-            }
-            default -> throw new IllegalArgumentException("Unsupported VBR mode: " + this.instance.VBR);
+        if (encoding instanceof Encoding.Cbr cbr) {
+            this.instance.VBR = VbrMode.vbr_off;
+            this.instance.brate = cbr.kbps();
+        } else if (encoding instanceof Encoding.Abr abr) {
+            this.instance.VBR = VbrMode.vbr_abr;
+            this.instance.VBR_mean_bitrate_kbps = abr.kbps();
+        } else if (encoding instanceof Encoding.Vbr vbr) {
+            this.instance.VBR = VbrMode.vbr_default;
+            final float vbrQuality = Math.min(((1F - vbr.quality()) * 10F), 9.999F);
+            this.instance.VBR_q = (int) vbrQuality;
+            this.instance.VBR_q_frac = vbrQuality % 1;
+        } else {
+            throw new IllegalArgumentException("Unsupported encoding: " + encoding);
         }
+
         if (this.id3Tag != null) {
             this.id3Tag.id3tag_init(this.instance);
             this.id3Tag.id3tag_add_v2(this.instance);
@@ -200,6 +207,52 @@ public class Mp3AudioOutputStream extends AudioOutputStream {
         } else {
             return result;
         }
+    }
+
+    public sealed interface Encoding permits Encoding.Cbr, Encoding.Abr, Encoding.Vbr {
+
+        static Encoding cbr(final int kbps) {
+            return new Cbr(kbps);
+        }
+
+        static Encoding abr(final int kbps) {
+            return new Abr(kbps);
+        }
+
+        static Encoding vbr(final float quality) {
+            return new Vbr(quality);
+        }
+
+        record Cbr(int kbps) implements Encoding {
+
+            public Cbr {
+                if (kbps < 8 || kbps > 320) {
+                    throw new IllegalArgumentException("Bitrate must be in [8, 320]: " + kbps);
+                }
+            }
+
+        }
+
+        record Abr(int kbps) implements Encoding {
+
+            public Abr {
+                if (kbps < 8 || kbps > 320) {
+                    throw new IllegalArgumentException("Bitrate must be in [8, 320]: " + kbps);
+                }
+            }
+
+        }
+
+        record Vbr(float quality) implements Encoding {
+
+            public Vbr {
+                if (!Float.isFinite(quality) || quality < 0F || quality > 1F) {
+                    throw new IllegalArgumentException("Quality must be finite and in [0, 1]: " + quality);
+                }
+            }
+
+        }
+
     }
 
     public record Id3Tags(String title, String artist, String album, String year, String comment, String track, String genre, byte[] albumArt) {

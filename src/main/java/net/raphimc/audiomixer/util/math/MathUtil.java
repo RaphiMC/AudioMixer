@@ -90,10 +90,6 @@ public final class MathUtil {
         return multiplyAndAdd(b - a, t, a);
     }
 
-    public static float interpolateExponential(final float a, final float b, final float t) {
-        return a * (float) Math.pow(b / a, t);
-    }
-
     public static int roundDownToMultiple(final int value, final int multiple) {
         return Math.multiplyExact(Math.floorDiv(value, multiple), multiple);
     }
