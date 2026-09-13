@@ -103,7 +103,7 @@ public abstract class SincResampler extends Resampler {
             for (int tapIndex = 0; tapIndex < lowerPhaseCoefficients.length; tapIndex++) {
                 final int tapSrcFrameIndex = firstFrameIndex + tapIndex;
                 if (tapSrcFrameIndex >= 0 && tapSrcFrameIndex < srcFrameCount) {
-                    final float coefficient = MathUtil.lerp(lowerPhaseCoefficients[tapIndex], upperPhaseCoefficients[tapIndex], (float) (phasePosition - phaseIndex));
+                    final float coefficient = MathUtil.interpolateLinear(lowerPhaseCoefficients[tapIndex], upperPhaseCoefficients[tapIndex], (float) (phasePosition - phaseIndex));
                     sample = MathUtil.multiplyAndAdd((src[tapSrcFrameIndex * 2] + src[tapSrcFrameIndex * 2 + 1]) / 2F, coefficient, sample);
                 }
             }
@@ -158,7 +158,7 @@ public abstract class SincResampler extends Resampler {
         for (int tapIndex = 0; tapIndex < lowerPhaseCoefficients.length; tapIndex++) {
             final int tapFrameIndex = firstFrameIndex + tapIndex;
             if (tapFrameIndex >= 0 && tapFrameIndex < frameCount) {
-                final float coefficient = MathUtil.lerp(lowerPhaseCoefficients[tapIndex], upperPhaseCoefficients[tapIndex], phaseFraction);
+                final float coefficient = MathUtil.interpolateLinear(lowerPhaseCoefficients[tapIndex], upperPhaseCoefficients[tapIndex], phaseFraction);
                 sample = MathUtil.multiplyAndAdd(samples[tapFrameIndex * channelCount + channelIndex], coefficient, sample);
             }
         }

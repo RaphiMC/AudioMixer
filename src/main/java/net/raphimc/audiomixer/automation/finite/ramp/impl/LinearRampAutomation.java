@@ -33,7 +33,7 @@ public class LinearRampAutomation extends RampAutomation {
 
     @Override
     public void apply() {
-        this.parameter().set(MathUtil.lerp(this.getStartValue(), this.getEndValue(), this.getProgress()));
+        this.parameter().set(MathUtil.interpolateLinear(this.getStartValue(), this.getEndValue(), this.getProgress()));
     }
 
 }

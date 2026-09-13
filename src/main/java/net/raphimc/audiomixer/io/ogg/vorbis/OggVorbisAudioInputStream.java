@@ -90,7 +90,8 @@ public class OggVorbisAudioInputStream extends AudioInputStream {
     private static Packet convertPacket(final OggInputStream.OggPacket inPacket) {
         final Packet outPacket = new Packet();
         outPacket.packet_base = inPacket.data();
-        outPacket.bytes = inPacket.data().length;
+        outPacket.packet = inPacket.offset();
+        outPacket.bytes = inPacket.length();
         outPacket.b_o_s = inPacket.bos() ? 1 : 0;
         outPacket.e_o_s = inPacket.eos() ? 1 : 0;
         outPacket.granulepos = inPacket.granulePosition();

@@ -32,7 +32,7 @@ public final class LinearResampler extends Resampler {
             final double srcFramePosition = MathUtil.multiplyAndAdd(dstFrameIndex, srcStep, baseSrcFramePosition);
             final float fraction = (float) (srcFramePosition - (int) srcFramePosition);
             final int srcIndex = (int) srcFramePosition;
-            dst[dstFrameIndex] = MathUtil.lerp(src[srcIndex], sampleOrZero(src, srcIndex + 1), fraction);
+            dst[dstFrameIndex] = MathUtil.interpolateLinear(src[srcIndex], sampleOrZero(src, srcIndex + 1), fraction);
         }
     }
 
@@ -42,8 +42,8 @@ public final class LinearResampler extends Resampler {
             final double srcFramePosition = MathUtil.multiplyAndAdd(dstFrameIndex, srcStep, baseSrcFramePosition);
             final float fraction = (float) (srcFramePosition - (int) srcFramePosition);
             final int srcIndex = (int) srcFramePosition * 2;
-            dst[dstFrameIndex * 2] = MathUtil.lerp(src[srcIndex], sampleOrZero(src, srcIndex + 2), fraction);
-            dst[dstFrameIndex * 2 + 1] = MathUtil.lerp(src[srcIndex + 1], sampleOrZero(src, srcIndex + 3), fraction);
+            dst[dstFrameIndex * 2] = MathUtil.interpolateLinear(src[srcIndex], sampleOrZero(src, srcIndex + 2), fraction);
+            dst[dstFrameIndex * 2 + 1] = MathUtil.interpolateLinear(src[srcIndex + 1], sampleOrZero(src, srcIndex + 3), fraction);
         }
     }
 
@@ -53,7 +53,7 @@ public final class LinearResampler extends Resampler {
             final double srcFramePosition = MathUtil.multiplyAndAdd(dstFrameIndex, srcStep, baseSrcFramePosition);
             final float fraction = (float) (srcFramePosition - (int) srcFramePosition);
             final int srcIndex = (int) srcFramePosition;
-            final float sample = MathUtil.lerp(src[srcIndex], sampleOrZero(src, srcIndex + 1), fraction);
+            final float sample = MathUtil.interpolateLinear(src[srcIndex], sampleOrZero(src, srcIndex + 1), fraction);
             dst[dstFrameIndex * 2] = sample;
             dst[dstFrameIndex * 2 + 1] = sample;
         }
@@ -65,7 +65,7 @@ public final class LinearResampler extends Resampler {
             final double srcFramePosition = MathUtil.multiplyAndAdd(dstFrameIndex, srcStep, baseSrcFramePosition);
             final float fraction = (float) (srcFramePosition - (int) srcFramePosition);
             final int srcIndex = (int) srcFramePosition * 2;
-            dst[dstFrameIndex] = MathUtil.lerp(
+            dst[dstFrameIndex] = MathUtil.interpolateLinear(
                 (src[srcIndex] + src[srcIndex + 1]) / 2F,
                 (sampleOrZero(src, srcIndex + 2) + sampleOrZero(src, srcIndex + 3)) / 2F,
                 fraction

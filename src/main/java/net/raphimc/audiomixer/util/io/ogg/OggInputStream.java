@@ -26,7 +26,6 @@ import java.io.Closeable;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -94,7 +93,7 @@ public class OggInputStream implements Closeable {
             switch (result) {
                 case PACKETOUT_SUCCESS -> {
                     return new OggPacket(
-                        entry.getKey(), Arrays.copyOfRange(packet.packet_base, packet.packet, packet.packet + packet.bytes),
+                        entry.getKey(), packet.packet_base, packet.packet, packet.bytes,
                         packet.b_o_s != 0, packet.e_o_s != 0, packet.granulepos, packet.packetno
                     );
                 }
@@ -154,7 +153,7 @@ public class OggInputStream implements Closeable {
         }
     }
 
-    public record OggPacket(int streamId, byte[] data, boolean bos, boolean eos, long granulePosition, long packetNumber) {
+    public record OggPacket(int streamId, byte[] data, int offset, int length, boolean bos, boolean eos, long granulePosition, long packetNumber) {
     }
 
 }

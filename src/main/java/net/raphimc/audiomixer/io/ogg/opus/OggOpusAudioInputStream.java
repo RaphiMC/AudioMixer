@@ -19,25 +19,23 @@ package net.raphimc.audiomixer.io.ogg.opus;
 
 import net.raphimc.audiomixer.io.AudioInputStream;
 import net.raphimc.audiomixer.io.ogg.opus.packet.OpusHeadPacket;
+import net.raphimc.audiomixer.io.ogg.opus.packet.OpusTagsPacket;
 import net.raphimc.audiomixer.util.ArrayUtil;
 import net.raphimc.audiomixer.util.AudioFormat;
 import net.raphimc.audiomixer.util.buffer.FloatRingBuffer;
-import net.raphimc.audiomixer.util.io.BinaryInputStream;
 import net.raphimc.audiomixer.util.io.ogg.OggInputStream;
 import net.raphimc.audiomixer.util.math.MathUtil;
 import org.concentus.OpusDecoder;
 import org.concentus.OpusException;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.ByteOrder;
 
 public class OggOpusAudioInputStream extends AudioInputStream {
 
     private static final byte[] OPUS_MAGIC = new byte[]{(byte) 'O', (byte) 'p', (byte) 'u', (byte) 's', (byte) 'H', (byte) 'e', (byte) 'a', (byte) 'd'};
-    private static final int SAMPLE_RATE = 48000; // Opus always uses 48kHz sample rate internally, regardless of the original sample rate of the audio
-    private static final int MAX_FRAME_COUNT = Math.round(SAMPLE_RATE * 0.120F); // 120ms is the maximum frame size
+    private static final int NATIVE_SAMPLE_RATE = 48000; // 48kHz is the native sample rate of Opus
+    private static final int MAX_PACKET_MILLIS = 120; // 120ms is the maximum Opus packet size
 
     private final OggInputStream oggInputStream;
     private final int opusStreamId;
@@ -52,7 +50,7 @@ public class OggOpusAudioInputStream extends AudioInputStream {
     }
 
     private OggOpusAudioInputStream(final CodeBeforeSuper codeBeforeSuper) throws IOException {
-        super(new AudioFormat(SAMPLE_RATE, codeBeforeSuper.opusHead.outputChannelCount()));
+        super(new AudioFormat(NATIVE_SAMPLE_RATE, codeBeforeSuper.opusHead.outputChannelCount()));
         this.oggInputStream = codeBeforeSuper.oggInputStream;
         this.opusStreamId = codeBeforeSuper.opusStreamId;
         try {
@@ -61,7 +59,7 @@ public class OggOpusAudioInputStream extends AudioInputStream {
         } catch (final OpusException e) {
             throw new IOException("Failed to initialize decoder", e);
         }
-        this.decodeOutputBuffer = new short[MAX_FRAME_COUNT * this.getFormat().channelCount()];
+        this.decodeOutputBuffer = new short[Math.multiplyExact(Math.multiplyExact(this.decoder.getSampleRate() / 1000, MAX_PACKET_MILLIS), this.getFormat().channelCount())];
         this.samplesBuffer = new FloatRingBuffer(this.decodeOutputBuffer.length);
         this.remainingPreSkipFrameCount = codeBeforeSuper.opusHead.preSkip();
     }
@@ -76,8 +74,11 @@ public class OggOpusAudioInputStream extends AudioInputStream {
 
     private void decodeNextPacket() throws IOException {
         final OggInputStream.OggPacket packet = this.oggInputStream.readUntilPacket(this.opusStreamId);
+        if (packet.length() == 0) {
+            throw new IOException("Malformed Ogg Opus stream: Zero-length audio packet");
+        }
         try {
-            final int frameCount = this.decoder.decode(packet.data(), 0, packet.data().length, this.decodeOutputBuffer, 0, this.decodeOutputBuffer.length / this.getFormat().channelCount(), false);
+            final int frameCount = this.decoder.decode(packet.data(), packet.offset(), packet.length(), this.decodeOutputBuffer, 0, this.getFormat().sampleCountToFrameCount(this.decodeOutputBuffer.length), false);
             int firstFrameIndex = 0;
             if (this.remainingPreSkipFrameCount > 0) {
                 final int skipFrameCount = Math.min(this.remainingPreSkipFrameCount, frameCount);
@@ -86,11 +87,11 @@ public class OggOpusAudioInputStream extends AudioInputStream {
             }
             int lastFrameIndex = frameCount;
             if (packet.eos() && packet.granulePosition() >= 0) {
-                final long remainingFrameCount = packet.granulePosition() - this.previousGranulePosition;
-                lastFrameIndex = Math.toIntExact(MathUtil.clamp(remainingFrameCount, 0, lastFrameIndex));
+                final long retainedFrameCount = packet.granulePosition() - this.previousGranulePosition;
+                lastFrameIndex = Math.toIntExact(MathUtil.clamp(retainedFrameCount, 0, lastFrameIndex));
             }
-            final int firstSampleIndex = firstFrameIndex * this.getFormat().channelCount();
-            final int lastSampleIndex = lastFrameIndex * this.getFormat().channelCount();
+            final int firstSampleIndex = Math.multiplyExact(firstFrameIndex, this.getFormat().channelCount());
+            final int lastSampleIndex = Math.multiplyExact(lastFrameIndex, this.getFormat().channelCount());
             for (int sampleIndex = firstSampleIndex; sampleIndex < lastSampleIndex; sampleIndex++) {
                 final short sample = this.decodeOutputBuffer[sampleIndex];
                 if (sample < 0) {
@@ -104,10 +105,10 @@ public class OggOpusAudioInputStream extends AudioInputStream {
             if (packet.granulePosition() >= 0) {
                 this.previousGranulePosition = packet.granulePosition();
             } else {
-                this.previousGranulePosition += frameCount;
+                this.previousGranulePosition = Math.addExact(this.previousGranulePosition, frameCount);
             }
         } catch (final OpusException e) {
-            throw new IOException("Failed to decode audio data", e);
+            throw new IOException("Failed to decode audio packet", e);
         }
     }
 
@@ -121,6 +122,7 @@ public class OggOpusAudioInputStream extends AudioInputStream {
         private final OggInputStream oggInputStream;
         private final int opusStreamId;
         private final OpusHeadPacket opusHead;
+        private final OpusTagsPacket opusTags;
 
         private CodeBeforeSuper(final InputStream inputStream) throws IOException {
             this.oggInputStream = new OggInputStream(inputStream);
@@ -128,11 +130,11 @@ public class OggOpusAudioInputStream extends AudioInputStream {
                 final OggInputStream.OggPacket packet = this.oggInputStream.readPacket();
                 if (packet.bos() && ArrayUtil.startsWith(packet.data(), OPUS_MAGIC)) {
                     this.opusStreamId = packet.streamId();
-                    this.opusHead = new OpusHeadPacket(new BinaryInputStream(new ByteArrayInputStream(packet.data()), ByteOrder.LITTLE_ENDIAN));
+                    this.opusHead = new OpusHeadPacket(packet.data());
                     break;
                 }
             }
-            this.oggInputStream.readUntilPacket(this.opusStreamId); // Skip the tags packet
+            this.opusTags = new OpusTagsPacket(this.oggInputStream.readUntilPacket(this.opusStreamId).data());
         }
 
     }

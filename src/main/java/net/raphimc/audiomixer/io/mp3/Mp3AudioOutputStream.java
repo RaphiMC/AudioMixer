@@ -58,15 +58,15 @@ public class Mp3AudioOutputStream extends AudioOutputStream {
         this(outputStream, format, quality, VbrMode.vbr_off, null);
     }
 
-    public Mp3AudioOutputStream(final OutputStream outputStream, final AudioFormat format, final float quality, final VbrMode vbrMode, final Id3Metadata id3Metadata) throws IOException {
+    public Mp3AudioOutputStream(final OutputStream outputStream, final AudioFormat format, final float quality, final VbrMode vbrMode, final Id3Tags id3Tags) throws IOException {
         super(format);
-        this.outputStream = outputStream;
         if (this.getFormat().channelCount() < 1 || this.getFormat().channelCount() > 2) {
             throw new IllegalArgumentException("Channel count must be 1 or 2: " + this.getFormat().channelCount());
         }
-        if (quality < 0F || quality > 1F) {
-            throw new IllegalArgumentException("Quality must be in [0, 1]: " + quality);
+        if (!Float.isFinite(quality) || quality < 0F || quality > 1F) {
+            throw new IllegalArgumentException("Quality must be finite and in [0, 1]: " + quality);
         }
+        this.outputStream = outputStream;
 
         this.lame = new Lame();
         final Reservoir reservoir = new Reservoir();
@@ -77,7 +77,7 @@ public class Mp3AudioOutputStream extends AudioOutputStream {
         final Quantize quantize = new Quantize();
         this.vbrTag = new VBRTag();
         final Version version = new Version();
-        this.id3Tag = id3Metadata != null ? new ID3Tag() : null;
+        this.id3Tag = id3Tags != null ? new ID3Tag() : null;
         reservoir.setModules(bitStream);
         takehiro.setModules(quantizePvt);
         bitStream.setModules(null, null, version, this.vbrTag);
@@ -101,8 +101,8 @@ public class Mp3AudioOutputStream extends AudioOutputStream {
         this.instance.bWriteVbrTag = this.outputStream instanceof SeekableOutputStream;
         this.instance.VBR = vbrMode;
         switch (this.instance.VBR) {
-            case vbr_off -> this.instance.brate = Math.round(MathUtil.map(quality, 0F, 1F, 8F, 320F));
-            case vbr_abr -> this.instance.VBR_mean_bitrate_kbps = Math.round(MathUtil.map(quality, 0F, 1F, 8F, 320F));
+            case vbr_off -> this.instance.brate = Math.round(MathUtil.interpolateExponential(32F, 320F, quality));
+            case vbr_abr -> this.instance.VBR_mean_bitrate_kbps = Math.round(MathUtil.interpolateExponential(32F, 320F, quality));
             case vbr_mt, vbr_rh, vbr_mtrh -> {
                 final float vbrQuality = Math.min(((1F - quality) * 10F), 9.999F);
                 this.instance.VBR_q = (int) vbrQuality;
@@ -114,15 +114,15 @@ public class Mp3AudioOutputStream extends AudioOutputStream {
             this.id3Tag.id3tag_init(this.instance);
             this.id3Tag.id3tag_add_v2(this.instance);
         }
-        if (id3Metadata != null) {
-            this.id3Tag.id3tag_set_title(this.instance, id3Metadata.title());
-            this.id3Tag.id3tag_set_artist(this.instance, id3Metadata.artist());
-            this.id3Tag.id3tag_set_album(this.instance, id3Metadata.album());
-            this.id3Tag.id3tag_set_year(this.instance, id3Metadata.year());
-            this.id3Tag.id3tag_set_comment(this.instance, id3Metadata.comment());
-            checkResult(this.id3Tag.id3tag_set_track(this.instance, id3Metadata.track()), "Failed to set ID3 track");
-            checkResult(this.id3Tag.id3tag_set_genre(this.instance, id3Metadata.genre()), "Failed to set ID3 genre");
-            if (id3Metadata.albumArt() != null && !this.id3Tag.id3tag_set_albumart(this.instance, id3Metadata.albumArt(), id3Metadata.albumArt().length)) {
+        if (id3Tags != null) {
+            this.id3Tag.id3tag_set_title(this.instance, id3Tags.title());
+            this.id3Tag.id3tag_set_artist(this.instance, id3Tags.artist());
+            this.id3Tag.id3tag_set_album(this.instance, id3Tags.album());
+            this.id3Tag.id3tag_set_year(this.instance, id3Tags.year());
+            this.id3Tag.id3tag_set_comment(this.instance, id3Tags.comment());
+            checkResult(this.id3Tag.id3tag_set_track(this.instance, id3Tags.track()), "Failed to set ID3 track");
+            checkResult(this.id3Tag.id3tag_set_genre(this.instance, id3Tags.genre()), "Failed to set ID3 genre");
+            if (id3Tags.albumArt() != null && !this.id3Tag.id3tag_set_albumart(this.instance, id3Tags.albumArt(), id3Tags.albumArt().length)) {
                 throw new IOException("Failed to set ID3 album art");
             }
         }
@@ -152,8 +152,8 @@ public class Mp3AudioOutputStream extends AudioOutputStream {
     }
 
     private void flushSamplesBuffer() throws IOException {
+        final int frameCount = this.getFormat().sampleCountToFrameCount(this.samplesBuffer.size());
         final int channelCount = this.getFormat().channelCount();
-        final int frameCount = this.samplesBuffer.size() / channelCount;
         for (int frameIndex = 0; frameIndex < frameCount; frameIndex++) {
             for (int channelIndex = 0; channelIndex < channelCount; channelIndex++) {
                 this.encodeInputBuffer[channelIndex][frameIndex] = Math.round(this.samplesBuffer.read() * Integer.MAX_VALUE);
@@ -202,42 +202,42 @@ public class Mp3AudioOutputStream extends AudioOutputStream {
         }
     }
 
-    public record Id3Metadata(String title, String artist, String album, String year, String comment, String track, String genre, byte[] albumArt) {
+    public record Id3Tags(String title, String artist, String album, String year, String comment, String track, String genre, byte[] albumArt) {
 
-        public Id3Metadata() {
+        public Id3Tags() {
             this(null, null, null, null, null, null, null, null);
         }
 
-        public Id3Metadata withTitle(final String title) {
-            return new Id3Metadata(title, this.artist, this.album, this.year, this.comment, this.track, this.genre, this.albumArt);
+        public Id3Tags withTitle(final String title) {
+            return new Id3Tags(title, this.artist, this.album, this.year, this.comment, this.track, this.genre, this.albumArt);
         }
 
-        public Id3Metadata withArtist(final String artist) {
-            return new Id3Metadata(this.title, artist, this.album, this.year, this.comment, this.track, this.genre, this.albumArt);
+        public Id3Tags withArtist(final String artist) {
+            return new Id3Tags(this.title, artist, this.album, this.year, this.comment, this.track, this.genre, this.albumArt);
         }
 
-        public Id3Metadata withAlbum(final String album) {
-            return new Id3Metadata(this.title, this.artist, album, this.year, this.comment, this.track, this.genre, this.albumArt);
+        public Id3Tags withAlbum(final String album) {
+            return new Id3Tags(this.title, this.artist, album, this.year, this.comment, this.track, this.genre, this.albumArt);
         }
 
-        public Id3Metadata withYear(final String year) {
-            return new Id3Metadata(this.title, this.artist, this.album, year, this.comment, this.track, this.genre, this.albumArt);
+        public Id3Tags withYear(final String year) {
+            return new Id3Tags(this.title, this.artist, this.album, year, this.comment, this.track, this.genre, this.albumArt);
         }
 
-        public Id3Metadata withComment(final String comment) {
-            return new Id3Metadata(this.title, this.artist, this.album, this.year, comment, this.track, this.genre, this.albumArt);
+        public Id3Tags withComment(final String comment) {
+            return new Id3Tags(this.title, this.artist, this.album, this.year, comment, this.track, this.genre, this.albumArt);
         }
 
-        public Id3Metadata withTrack(final String track) {
-            return new Id3Metadata(this.title, this.artist, this.album, this.year, this.comment, track, this.genre, this.albumArt);
+        public Id3Tags withTrack(final String track) {
+            return new Id3Tags(this.title, this.artist, this.album, this.year, this.comment, track, this.genre, this.albumArt);
         }
 
-        public Id3Metadata withGenre(final String genre) {
-            return new Id3Metadata(this.title, this.artist, this.album, this.year, this.comment, this.track, genre, this.albumArt);
+        public Id3Tags withGenre(final String genre) {
+            return new Id3Tags(this.title, this.artist, this.album, this.year, this.comment, this.track, genre, this.albumArt);
         }
 
-        public Id3Metadata withAlbumArt(final byte[] albumArt) {
-            return new Id3Metadata(this.title, this.artist, this.album, this.year, this.comment, this.track, this.genre, albumArt);
+        public Id3Tags withAlbumArt(final byte[] albumArt) {
+            return new Id3Tags(this.title, this.artist, this.album, this.year, this.comment, this.track, this.genre, albumArt);
         }
 
     }

@@ -20,7 +20,10 @@ package net.raphimc.audiomixer.io.ogg.opus.packet;
 import net.raphimc.audiomixer.util.io.BinaryInputStream;
 import net.raphimc.audiomixer.util.io.BinaryOutputStream;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.ByteOrder;
 import java.util.Arrays;
 
 public class OpusHeadPacket {
@@ -33,6 +36,10 @@ public class OpusHeadPacket {
     private final int preSkip;
     private final long inputSampleRate;
     private final short outputGain;
+
+    public OpusHeadPacket(final byte[] data) throws IOException {
+        this(new BinaryInputStream(new ByteArrayInputStream(data), ByteOrder.LITTLE_ENDIAN));
+    }
 
     public OpusHeadPacket(final BinaryInputStream inputStream) throws IOException {
         final byte[] magic = inputStream.readBytes(MAGIC.length);
@@ -76,6 +83,13 @@ public class OpusHeadPacket {
         this.preSkip = preSkip;
         this.inputSampleRate = inputSampleRate;
         this.outputGain = outputGain;
+    }
+
+    public byte[] write() throws IOException {
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        final BinaryOutputStream outputStream = new BinaryOutputStream(baos, ByteOrder.LITTLE_ENDIAN);
+        this.write(outputStream);
+        return baos.toByteArray();
     }
 
     public void write(final BinaryOutputStream outputStream) throws IOException {
