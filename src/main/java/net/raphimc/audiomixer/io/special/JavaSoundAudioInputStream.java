@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package net.raphimc.audiomixer.io.javasound;
+package net.raphimc.audiomixer.io.special;
 
 import net.raphimc.audiomixer.io.pcm.PcmAudioInputStream;
 import net.raphimc.audiomixer.util.JavaAudioFormatUtil;

@@ -17,14 +17,15 @@
  */
 package net.raphimc.audiomixer.io;
 
-import net.raphimc.audiomixer.io.javasound.JavaSoundAudioInputStream;
 import net.raphimc.audiomixer.io.mp3.Mp3AudioInputStream;
 import net.raphimc.audiomixer.io.ogg.opus.OggOpusAudioInputStream;
 import net.raphimc.audiomixer.io.ogg.vorbis.OggVorbisAudioInputStream;
+import net.raphimc.audiomixer.io.special.JavaSoundAudioInputStream;
+import net.raphimc.audiomixer.io.special.ResamplingAudioInputStream;
 import net.raphimc.audiomixer.io.wav.WavInputStream;
 import net.raphimc.audiomixer.io.wav.pcm.WavPcmAudioInputStream;
 import net.raphimc.audiomixer.resampler.Resampler;
-import net.raphimc.audiomixer.resampler.impl.LinearResampler;
+import net.raphimc.audiomixer.resampler.impl.BlackmanSincResampler;
 import net.raphimc.audiomixer.util.ArrayUtil;
 import net.raphimc.audiomixer.util.AudioFormat;
 import net.raphimc.audiomixer.util.buffer.AudioBuffer;
@@ -64,7 +65,7 @@ public final class AudioIo {
     }
 
     public static AudioBuffer read(final InputStream inputStream, final AudioFormat targetFormat) throws IOException {
-        return read(inputStream, targetFormat, new LinearResampler());
+        return read(inputStream, targetFormat, new BlackmanSincResampler());
     }
 
     public static AudioBuffer read(final InputStream inputStream, final AudioFormat targetFormat, final Resampler resampler) throws IOException {
@@ -108,6 +109,14 @@ public final class AudioIo {
         } catch (final UnsupportedAudioFileException e) {
             throw new IOException("Unsupported audio file format", e);
         }
+    }
+
+    public static AudioInputStream open(final InputStream inputStream, final AudioFormat targetFormat) throws IOException {
+        return open(inputStream, targetFormat, new BlackmanSincResampler());
+    }
+
+    public static AudioInputStream open(final InputStream inputStream, final AudioFormat targetFormat, final Resampler resampler) throws IOException {
+        return ResamplingAudioInputStream.wrapIfNeeded(open(inputStream), targetFormat, resampler);
     }
 
 }

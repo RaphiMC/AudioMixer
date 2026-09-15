@@ -24,25 +24,16 @@ import java.util.Arrays;
 
 public abstract class SincResampler extends Resampler {
 
+    protected static final int DEFAULT_TAP_COUNT = 64;
+    protected static final int DEFAULT_PHASE_COUNT = 128;
+
     private final int tapCount;
     private final int phaseCount;
-    private final double rolloff;
+    private final double cutoffRatio;
     private final float[][] coefficientsTable;
     private double cutoff;
 
-    public SincResampler() {
-        this(64);
-    }
-
-    public SincResampler(final int tapCount) {
-        this(tapCount, 128);
-    }
-
-    public SincResampler(final int tapCount, final int phaseCount) {
-        this(tapCount, phaseCount, 0.95D);
-    }
-
-    public SincResampler(final int tapCount, final int phaseCount, final double rolloff) {
+    protected SincResampler(final int tapCount, final int phaseCount, final double cutoffRatio) {
         super(tapCount / 2 - 1, tapCount / 2);
         if (tapCount % 2 != 0 || tapCount < 2) {
             throw new IllegalArgumentException("Tap count must be even and >= 2: " + tapCount);
@@ -50,12 +41,12 @@ public abstract class SincResampler extends Resampler {
         if (phaseCount <= 0) {
             throw new IllegalArgumentException("Phase count must be > 0: " + phaseCount);
         }
-        if (!Double.isFinite(rolloff) || rolloff <= 0D || rolloff > 1D) {
-            throw new IllegalArgumentException("Rolloff must be finite and in (0, 1]: " + rolloff);
+        if (!Double.isFinite(cutoffRatio) || cutoffRatio < 0D || cutoffRatio > 1D) {
+            throw new IllegalArgumentException("Cutoff ratio must be finite and in [0, 1]: " + cutoffRatio);
         }
         this.tapCount = tapCount;
         this.phaseCount = phaseCount;
-        this.rolloff = rolloff;
+        this.cutoffRatio = cutoffRatio;
         this.coefficientsTable = new float[this.phaseCount + 1][];
     }
 
@@ -99,20 +90,22 @@ public abstract class SincResampler extends Resampler {
             final int phaseIndex = (int) phasePosition;
             final float[] lowerPhaseCoefficients = this.getPhaseCoefficients(phaseIndex);
             final float[] upperPhaseCoefficients = this.getPhaseCoefficients(phaseIndex + 1);
-            float sample = 0F;
-            for (int tapIndex = 0; tapIndex < lowerPhaseCoefficients.length; tapIndex++) {
-                final int tapSrcFrameIndex = firstFrameIndex + tapIndex;
-                if (tapSrcFrameIndex >= 0 && tapSrcFrameIndex < srcFrameCount) {
-                    final float coefficient = MathUtil.interpolateLinear(lowerPhaseCoefficients[tapIndex], upperPhaseCoefficients[tapIndex], (float) (phasePosition - phaseIndex));
-                    sample = MathUtil.multiplyAndAdd((src[tapSrcFrameIndex * 2] + src[tapSrcFrameIndex * 2 + 1]) / 2F, coefficient, sample);
-                }
+            final int firstTapIndex = Math.max(-firstFrameIndex, 0);
+            final int lastTapIndex = Math.min(srcFrameCount - firstFrameIndex, lowerPhaseCoefficients.length);
+            float lowerSample = 0F;
+            float upperSample = 0F;
+            for (int tapIndex = firstTapIndex, sampleIndex = (firstFrameIndex + firstTapIndex) * 2; tapIndex < lastTapIndex; tapIndex++, sampleIndex += 2) {
+                final float sample = (src[sampleIndex] + src[sampleIndex + 1]) / 2F;
+                lowerSample = MathUtil.multiplyAndAdd(sample, lowerPhaseCoefficients[tapIndex], lowerSample);
+                upperSample = MathUtil.multiplyAndAdd(sample, upperPhaseCoefficients[tapIndex], upperSample);
             }
-            dst[dstFrameIndex] = sample;
+            dst[dstFrameIndex] = MathUtil.interpolateLinear(lowerSample, upperSample, (float) (phasePosition - phaseIndex));
         }
     }
 
     private void updateCutoff(final double srcStep) {
-        final double cutoff = this.rolloff / Math.max(1D, srcStep);
+        final double nyquistLimit = Math.min(1D / srcStep, 1D);
+        final double cutoff = Math.max(nyquistLimit - (1D - this.cutoffRatio), 0D);
         if (this.cutoff != cutoff) {
             this.cutoff = cutoff;
             Arrays.fill(this.coefficientsTable, null);
@@ -126,7 +119,7 @@ public abstract class SincResampler extends Resampler {
             float coefficientsSum = 0F;
             for (int tapIndex = 0; tapIndex < phaseCoefficients.length; tapIndex++) {
                 final double distance = tapIndex - this.getLookBehindFrameCount() - phase;
-                final float coefficient = (float) (this.cutoff * sinc(this.cutoff * distance) * this.evaluateWindow(distance / this.getLookAheadFrameCount()));
+                final float coefficient = (float) (sinc(this.cutoff * distance) * this.evaluateWindow(distance / this.getLookAheadFrameCount()));
                 phaseCoefficients[tapIndex] = coefficient;
                 coefficientsSum += coefficient;
             }
@@ -153,16 +146,16 @@ public abstract class SincResampler extends Resampler {
     }
 
     private static float convolve(final float[] samples, final int firstFrameIndex, final int channelCount, final int channelIndex, final float[] lowerPhaseCoefficients, final float[] upperPhaseCoefficients, final float phaseFraction) {
-        float sample = 0F;
-        final int frameCount = samples.length / channelCount;
-        for (int tapIndex = 0; tapIndex < lowerPhaseCoefficients.length; tapIndex++) {
-            final int tapFrameIndex = firstFrameIndex + tapIndex;
-            if (tapFrameIndex >= 0 && tapFrameIndex < frameCount) {
-                final float coefficient = MathUtil.interpolateLinear(lowerPhaseCoefficients[tapIndex], upperPhaseCoefficients[tapIndex], phaseFraction);
-                sample = MathUtil.multiplyAndAdd(samples[tapFrameIndex * channelCount + channelIndex], coefficient, sample);
-            }
+        final int firstTapIndex = Math.max(-firstFrameIndex, 0);
+        final int lastTapIndex = Math.min(samples.length / channelCount - firstFrameIndex, lowerPhaseCoefficients.length);
+        float lowerSample = 0F;
+        float upperSample = 0F;
+        for (int tapIndex = firstTapIndex, sampleIndex = (firstFrameIndex + firstTapIndex) * channelCount + channelIndex; tapIndex < lastTapIndex; tapIndex++, sampleIndex += channelCount) {
+            final float sample = samples[sampleIndex];
+            lowerSample = MathUtil.multiplyAndAdd(sample, lowerPhaseCoefficients[tapIndex], lowerSample);
+            upperSample = MathUtil.multiplyAndAdd(sample, upperPhaseCoefficients[tapIndex], upperSample);
         }
-        return sample;
+        return MathUtil.interpolateLinear(lowerSample, upperSample, phaseFraction);
     }
 
     private static double sinc(final double x) {

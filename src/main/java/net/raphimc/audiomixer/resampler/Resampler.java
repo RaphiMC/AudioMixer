@@ -39,7 +39,7 @@ public abstract class Resampler {
     }
 
     public AudioBuffer resample(final AudioBuffer src, final AudioFormat dstFormat) {
-        if (!src.format().equals(dstFormat) && src.frameCount() > 0) {
+        if (!src.format().equals(dstFormat)) {
             final double srcStep = (double) src.format().sampleRate() / (double) dstFormat.sampleRate();
             final AudioBuffer dst = new AudioBuffer(dstFormat, computeOutputFrameCount(src.frameCount(), Integer.MAX_VALUE, srcStep, 0));
             this.resample(src, dst, 0);
@@ -55,9 +55,9 @@ public abstract class Resampler {
     }
 
     public double resample(final float[] src, final AudioFormat srcFormat, final float[] dst, final AudioFormat dstFormat, final double srcFramePosition) {
-        if (!srcFormat.equals(dstFormat) || srcFramePosition % 1 != 0) {
-            final int srcFrameCount = srcFormat.sampleCountToFrameCount(src.length);
-            final int dstFrameCount = dstFormat.sampleCountToFrameCount(dst.length);
+        final int srcFrameCount = srcFormat.sampleCountToFrameCount(src.length);
+        final int dstFrameCount = dstFormat.sampleCountToFrameCount(dst.length);
+        if (srcFormat.sampleRate() != dstFormat.sampleRate() || srcFramePosition % 1 != 0) {
             final double srcStep = (double) srcFormat.sampleRate() / (double) dstFormat.sampleRate();
             this.lastOutputFrameCount = computeOutputFrameCount(srcFrameCount, dstFrameCount, srcStep, srcFramePosition);
             if (srcFormat.channelCount() == 1 && dstFormat.channelCount() == 1) {
@@ -73,10 +73,16 @@ public abstract class Resampler {
             }
             return MathUtil.multiplyAndAdd(this.lastOutputFrameCount, srcStep, srcFramePosition);
         } else {
-            final int offset = (int) srcFramePosition * srcFormat.channelCount();
-            final int length = MathUtil.clamp(src.length - offset, 0, dst.length);
-            System.arraycopy(src, offset, dst, 0, length);
-            this.lastOutputFrameCount = srcFormat.sampleCountToFrameCount(length);
+            this.lastOutputFrameCount = computeOutputFrameCount(srcFrameCount, dstFrameCount, 1D, srcFramePosition);
+            if (srcFormat.channelCount() == dstFormat.channelCount()) {
+                System.arraycopy(src, (int) srcFramePosition * srcFormat.channelCount(), dst, 0, this.lastOutputFrameCount * srcFormat.channelCount());
+            } else if (srcFormat.channelCount() == 1 && dstFormat.channelCount() == 2) {
+                remapMonoToStereo(src, dst, this.lastOutputFrameCount, (int) srcFramePosition);
+            } else if (srcFormat.channelCount() == 2 && dstFormat.channelCount() == 1) {
+                remapStereoToMono(src, dst, this.lastOutputFrameCount, (int) srcFramePosition);
+            } else {
+                throw new IllegalArgumentException("Unsupported channel conversion: " + srcFormat.channelCount() + " -> " + dstFormat.channelCount());
+            }
             return srcFramePosition + this.lastOutputFrameCount;
         }
     }
@@ -110,6 +116,19 @@ public abstract class Resampler {
             return 0;
         } else {
             throw new IllegalArgumentException("Output frame count must be >= 0: " + outputFrameCount);
+        }
+    }
+
+    private static void remapMonoToStereo(final float[] src, final float[] dst, final int outputFrameCount, final int srcFrameIndex) {
+        for (int dstFrameIndex = 0; dstFrameIndex < outputFrameCount; dstFrameIndex++) {
+            dst[dstFrameIndex * 2] = dst[dstFrameIndex * 2 + 1] = src[srcFrameIndex + dstFrameIndex];
+        }
+    }
+
+    private static void remapStereoToMono(final float[] src, final float[] dst, final int outputFrameCount, final int srcFrameIndex) {
+        for (int dstFrameIndex = 0; dstFrameIndex < outputFrameCount; dstFrameIndex++) {
+            final int srcIndex = (srcFrameIndex + dstFrameIndex) * 2;
+            dst[dstFrameIndex] = (src[srcIndex] + src[srcIndex + 1]) / 2F;
         }
     }
 

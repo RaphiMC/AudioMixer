@@ -22,18 +22,19 @@ import net.raphimc.audiomixer.util.math.MathUtil;
 public final class BlackmanSincResampler extends SincResampler {
 
     public BlackmanSincResampler() {
+        this(DEFAULT_TAP_COUNT);
     }
 
     public BlackmanSincResampler(final int tapCount) {
-        super(tapCount);
+        this(tapCount, DEFAULT_PHASE_COUNT);
     }
 
     public BlackmanSincResampler(final int tapCount, final int phaseCount) {
-        super(tapCount, phaseCount);
+        this(tapCount, phaseCount, 1D - Math.min(Math.cbrt(tapCount), 5.5D) / tapCount);
     }
 
-    public BlackmanSincResampler(final int tapCount, final int phaseCount, final double rolloff) {
-        super(tapCount, phaseCount, rolloff);
+    public BlackmanSincResampler(final int tapCount, final int phaseCount, final double cutoffRatio) {
+        super(tapCount, phaseCount, cutoffRatio);
     }
 
     @Override

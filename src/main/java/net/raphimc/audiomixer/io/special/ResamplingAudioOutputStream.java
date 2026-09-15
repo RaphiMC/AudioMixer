@@ -19,7 +19,7 @@ package net.raphimc.audiomixer.io.special;
 
 import net.raphimc.audiomixer.io.AudioOutputStream;
 import net.raphimc.audiomixer.resampler.Resampler;
-import net.raphimc.audiomixer.resampler.impl.LinearResampler;
+import net.raphimc.audiomixer.resampler.impl.BlackmanSincResampler;
 import net.raphimc.audiomixer.util.AudioFormat;
 
 import java.io.IOException;
@@ -36,6 +36,22 @@ public class ResamplingAudioOutputStream extends AudioOutputStream {
     private int inputSampleCount;
     private final float[] outputSamples;
 
+    public static AudioOutputStream wrapIfNeeded(final AudioOutputStream outputStream, final AudioFormat sourceFormat) {
+        return outputStream.getFormat().equals(sourceFormat) ? outputStream : new ResamplingAudioOutputStream(outputStream, sourceFormat);
+    }
+
+    public static AudioOutputStream wrapIfNeeded(final AudioOutputStream outputStream, final AudioFormat sourceFormat, final Resampler resampler) {
+        return outputStream.getFormat().equals(sourceFormat) ? outputStream : new ResamplingAudioOutputStream(outputStream, sourceFormat, resampler);
+    }
+
+    public static AudioOutputStream wrapIfNeeded(final AudioOutputStream outputStream, final AudioFormat sourceFormat, final float bufferMillis) {
+        return outputStream.getFormat().equals(sourceFormat) ? outputStream : new ResamplingAudioOutputStream(outputStream, sourceFormat, bufferMillis);
+    }
+
+    public static AudioOutputStream wrapIfNeeded(final AudioOutputStream outputStream, final AudioFormat sourceFormat, final float bufferMillis, final Resampler resampler) {
+        return outputStream.getFormat().equals(sourceFormat) ? outputStream : new ResamplingAudioOutputStream(outputStream, sourceFormat, bufferMillis, resampler);
+    }
+
     public ResamplingAudioOutputStream(final AudioOutputStream delegate, final AudioFormat sourceFormat) {
         this(delegate, sourceFormat, DEFAULT_BUFFER_MILLIS);
     }
@@ -45,7 +61,7 @@ public class ResamplingAudioOutputStream extends AudioOutputStream {
     }
 
     public ResamplingAudioOutputStream(final AudioOutputStream delegate, final AudioFormat sourceFormat, final float bufferMillis) {
-        this(delegate, sourceFormat, bufferMillis, new LinearResampler());
+        this(delegate, sourceFormat, bufferMillis, new BlackmanSincResampler());
     }
 
     public ResamplingAudioOutputStream(final AudioOutputStream delegate, final AudioFormat sourceFormat, final float bufferMillis, final Resampler resampler) {

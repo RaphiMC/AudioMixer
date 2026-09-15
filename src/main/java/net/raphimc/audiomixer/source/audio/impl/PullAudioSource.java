@@ -19,7 +19,7 @@ package net.raphimc.audiomixer.source.audio.impl;
 
 import net.raphimc.audiomixer.io.AudioInputStream;
 import net.raphimc.audiomixer.resampler.Resampler;
-import net.raphimc.audiomixer.resampler.impl.LinearResampler;
+import net.raphimc.audiomixer.resampler.impl.CubicResampler;
 import net.raphimc.audiomixer.source.audio.StreamingAudioSource;
 import net.raphimc.audiomixer.util.buffer.AudioBuffer;
 
@@ -42,7 +42,7 @@ public class PullAudioSource extends StreamingAudioSource implements Closeable {
     }
 
     public PullAudioSource(final AudioInputStream inputStream, final float bufferMillis) {
-        this(inputStream, bufferMillis, new LinearResampler());
+        this(inputStream, bufferMillis, new CubicResampler());
     }
 
     public PullAudioSource(final AudioInputStream inputStream, final float bufferMillis, final Resampler resampler) {

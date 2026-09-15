@@ -19,7 +19,7 @@ package net.raphimc.audiomixer.source.audio;
 
 import net.raphimc.audiomixer.parameter.FloatParameter;
 import net.raphimc.audiomixer.resampler.Resampler;
-import net.raphimc.audiomixer.resampler.impl.LinearResampler;
+import net.raphimc.audiomixer.resampler.impl.CubicResampler;
 import net.raphimc.audiomixer.source.FiniteSource;
 import net.raphimc.audiomixer.util.AudioFormat;
 import net.raphimc.audiomixer.util.buffer.AudioBuffer;
@@ -34,7 +34,7 @@ public abstract class AudioSource extends FiniteSource {
     protected double position;
 
     public AudioSource(final AudioBuffer buffer) {
-        this(buffer, new LinearResampler());
+        this(buffer, new CubicResampler());
     }
 
     public AudioSource(final AudioBuffer buffer, final Resampler resampler) {
