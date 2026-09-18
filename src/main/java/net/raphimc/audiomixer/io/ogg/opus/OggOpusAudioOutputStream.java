@@ -20,6 +20,7 @@ package net.raphimc.audiomixer.io.ogg.opus;
 import net.raphimc.audiomixer.io.AudioOutputStream;
 import net.raphimc.audiomixer.io.ogg.opus.packet.OpusHeadPacket;
 import net.raphimc.audiomixer.io.ogg.opus.packet.OpusTagsPacket;
+import net.raphimc.audiomixer.io.special.ResamplingAudioOutputStream;
 import net.raphimc.audiomixer.util.AudioFormat;
 import net.raphimc.audiomixer.util.buffer.FloatRingBuffer;
 import net.raphimc.audiomixer.util.io.ogg.OggOutputStream;
@@ -34,11 +35,15 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.NavigableSet;
+import java.util.Optional;
+import java.util.TreeSet;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class OggOpusAudioOutputStream extends AudioOutputStream {
 
     private static final Encoding DEFAULT_ENCODING = Encoding.vbr(128);
+    private static final NavigableSet<Integer> SUPPORTED_SAMPLE_RATES = Collections.unmodifiableNavigableSet(new TreeSet<>(List.of(8000, 12000, 16000, 24000, 48000)));
     private static final int GRANULE_SAMPLE_RATE = 48000; // Opus granule position and pre-skip always use 48kHz units
     private static final int MAX_FRAME_MILLIS = 60; // 60ms is the maximum Opus frame size
 
@@ -50,6 +55,26 @@ public class OggOpusAudioOutputStream extends AudioOutputStream {
     private final short[] encodeInputBuffer;
     private final byte[] encodeOutputBuffer = new byte[4000]; // 4000 bytes is the recommended output buffer size
     private long granulePosition;
+
+    public static AudioOutputStream createCompatible(final OutputStream outputStream, final AudioFormat format) throws IOException {
+        final AudioFormat targetFormat = format.withSampleRate(Optional.ofNullable(SUPPORTED_SAMPLE_RATES.ceiling(Math.round(format.sampleRate()))).orElse(SUPPORTED_SAMPLE_RATES.last()));
+        return ResamplingAudioOutputStream.wrapIfNeeded(new OggOpusAudioOutputStream(outputStream, targetFormat), format);
+    }
+
+    public static AudioOutputStream createCompatible(final OutputStream outputStream, final AudioFormat format, final OpusSignal signalType, final Map<String, List<String>> tags) throws IOException {
+        final AudioFormat targetFormat = format.withSampleRate(Optional.ofNullable(SUPPORTED_SAMPLE_RATES.ceiling(Math.round(format.sampleRate()))).orElse(SUPPORTED_SAMPLE_RATES.last()));
+        return ResamplingAudioOutputStream.wrapIfNeeded(new OggOpusAudioOutputStream(outputStream, targetFormat, signalType, tags), format);
+    }
+
+    public static AudioOutputStream createCompatible(final OutputStream outputStream, final AudioFormat format, final Encoding encoding) throws IOException {
+        final AudioFormat targetFormat = format.withSampleRate(Optional.ofNullable(SUPPORTED_SAMPLE_RATES.ceiling(Math.round(format.sampleRate()))).orElse(SUPPORTED_SAMPLE_RATES.last()));
+        return ResamplingAudioOutputStream.wrapIfNeeded(new OggOpusAudioOutputStream(outputStream, targetFormat, encoding), format);
+    }
+
+    public static AudioOutputStream createCompatible(final OutputStream outputStream, final AudioFormat format, final Encoding encoding, final OpusSignal signalType, final Map<String, List<String>> tags) throws IOException {
+        final AudioFormat targetFormat = format.withSampleRate(Optional.ofNullable(SUPPORTED_SAMPLE_RATES.ceiling(Math.round(format.sampleRate()))).orElse(SUPPORTED_SAMPLE_RATES.last()));
+        return ResamplingAudioOutputStream.wrapIfNeeded(new OggOpusAudioOutputStream(outputStream, targetFormat, encoding, signalType, tags), format);
+    }
 
     public OggOpusAudioOutputStream(final OutputStream outputStream, final AudioFormat format) throws IOException {
         this(outputStream, format, DEFAULT_ENCODING);
