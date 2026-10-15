@@ -71,6 +71,12 @@ public record AudioBuffer(AudioFormat format, float[] samples) {
         }
     }
 
+    public void clipToUnitRange() {
+        for (int sampleIndex = 0; sampleIndex < this.samples.length; sampleIndex++) {
+            this.samples[sampleIndex] = MathUtil.clamp(this.samples[sampleIndex], -1F, 1F);
+        }
+    }
+
     public void clear() {
         Arrays.fill(this.samples, 0F);
     }

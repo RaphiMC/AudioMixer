@@ -20,7 +20,6 @@ package net.raphimc.audiomixer.processor.effect;
 import net.raphimc.audiomixer.parameter.FloatParameter;
 import net.raphimc.audiomixer.processor.Processor;
 import net.raphimc.audiomixer.util.buffer.AudioBuffer;
-import net.raphimc.audiomixer.util.math.MathUtil;
 
 public class HardClipProcessor extends Processor {
 
@@ -35,11 +34,8 @@ public class HardClipProcessor extends Processor {
 
     @Override
     protected void processInternal(final AudioBuffer buffer) {
-        final float drive = this.drive.get();
-        final float[] samples = buffer.samples();
-        for (int sampleIndex = 0; sampleIndex < samples.length; sampleIndex++) {
-            samples[sampleIndex] = MathUtil.clamp(samples[sampleIndex] * drive, -1F, 1F);
-        }
+        buffer.multiply(this.drive.get());
+        buffer.clipToUnitRange();
     }
 
 }
