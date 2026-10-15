@@ -32,7 +32,7 @@ import java.util.Map;
 
 public class OggInputStream implements Closeable {
 
-    private static final int BUFFER_SIZE = 64 * 1024;
+    private static final int BUFFER_SIZE = 8192;
     private static final int PAGEOUT_SUCCESS = 1;
     private static final int PAGEOUT_NEED_MORE_DATA = 0;
     private static final int PAGEOUT_LOST_SYNC = -1;

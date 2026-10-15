@@ -30,7 +30,7 @@ import java.util.List;
 
 public class OpusTagsPacket {
 
-    private static final byte[] MAGIC = new byte[]{(byte) 'O', (byte) 'p', (byte) 'u', (byte) 's', (byte) 'T', (byte) 'a', (byte) 'g', (byte) 's'};
+    private static final byte[] MAGIC = new byte[]{'O', 'p', 'u', 's', 'T', 'a', 'g', 's'};
 
     private final String vendor;
     private final List<String> userComments;

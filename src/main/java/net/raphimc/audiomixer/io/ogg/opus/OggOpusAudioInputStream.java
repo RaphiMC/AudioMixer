@@ -33,7 +33,7 @@ import java.io.InputStream;
 
 public class OggOpusAudioInputStream extends AudioInputStream {
 
-    private static final byte[] OPUS_MAGIC = new byte[]{(byte) 'O', (byte) 'p', (byte) 'u', (byte) 's', (byte) 'H', (byte) 'e', (byte) 'a', (byte) 'd'};
+    private static final byte[] OPUS_MAGIC = new byte[]{'O', 'p', 'u', 's', 'H', 'e', 'a', 'd'};
     private static final int NATIVE_SAMPLE_RATE = 48000; // 48kHz is the native sample rate of Opus
     private static final int MAX_PACKET_MILLIS = 120; // 120ms is the maximum Opus packet size
 

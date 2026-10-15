@@ -27,13 +27,14 @@ import net.raphimc.audiomixer.util.ArrayUtil;
 import net.raphimc.audiomixer.util.AudioFormat;
 import net.raphimc.audiomixer.util.buffer.FloatRingBuffer;
 import net.raphimc.audiomixer.util.io.ogg.OggInputStream;
+import net.raphimc.audiomixer.util.math.MathUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
 
 public class OggVorbisAudioInputStream extends AudioInputStream {
 
-    private static final byte[] VORBIS_MAGIC = new byte[]{(byte) 0x01, (byte) 'v', (byte) 'o', (byte) 'r', (byte) 'b', (byte) 'i', (byte) 's'};
+    private static final byte[] VORBIS_MAGIC = new byte[]{1, 'v', 'o', 'r', 'b', 'i', 's'};
     private static final int MAX_FRAME_COUNT = 8192; // Hardcoded in JOrbis
 
     private final OggInputStream oggInputStream;
@@ -41,6 +42,7 @@ public class OggVorbisAudioInputStream extends AudioInputStream {
     private final DspState dspState = new DspState();
     private final Block block = new Block(this.dspState);
     private final FloatRingBuffer samplesBuffer;
+    private long previousGranulePosition;
 
     public OggVorbisAudioInputStream(final InputStream inputStream) throws IOException {
         this(new CodeBeforeSuper(inputStream));
@@ -70,15 +72,23 @@ public class OggVorbisAudioInputStream extends AudioInputStream {
         final int channelCount = this.getFormat().channelCount();
         final float[][][] samplesRef = new float[1][][];
         final int[] offsets = new int[channelCount];
-        int frameCount;
-        while ((frameCount = this.dspState.synthesis_pcmout(samplesRef, offsets)) > 0) {
-            final float[][] channelSamples = samplesRef[0];
-            for (int frameIndex = 0; frameIndex < frameCount; frameIndex++) {
-                for (int channelIndex = 0; channelIndex < channelCount; channelIndex++) {
-                    this.samplesBuffer.write(channelSamples[channelIndex][offsets[channelIndex] + frameIndex]);
-                }
+        final int frameCount = this.dspState.synthesis_pcmout(samplesRef, offsets);
+        final float[][] channelSamples = samplesRef[0];
+        int lastFrameIndex = frameCount;
+        if (packet.e_o_s != 0 && packet.granulepos >= 0) {
+            final long retainedFrameCount = packet.granulepos - this.previousGranulePosition;
+            lastFrameIndex = Math.toIntExact(MathUtil.clamp(retainedFrameCount, 0, lastFrameIndex));
+        }
+        for (int frameIndex = 0; frameIndex < lastFrameIndex; frameIndex++) {
+            for (int channelIndex = 0; channelIndex < channelCount; channelIndex++) {
+                this.samplesBuffer.write(channelSamples[channelIndex][offsets[channelIndex] + frameIndex]);
             }
-            checkResult(this.dspState.synthesis_read(frameCount), "Failed to update dsp state");
+        }
+        checkResult(this.dspState.synthesis_read(frameCount), "Failed to update dsp state");
+        if (packet.granulepos >= 0) {
+            this.previousGranulePosition = packet.granulepos;
+        } else {
+            this.previousGranulePosition = Math.addExact(this.previousGranulePosition, frameCount);
         }
     }
 

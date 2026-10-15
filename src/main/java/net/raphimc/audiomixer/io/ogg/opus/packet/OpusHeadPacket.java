@@ -28,7 +28,7 @@ import java.util.Arrays;
 
 public class OpusHeadPacket {
 
-    private static final byte[] MAGIC = new byte[]{(byte) 'O', (byte) 'p', (byte) 'u', (byte) 's', (byte) 'H', (byte) 'e', (byte) 'a', (byte) 'd'};
+    private static final byte[] MAGIC = new byte[]{'O', 'p', 'u', 's', 'H', 'e', 'a', 'd'};
 
     private final byte majorVersion;
     private final byte minorVersion;
