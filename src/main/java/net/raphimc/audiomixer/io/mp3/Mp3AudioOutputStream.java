@@ -37,6 +37,9 @@ import net.raphimc.audiomixer.util.math.MathUtil;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Mp3AudioOutputStream extends AudioOutputStream {
 
@@ -131,6 +134,9 @@ public class Mp3AudioOutputStream extends AudioOutputStream {
             checkResult(this.id3Tag.id3tag_set_genre(this.instance, id3Tags.genre()), "Failed to set ID3 genre");
             if (id3Tags.albumArt() != null && !this.id3Tag.id3tag_set_albumart(this.instance, id3Tags.albumArt(), id3Tags.albumArt().length)) {
                 throw new IOException("Failed to set ID3 album art");
+            }
+            for (Map.Entry<String, String> entry : id3Tags.customFields().entrySet()) {
+                checkResult(this.id3Tag.id3tag_set_fieldvalue(this.instance, "TXXX=" + entry.getKey() + '\0' + entry.getValue()), "Failed to set ID3 custom field: " + entry.getKey());
             }
         }
         checkResult(this.lame.lame_init_params(this.instance), "Failed to set parameters");
@@ -255,42 +261,48 @@ public class Mp3AudioOutputStream extends AudioOutputStream {
 
     }
 
-    public record Id3Tags(String title, String artist, String album, String year, String comment, String track, String genre, byte[] albumArt) {
+    public record Id3Tags(String title, String artist, String album, String year, String comment, String track, String genre, byte[] albumArt, Map<String, String> customFields) {
 
         public Id3Tags() {
-            this(null, null, null, null, null, null, null, null);
+            this(null, null, null, null, null, null, null, null, Collections.emptyMap());
         }
 
         public Id3Tags withTitle(final String title) {
-            return new Id3Tags(title, this.artist, this.album, this.year, this.comment, this.track, this.genre, this.albumArt);
+            return new Id3Tags(title, this.artist, this.album, this.year, this.comment, this.track, this.genre, this.albumArt, this.customFields);
         }
 
         public Id3Tags withArtist(final String artist) {
-            return new Id3Tags(this.title, artist, this.album, this.year, this.comment, this.track, this.genre, this.albumArt);
+            return new Id3Tags(this.title, artist, this.album, this.year, this.comment, this.track, this.genre, this.albumArt, this.customFields);
         }
 
         public Id3Tags withAlbum(final String album) {
-            return new Id3Tags(this.title, this.artist, album, this.year, this.comment, this.track, this.genre, this.albumArt);
+            return new Id3Tags(this.title, this.artist, album, this.year, this.comment, this.track, this.genre, this.albumArt, this.customFields);
         }
 
         public Id3Tags withYear(final String year) {
-            return new Id3Tags(this.title, this.artist, this.album, year, this.comment, this.track, this.genre, this.albumArt);
+            return new Id3Tags(this.title, this.artist, this.album, year, this.comment, this.track, this.genre, this.albumArt, this.customFields);
         }
 
         public Id3Tags withComment(final String comment) {
-            return new Id3Tags(this.title, this.artist, this.album, this.year, comment, this.track, this.genre, this.albumArt);
+            return new Id3Tags(this.title, this.artist, this.album, this.year, comment, this.track, this.genre, this.albumArt, this.customFields);
         }
 
         public Id3Tags withTrack(final String track) {
-            return new Id3Tags(this.title, this.artist, this.album, this.year, this.comment, track, this.genre, this.albumArt);
+            return new Id3Tags(this.title, this.artist, this.album, this.year, this.comment, track, this.genre, this.albumArt, this.customFields);
         }
 
         public Id3Tags withGenre(final String genre) {
-            return new Id3Tags(this.title, this.artist, this.album, this.year, this.comment, this.track, genre, this.albumArt);
+            return new Id3Tags(this.title, this.artist, this.album, this.year, this.comment, this.track, genre, this.albumArt, this.customFields);
         }
 
         public Id3Tags withAlbumArt(final byte[] albumArt) {
-            return new Id3Tags(this.title, this.artist, this.album, this.year, this.comment, this.track, this.genre, albumArt);
+            return new Id3Tags(this.title, this.artist, this.album, this.year, this.comment, this.track, this.genre, albumArt, this.customFields);
+        }
+
+        public Id3Tags withCustomField(final String key, final String value) {
+            final Map<String, String> newCustomFields = new HashMap<>(this.customFields);
+            newCustomFields.put(key, value);
+            return new Id3Tags(this.title, this.artist, this.album, this.year, this.comment, this.track, this.genre, this.albumArt, Collections.unmodifiableMap(newCustomFields));
         }
 
     }

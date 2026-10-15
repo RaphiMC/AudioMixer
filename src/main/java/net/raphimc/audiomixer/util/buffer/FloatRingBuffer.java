@@ -37,7 +37,6 @@ public class FloatRingBuffer {
     }
 
     public int read(final float[] dst, final int offset, final int length) {
-        this.checkNotEmpty();
         final int readLength = Math.min(length, this.size);
         final int firstPartLength = Math.min(readLength, this.buffer.length - this.head);
         System.arraycopy(this.buffer, this.head, dst, offset, firstPartLength);
@@ -48,6 +47,13 @@ public class FloatRingBuffer {
         this.head = (this.head + readLength) % this.buffer.length;
         this.size -= readLength;
         return readLength;
+    }
+
+    public int skip(final int length) {
+        final int skipLength = Math.min(length, this.size);
+        this.head = (this.head + skipLength) % this.buffer.length;
+        this.size -= skipLength;
+        return skipLength;
     }
 
     public void write(final float value) {

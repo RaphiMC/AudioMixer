@@ -17,12 +17,12 @@
  */
 package net.raphimc.audiomixer.io.mp3;
 
-import javazoom.jl.decoder.Bitstream;
-import javazoom.jl.decoder.BitstreamException;
-import javazoom.jl.decoder.Decoder;
-import javazoom.jl.decoder.DecoderException;
-import javazoom.jl.decoder.Header;
-import javazoom.jl.decoder.SampleBuffer;
+import de.sciss.jump3r.mp3.Encoder;
+import de.sciss.jump3r.mp3.VBRTag;
+import de.sciss.jump3r.mp3.VBRTagData;
+import de.sciss.jump3r.mpg.Common;
+import de.sciss.jump3r.mpg.Interface;
+import de.sciss.jump3r.mpg.MPGLib;
 import net.raphimc.audiomixer.io.AudioInputStream;
 import net.raphimc.audiomixer.util.AudioFormat;
 import net.raphimc.audiomixer.util.buffer.FloatRingBuffer;
@@ -33,88 +33,104 @@ import java.io.InputStream;
 
 public class Mp3AudioInputStream extends AudioInputStream {
 
-    private final Bitstream mp3InputStream;
-    private final Decoder decoder = new Decoder();
-    private final SampleBuffer decodeOutputBuffer;
+    private static final int MAX_FRAME_COUNT = 1152;
+    private static final Mp3InputStream.Frame FLUSH_FRAME = new Mp3InputStream.Frame(null, 0, 0, null, null, 0, 0, null);
+
+    private final Mp3InputStream mp3InputStream;
+    private final MPGLib mpgLib;
+    private final MPGLib.mpstr_tag instance;
+    private final float[][] decodeOutputBuffer;
     private final FloatRingBuffer samplesBuffer;
+    private final int paddingSampleCount;
+    private int remainingDelaySampleCount;
 
     public Mp3AudioInputStream(final InputStream inputStream) throws IOException {
         this(new CodeBeforeSuper(inputStream));
     }
 
-    private Mp3AudioInputStream(final CodeBeforeSuper codeBeforeSuper) {
-        super(new AudioFormat(codeBeforeSuper.firstFrame.frequency(), codeBeforeSuper.firstFrame.mode() == Header.SINGLE_CHANNEL ? 1 : 2));
+    private Mp3AudioInputStream(final CodeBeforeSuper codeBeforeSuper) throws IOException {
+        super(new AudioFormat(codeBeforeSuper.firstFrame.sampleRate(), codeBeforeSuper.firstFrame.channelMode().channelCount()));
         this.mp3InputStream = codeBeforeSuper.mp3InputStream;
-        this.decodeOutputBuffer = new SampleBuffer(Math.round(this.getFormat().sampleRate()), this.getFormat().channelCount());
-        this.samplesBuffer = new FloatRingBuffer(this.decodeOutputBuffer.getBuffer().length);
-        this.decoder.setOutputBuffer(this.decodeOutputBuffer);
+
+        this.mpgLib = new MPGLib();
+        final Interface mpgInterface = new Interface();
+        final VBRTag vbrTag = new VBRTag();
+        final Common common = new Common();
+        mpgInterface.setModules(vbrTag, common);
+        this.mpgLib.setModules(mpgInterface, common);
+
+        this.instance = this.mpgLib.hip_decode_init();
+        if (this.instance == null) {
+            throw new IOException("Failed to create HIP instance");
+        }
+        this.decodeOutputBuffer = new float[2][MAX_FRAME_COUNT];
+        final VBRTagData vbrTagData = vbrTag.getVbrTag(codeBeforeSuper.firstFrame.data());
+        this.paddingSampleCount = vbrTagData != null && vbrTagData.encPadding >= 0 ? Math.max(Math.multiplyExact(Math.subtractExact(vbrTagData.encPadding, Encoder.DECDELAY + 1), this.getFormat().channelCount()), 0) : 0;
+        this.remainingDelaySampleCount = vbrTagData != null && vbrTagData.encDelay >= 0 ? Math.multiplyExact(Math.addExact(vbrTagData.encDelay, Encoder.DECDELAY + 1), this.getFormat().channelCount()) : 0;
+        this.samplesBuffer = new FloatRingBuffer(Math.addExact(MAX_FRAME_COUNT * this.getFormat().channelCount(), this.paddingSampleCount));
+
+        this.decodeFrame(codeBeforeSuper.firstFrame);
     }
 
     @Override
     public float read() throws IOException {
-        while (this.samplesBuffer.isEmpty()) {
+        while (this.samplesBuffer.size() <= this.paddingSampleCount) {
             this.decodeNextFrame();
+            if (this.remainingDelaySampleCount > 0) {
+                this.remainingDelaySampleCount -= this.samplesBuffer.skip(this.remainingDelaySampleCount);
+            }
         }
         return this.samplesBuffer.read();
     }
 
     private void decodeNextFrame() throws IOException {
-        try {
-            final Header frame = this.mp3InputStream.readFrame();
-            if (frame == null) {
+        final Mp3InputStream.Frame frame = this.mp3InputStream.readFrame();
+        if (frame != null) {
+            if (frame.sampleRate() != this.getFormat().sampleRate() || frame.channelMode().channelCount() != this.getFormat().channelCount()) {
+                throw new IOException("Malformed MP3 stream: Audio format changed mid-stream (expected: " + this.getFormat().sampleRate() + " Hz, " + this.getFormat().channelCount() + " channels; got: " + frame.sampleRate() + " Hz, " + frame.channelMode().channelCount() + " channels)");
+            }
+            this.decodeFrame(frame);
+        } else {
+            this.decodeFrame(FLUSH_FRAME);
+            if (this.samplesBuffer.size() <= this.paddingSampleCount) {
                 throw new EOFException();
             }
-            this.decoder.decodeFrame(frame, this.mp3InputStream);
-            this.mp3InputStream.closeFrame();
-            for (int sampleIndex = 0; sampleIndex < this.decodeOutputBuffer.getBufferLength(); sampleIndex++) {
-                final short sample = this.decodeOutputBuffer.getBuffer()[sampleIndex];
-                if (sample < 0) {
-                    this.samplesBuffer.write(-(float) sample / Short.MIN_VALUE);
-                } else if (sample > 0) {
-                    this.samplesBuffer.write((float) sample / Short.MAX_VALUE);
-                } else {
-                    this.samplesBuffer.write(0F);
-                }
+        }
+    }
+
+    private void decodeFrame(final Mp3InputStream.Frame frame) throws IOException {
+        final int frameCount = checkResult(this.mpgLib.hip_decode1_unclipped(this.instance, frame.data(), frame.offset(), frame.length(), this.decodeOutputBuffer[0], this.decodeOutputBuffer[1]), "Failed to decode MP3 frame");
+        final int channelCount = this.getFormat().channelCount();
+        for (int frameIndex = 0; frameIndex < frameCount; frameIndex++) {
+            for (int channelIndex = 0; channelIndex < channelCount; channelIndex++) {
+                this.samplesBuffer.write(this.decodeOutputBuffer[channelIndex][frameIndex] / Short.MAX_VALUE);
             }
-        } catch (final BitstreamException e) {
-            throw unwrapBitstreamException(e);
-        } catch (final DecoderException e) {
-            throw new IOException("Failed to decode frame", e);
         }
     }
 
     @Override
     public void close() throws IOException {
-        try {
-            this.mp3InputStream.close();
-        } catch (final BitstreamException e) {
-            throw unwrapBitstreamException(e);
+        try (this.mp3InputStream) {
+            checkResult(this.mpgLib.hip_decode_exit(this.instance), "Failed to close HIP instance");
         }
     }
 
-    private static IOException unwrapBitstreamException(final BitstreamException e) {
-        if (e.getCause() instanceof IOException ioException) {
-            return ioException;
+    private static int checkResult(final int result, final String message) throws IOException {
+        if (result < 0) {
+            throw new IOException(message + " (error code: " + result + ")");
         } else {
-            return new IOException("Malformed MP3 stream", e);
+            return result;
         }
     }
 
     private static final class CodeBeforeSuper {
 
-        private final Bitstream mp3InputStream;
-        private final Header firstFrame;
+        private final Mp3InputStream mp3InputStream;
+        private final Mp3InputStream.Frame firstFrame;
 
         private CodeBeforeSuper(final InputStream inputStream) throws IOException {
-            this.mp3InputStream = new Bitstream(inputStream);
-            try {
-                this.firstFrame = this.mp3InputStream.readFrame();
-            } catch (final BitstreamException e) {
-                throw unwrapBitstreamException(e);
-            }
-            if (this.firstFrame == null) {
-                throw new EOFException("Unexpected end of stream");
-            }
+            this.mp3InputStream = new Mp3InputStream(inputStream);
+            this.firstFrame = this.mp3InputStream.readFrameOrThrow();
         }
 
     }
