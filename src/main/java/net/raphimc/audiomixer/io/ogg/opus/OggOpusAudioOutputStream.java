@@ -24,6 +24,7 @@ import net.raphimc.audiomixer.io.special.ResamplingAudioOutputStream;
 import net.raphimc.audiomixer.util.AudioFormat;
 import net.raphimc.audiomixer.util.buffer.FloatRingBuffer;
 import net.raphimc.audiomixer.util.io.ogg.OggOutputStream;
+import net.raphimc.audiomixer.util.math.MathUtil;
 import org.concentus.OpusApplication;
 import org.concentus.OpusEncoder;
 import org.concentus.OpusException;
@@ -120,8 +121,8 @@ public class OggOpusAudioOutputStream extends AudioOutputStream {
 
     @Override
     public void write(final float sample) throws IOException {
-        if (!Float.isFinite(sample) || sample < -1F || sample > 1F) {
-            throw new IOException("Sample must be finite and in [-1, 1]");
+        if (!Float.isFinite(sample)) {
+            throw new IOException("Sample must be finite: " + sample);
         }
         this.samplesBuffer.write(sample);
         if (this.samplesBuffer.isFull()) {
@@ -132,7 +133,7 @@ public class OggOpusAudioOutputStream extends AudioOutputStream {
     private void flushSamplesBuffer(final boolean endOfStream) throws IOException {
         final int sampleCount = this.samplesBuffer.size();
         for (int sampleIndex = 0; sampleIndex < sampleCount; sampleIndex++) {
-            final float sample = this.samplesBuffer.read();
+            final float sample = MathUtil.clamp(this.samplesBuffer.read(), -1F, 1F);
             if (sample < 0F) {
                 this.encodeInputBuffer[sampleIndex] = (short) Math.round(-sample * Short.MIN_VALUE);
             } else if (sample > 0F) {

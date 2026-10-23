@@ -44,7 +44,13 @@ public class PcmAudioOutputStream extends AudioOutputStream {
     }
 
     @Override
-    public void write(final float sample) throws IOException {
+    public void write(float sample) throws IOException {
+        if (!Float.isFinite(sample)) {
+            throw new IOException("Sample must be finite: " + sample);
+        }
+        if (this.encoding.type() != PcmSampleEncoding.Type.FLOAT) {
+            sample = MathUtil.clamp(sample, -1F, 1F);
+        }
         switch (this.encoding) {
             case S8 -> this.writeSignedByte(sample);
             case U8 -> this.writeUnsignedByte(sample);
@@ -61,7 +67,6 @@ public class PcmAudioOutputStream extends AudioOutputStream {
     }
 
     private void writeSignedByte(final float sample) throws IOException {
-        this.checkSampleRange(sample);
         final byte value;
         if (sample < 0F) {
             value = (byte) Math.round(-sample * Byte.MIN_VALUE);
@@ -74,12 +79,10 @@ public class PcmAudioOutputStream extends AudioOutputStream {
     }
 
     private void writeUnsignedByte(final float sample) throws IOException {
-        this.checkSampleRange(sample);
         this.outputStream.writeUnsignedByte(Math.round((sample + 1F) * (Byte.MAX_VALUE + 0.5F)));
     }
 
     private void writeSignedShort(final float sample, final ByteOrder byteOrder) throws IOException {
-        this.checkSampleRange(sample);
         final short value;
         if (sample < 0F) {
             value = (short) Math.round(-sample * Short.MIN_VALUE);
@@ -92,12 +95,10 @@ public class PcmAudioOutputStream extends AudioOutputStream {
     }
 
     private void writeUnsignedShort(final float sample, final ByteOrder byteOrder) throws IOException {
-        this.checkSampleRange(sample);
         this.outputStream.writeUnsignedShort(Math.round((sample + 1F) * (Short.MAX_VALUE + 0.5F)), byteOrder);
     }
 
     private void writeSignedMedium(final float sample, final ByteOrder byteOrder) throws IOException {
-        this.checkSampleRange(sample);
         final int value;
         if (sample < 0F) {
             value = Math.round(-sample * MathUtil.MEDIUM_MIN_VALUE);
@@ -110,12 +111,10 @@ public class PcmAudioOutputStream extends AudioOutputStream {
     }
 
     private void writeUnsignedMedium(final float sample, final ByteOrder byteOrder) throws IOException {
-        this.checkSampleRange(sample);
         this.outputStream.writeUnsignedMedium(Math.round((sample + 1F) * (MathUtil.MEDIUM_MAX_VALUE + 0.5F)), byteOrder);
     }
 
     private void writeSignedInt(final float sample, final ByteOrder byteOrder) throws IOException {
-        this.checkSampleRange(sample);
         final int value;
         if (sample < 0F) {
             value = (int) Math.round((double) -sample * Integer.MIN_VALUE);
@@ -128,7 +127,6 @@ public class PcmAudioOutputStream extends AudioOutputStream {
     }
 
     private void writeUnsignedInt(final float sample, final ByteOrder byteOrder) throws IOException {
-        this.checkSampleRange(sample);
         this.outputStream.writeUnsignedInt(Math.round((sample + 1F) * (Integer.MAX_VALUE + 0.5D)), byteOrder);
     }
 
@@ -144,12 +142,6 @@ public class PcmAudioOutputStream extends AudioOutputStream {
 
     public PcmSampleEncoding getEncoding() {
         return this.encoding;
-    }
-
-    private void checkSampleRange(final float sample) throws IOException {
-        if (!Float.isFinite(sample) || sample < -1F || sample > 1F) {
-            throw new IOException("Sample must be finite and in [-1, 1]");
-        }
     }
 
 }

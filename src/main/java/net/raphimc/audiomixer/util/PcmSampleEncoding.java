@@ -23,42 +23,42 @@ import java.nio.ByteOrder;
 
 public enum PcmSampleEncoding {
 
-    S8(true, Byte.BYTES, ByteOrder.BIG_ENDIAN),
-    U8(false, Byte.BYTES, ByteOrder.BIG_ENDIAN),
+    S8(Type.SIGNED, Byte.BYTES, ByteOrder.BIG_ENDIAN),
+    U8(Type.UNSIGNED, Byte.BYTES, ByteOrder.BIG_ENDIAN),
 
-    S16_BE(true, Short.BYTES, ByteOrder.BIG_ENDIAN),
-    S16_LE(true, Short.BYTES, ByteOrder.LITTLE_ENDIAN),
-    U16_BE(false, Short.BYTES, ByteOrder.BIG_ENDIAN),
-    U16_LE(false, Short.BYTES, ByteOrder.LITTLE_ENDIAN),
+    S16_BE(Type.SIGNED, Short.BYTES, ByteOrder.BIG_ENDIAN),
+    S16_LE(Type.SIGNED, Short.BYTES, ByteOrder.LITTLE_ENDIAN),
+    U16_BE(Type.UNSIGNED, Short.BYTES, ByteOrder.BIG_ENDIAN),
+    U16_LE(Type.UNSIGNED, Short.BYTES, ByteOrder.LITTLE_ENDIAN),
 
-    S24_BE(true, MathUtil.MEDIUM_BYTES, ByteOrder.BIG_ENDIAN),
-    S24_LE(true, MathUtil.MEDIUM_BYTES, ByteOrder.LITTLE_ENDIAN),
-    U24_BE(false, MathUtil.MEDIUM_BYTES, ByteOrder.BIG_ENDIAN),
-    U24_LE(false, MathUtil.MEDIUM_BYTES, ByteOrder.LITTLE_ENDIAN),
+    S24_BE(Type.SIGNED, MathUtil.MEDIUM_BYTES, ByteOrder.BIG_ENDIAN),
+    S24_LE(Type.SIGNED, MathUtil.MEDIUM_BYTES, ByteOrder.LITTLE_ENDIAN),
+    U24_BE(Type.UNSIGNED, MathUtil.MEDIUM_BYTES, ByteOrder.BIG_ENDIAN),
+    U24_LE(Type.UNSIGNED, MathUtil.MEDIUM_BYTES, ByteOrder.LITTLE_ENDIAN),
 
-    S32_BE(true, Integer.BYTES, ByteOrder.BIG_ENDIAN),
-    S32_LE(true, Integer.BYTES, ByteOrder.LITTLE_ENDIAN),
-    U32_BE(false, Integer.BYTES, ByteOrder.BIG_ENDIAN),
-    U32_LE(false, Integer.BYTES, ByteOrder.LITTLE_ENDIAN),
+    S32_BE(Type.SIGNED, Integer.BYTES, ByteOrder.BIG_ENDIAN),
+    S32_LE(Type.SIGNED, Integer.BYTES, ByteOrder.LITTLE_ENDIAN),
+    U32_BE(Type.UNSIGNED, Integer.BYTES, ByteOrder.BIG_ENDIAN),
+    U32_LE(Type.UNSIGNED, Integer.BYTES, ByteOrder.LITTLE_ENDIAN),
 
-    F32_BE(true, Float.BYTES, ByteOrder.BIG_ENDIAN),
-    F32_LE(true, Float.BYTES, ByteOrder.LITTLE_ENDIAN),
+    F32_BE(Type.FLOAT, Float.BYTES, ByteOrder.BIG_ENDIAN),
+    F32_LE(Type.FLOAT, Float.BYTES, ByteOrder.LITTLE_ENDIAN),
 
-    F64_BE(true, Double.BYTES, ByteOrder.BIG_ENDIAN),
-    F64_LE(true, Double.BYTES, ByteOrder.LITTLE_ENDIAN);
+    F64_BE(Type.FLOAT, Double.BYTES, ByteOrder.BIG_ENDIAN),
+    F64_LE(Type.FLOAT, Double.BYTES, ByteOrder.LITTLE_ENDIAN);
 
-    private final boolean signed;
+    private final Type type;
     private final int bytesPerSample;
     private final ByteOrder byteOrder;
 
-    PcmSampleEncoding(final boolean signed, final int bytesPerSample, final ByteOrder byteOrder) {
-        this.signed = signed;
+    PcmSampleEncoding(final Type type, final int bytesPerSample, final ByteOrder byteOrder) {
+        this.type = type;
         this.bytesPerSample = bytesPerSample;
         this.byteOrder = byteOrder;
     }
 
-    public boolean signed() {
-        return this.signed;
+    public Type type() {
+        return this.type;
     }
 
     public int bytesPerSample() {
@@ -67,6 +67,14 @@ public enum PcmSampleEncoding {
 
     public ByteOrder byteOrder() {
         return this.byteOrder;
+    }
+
+    public enum Type {
+
+        SIGNED,
+        UNSIGNED,
+        FLOAT
+
     }
 
 }

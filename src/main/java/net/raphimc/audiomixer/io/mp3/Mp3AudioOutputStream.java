@@ -155,8 +155,8 @@ public class Mp3AudioOutputStream extends AudioOutputStream {
 
     @Override
     public void write(final float sample) throws IOException {
-        if (!Float.isFinite(sample) || sample < -1F || sample > 1F) {
-            throw new IOException("Sample must be finite and in [-1, 1]");
+        if (!Float.isFinite(sample)) {
+            throw new IOException("Sample must be finite: " + sample);
         }
         this.samplesBuffer.write(sample);
         if (this.samplesBuffer.isFull()) {
@@ -169,7 +169,7 @@ public class Mp3AudioOutputStream extends AudioOutputStream {
         final int channelCount = this.getFormat().channelCount();
         for (int frameIndex = 0; frameIndex < frameCount; frameIndex++) {
             for (int channelIndex = 0; channelIndex < channelCount; channelIndex++) {
-                this.encodeInputBuffer[channelIndex][frameIndex] = Math.round(this.samplesBuffer.read() * Integer.MAX_VALUE);
+                this.encodeInputBuffer[channelIndex][frameIndex] = Math.round(MathUtil.clamp(this.samplesBuffer.read(), -1F, 1F) * Integer.MAX_VALUE);
             }
         }
         final int length = checkResult(this.lame.lame_encode_buffer_int(this.instance, this.encodeInputBuffer[0], this.encodeInputBuffer[1], frameCount, this.encodeOutputBuffer, 0, this.encodeOutputBuffer.length), "Failed to encode buffer");
