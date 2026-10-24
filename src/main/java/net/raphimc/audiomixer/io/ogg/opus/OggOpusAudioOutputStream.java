@@ -93,6 +93,7 @@ public class OggOpusAudioOutputStream extends AudioOutputStream {
         super(format);
         this.oggOutputStream = new OggOutputStream(outputStream);
         this.opusStreamId = ThreadLocalRandom.current().nextInt();
+
         try {
             this.encoder = new OpusEncoder(Math.round(this.getFormat().sampleRate()), this.getFormat().channelCount(), OpusApplication.OPUS_APPLICATION_AUDIO);
         } catch (final OpusException e) {
@@ -133,14 +134,7 @@ public class OggOpusAudioOutputStream extends AudioOutputStream {
     private void flushSamplesBuffer(final boolean endOfStream) throws IOException {
         final int sampleCount = this.samplesBuffer.size();
         for (int sampleIndex = 0; sampleIndex < sampleCount; sampleIndex++) {
-            final float sample = MathUtil.clamp(this.samplesBuffer.read(), -1F, 1F);
-            if (sample < 0F) {
-                this.encodeInputBuffer[sampleIndex] = (short) Math.round(-sample * Short.MIN_VALUE);
-            } else if (sample > 0F) {
-                this.encodeInputBuffer[sampleIndex] = (short) Math.round(sample * Short.MAX_VALUE);
-            } else {
-                this.encodeInputBuffer[sampleIndex] = 0;
-            }
+            this.encodeInputBuffer[sampleIndex] = (short) MathUtil.clamp(Math.round(this.samplesBuffer.read() * -Short.MIN_VALUE), Short.MIN_VALUE, Short.MAX_VALUE);
         }
         if (endOfStream) {
             Arrays.fill(this.encodeInputBuffer, sampleCount, this.encodeInputBuffer.length, (short) 0);

@@ -26,12 +26,12 @@ import net.raphimc.audiomixer.util.math.MathUtil;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.ByteOrder;
 
 public class PcmAudioInputStream extends AudioInputStream {
 
     private final BinaryInputStream inputStream;
     private final PcmSampleEncoding encoding;
+    private final float integerScale;
 
     public PcmAudioInputStream(final InputStream inputStream, final PcmAudioFormat format) {
         this(inputStream, format.format(), format.encoding());
@@ -41,82 +41,23 @@ public class PcmAudioInputStream extends AudioInputStream {
         super(format);
         this.inputStream = new BinaryInputStream(inputStream);
         this.encoding = encoding;
+        this.integerScale = Math.scalb(1F, encoding.bytesPerSample() * Byte.SIZE - 1);
     }
 
     @Override
     public float read() throws IOException {
         return switch (this.encoding) {
-            case S8 -> this.readSignedByte();
-            case U8 -> this.readUnsignedByte();
-            case S16_BE, S16_LE -> this.readSignedShort(this.encoding.byteOrder());
-            case U16_BE, U16_LE -> this.readUnsignedShort(this.encoding.byteOrder());
-            case S24_BE, S24_LE -> this.readSignedMedium(this.encoding.byteOrder());
-            case U24_BE, U24_LE -> this.readUnsignedMedium(this.encoding.byteOrder());
-            case S32_BE, S32_LE -> this.readSignedInt(this.encoding.byteOrder());
-            case U32_BE, U32_LE -> this.readUnsignedInt(this.encoding.byteOrder());
+            case S8 -> this.inputStream.readByte() / this.integerScale;
+            case U8 -> (this.inputStream.readUnsignedByte() + Byte.MIN_VALUE) / this.integerScale;
+            case S16_BE, S16_LE -> this.inputStream.readShort(this.encoding.byteOrder()) / this.integerScale;
+            case U16_BE, U16_LE -> (this.inputStream.readUnsignedShort(this.encoding.byteOrder()) + Short.MIN_VALUE) / this.integerScale;
+            case S24_BE, S24_LE -> this.inputStream.readMedium(this.encoding.byteOrder()) / this.integerScale;
+            case U24_BE, U24_LE -> (this.inputStream.readUnsignedMedium(this.encoding.byteOrder()) + MathUtil.MEDIUM_MIN_VALUE) / this.integerScale;
+            case S32_BE, S32_LE -> this.inputStream.readInt(this.encoding.byteOrder()) / this.integerScale;
+            case U32_BE, U32_LE -> (this.inputStream.readUnsignedInt(this.encoding.byteOrder()) + Integer.MIN_VALUE) / this.integerScale;
             case F32_BE, F32_LE -> this.inputStream.readFloat(this.encoding.byteOrder());
             case F64_BE, F64_LE -> (float) this.inputStream.readDouble(this.encoding.byteOrder());
         };
-    }
-
-    private float readSignedByte() throws IOException {
-        final byte value = this.inputStream.readByte();
-        if (value < 0) {
-            return -(float) value / Byte.MIN_VALUE;
-        } else if (value > 0) {
-            return (float) value / Byte.MAX_VALUE;
-        } else {
-            return 0F;
-        }
-    }
-
-    private float readUnsignedByte() throws IOException {
-        return this.inputStream.readUnsignedByte() / (Byte.MAX_VALUE + 0.5F) - 1F;
-    }
-
-    private float readSignedShort(final ByteOrder byteOrder) throws IOException {
-        final short value = this.inputStream.readShort(byteOrder);
-        if (value < 0) {
-            return -(float) value / Short.MIN_VALUE;
-        } else if (value > 0) {
-            return (float) value / Short.MAX_VALUE;
-        } else {
-            return 0F;
-        }
-    }
-
-    private float readUnsignedShort(final ByteOrder byteOrder) throws IOException {
-        return this.inputStream.readUnsignedShort(byteOrder) / (Short.MAX_VALUE + 0.5F) - 1F;
-    }
-
-    private float readSignedMedium(final ByteOrder byteOrder) throws IOException {
-        final int value = this.inputStream.readMedium(byteOrder);
-        if (value < 0) {
-            return -(float) value / MathUtil.MEDIUM_MIN_VALUE;
-        } else if (value > 0) {
-            return (float) value / MathUtil.MEDIUM_MAX_VALUE;
-        } else {
-            return 0F;
-        }
-    }
-
-    private float readUnsignedMedium(final ByteOrder byteOrder) throws IOException {
-        return this.inputStream.readUnsignedMedium(byteOrder) / (MathUtil.MEDIUM_MAX_VALUE + 0.5F) - 1F;
-    }
-
-    private float readSignedInt(final ByteOrder byteOrder) throws IOException {
-        final int value = this.inputStream.readInt(byteOrder);
-        if (value < 0) {
-            return (float) (-(double) value / Integer.MIN_VALUE);
-        } else if (value > 0) {
-            return (float) ((double) value / Integer.MAX_VALUE);
-        } else {
-            return 0F;
-        }
-    }
-
-    private float readUnsignedInt(final ByteOrder byteOrder) throws IOException {
-        return (float) (this.inputStream.readUnsignedInt(byteOrder) / (Integer.MAX_VALUE + 0.5D)) - 1F;
     }
 
     @Override

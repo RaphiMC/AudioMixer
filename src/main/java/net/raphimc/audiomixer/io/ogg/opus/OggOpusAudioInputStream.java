@@ -93,14 +93,7 @@ public class OggOpusAudioInputStream extends AudioInputStream {
             final int firstSampleIndex = Math.multiplyExact(firstFrameIndex, this.getFormat().channelCount());
             final int lastSampleIndex = Math.multiplyExact(lastFrameIndex, this.getFormat().channelCount());
             for (int sampleIndex = firstSampleIndex; sampleIndex < lastSampleIndex; sampleIndex++) {
-                final short sample = this.decodeOutputBuffer[sampleIndex];
-                if (sample < 0) {
-                    this.samplesBuffer.write(-(float) sample / Short.MIN_VALUE);
-                } else if (sample > 0) {
-                    this.samplesBuffer.write((float) sample / Short.MAX_VALUE);
-                } else {
-                    this.samplesBuffer.write(0F);
-                }
+                this.samplesBuffer.write(this.decodeOutputBuffer[sampleIndex] / (float) -Short.MIN_VALUE);
             }
             if (packet.granulePosition() >= 0) {
                 this.previousGranulePosition = packet.granulePosition();
