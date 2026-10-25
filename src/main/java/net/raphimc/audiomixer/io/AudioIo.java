@@ -17,6 +17,7 @@
  */
 package net.raphimc.audiomixer.io;
 
+import net.raphimc.audiomixer.io.flac.FlacAudioInputStream;
 import net.raphimc.audiomixer.io.mp3.Mp3AudioInputStream;
 import net.raphimc.audiomixer.io.ogg.opus.OggOpusAudioInputStream;
 import net.raphimc.audiomixer.io.ogg.vorbis.OggVorbisAudioInputStream;
@@ -42,7 +43,7 @@ import java.util.UUID;
 public final class AudioIo {
 
     private static final int MAGIC_LENGTH = 16;
-    private static final int MAX_HEADER_LENGTH = 256 * 1024;
+    private static final int MAX_HEADER_LENGTH = 16 * 1024 * 1024;
 
     private static final byte[] RIFF_MAGIC = new byte[]{'R', 'I', 'F', 'F'};
     private static final String WAV_MAGIC = "WAVE";
@@ -56,6 +57,8 @@ public final class AudioIo {
     private static final byte[] MP3_ID3V1_MAGIC = new byte[]{'T', 'A', 'G'};
     private static final byte[] MP3_ID3V2_MAGIC = new byte[]{'I', 'D', '3'};
     private static final byte[] MP3_APE_MAGIC = new byte[]{'A', 'P', 'E', 'T', 'A', 'G', 'E', 'X'};
+
+    private static final byte[] FLAC_MAGIC = new byte[]{'f', 'L', 'a', 'C'};
 
     private AudioIo() {
     }
@@ -111,6 +114,8 @@ public final class AudioIo {
             }
         } else if (ArrayUtil.startsWith(magic, MP3_ID3V1_MAGIC) || ArrayUtil.startsWith(magic, MP3_ID3V2_MAGIC) || ArrayUtil.startsWith(magic, MP3_APE_MAGIC) || (magic.length >= 2 && (magic[0] & 0xFF) == 0xFF && (magic[1] & 0xE0) == 0xE0)) {
             return new Mp3AudioInputStream(bis);
+        } else if (ArrayUtil.startsWith(magic, FLAC_MAGIC)) {
+            return new FlacAudioInputStream(bis);
         }
         try {
             return new JavaSoundAudioInputStream(AudioSystem.getAudioInputStream(bis));

@@ -13,4 +13,5 @@ dependencies {
     compileOnly "org.jcraft:jorbis:0.0.17" // OggInputStream, OggOutputStream, OggVorbisAudioInputStream
     compileOnly "com.plasmoverse:concentus:1.0.0" // OggOpusAudioInputStream, OggOpusAudioOutputStream
     compileOnly "io.github.raphimc:jump3r:1.0.6" // Mp3InputStream, Mp3AudioInputStream, Mp3AudioOutputStream
+    compileOnly "io.github.raphimc:libflac-java:1.4.3.1" // FlacAudioInputStream, FlacAudioOutputStream
 }

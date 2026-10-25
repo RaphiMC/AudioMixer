@@ -5,8 +5,8 @@ High performance Java audio library.
 - Realtime audio mixing to a playback device
 - Rendering mixed audio to a file
 - IO
-  - Reading wav, ogg, opus, mp3 and pcm audio files
-  - Writing wav, opus, mp3 and pcm audio files
+  - Reading wav, ogg, opus, mp3, flac and pcm audio streams
+  - Writing wav, opus, mp3, flac and pcm audio streams
 - Sampled audio playback
   - Pitch control
   - Streaming (Pull and Push support)
