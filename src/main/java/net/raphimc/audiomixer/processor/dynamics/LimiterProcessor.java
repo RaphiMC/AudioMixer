@@ -27,16 +27,23 @@ import java.util.ArrayDeque;
 public class LimiterProcessor extends Processor {
 
     private final FloatParameter attackMillis = FloatParameter.of(1F).withConstraint(FloatParameter.Constraint.GREATER_THAN_ZERO);
+    private final FloatParameter holdMillis = FloatParameter.of(20F).withConstraint(FloatParameter.Constraint.POSITIVE);
     private final FloatParameter releaseMillis = FloatParameter.of(100F).withConstraint(FloatParameter.Constraint.GREATER_THAN_ZERO);
     private final FloatParameter lookaheadMillis = FloatParameter.of(5F).withConstraint(FloatParameter.Constraint.GREATER_THAN_ZERO);
 
     private float currentGain = 1F;
+    private int remainingHoldFrames;
 
     public LimiterProcessor() {
     }
 
     public LimiterProcessor(final float attackMillis, final float releaseMillis, final float lookaheadMillis) {
+        this(attackMillis, 20F, releaseMillis, lookaheadMillis);
+    }
+
+    public LimiterProcessor(final float attackMillis, final float holdMillis, final float releaseMillis, final float lookaheadMillis) {
         this.attackMillis.set(attackMillis);
+        this.holdMillis.set(holdMillis);
         this.releaseMillis.set(releaseMillis);
         this.lookaheadMillis.set(lookaheadMillis);
     }
@@ -45,10 +52,12 @@ public class LimiterProcessor extends Processor {
     protected void processInternal(final AudioBuffer buffer) {
         final float millisPerFrame = buffer.format().frameCountToMillis(1);
         final float attackCoefficient = computeCoefficient(millisPerFrame, this.attackMillis.get());
+        final int holdFrameCount = buffer.format().millisToFrameCount(this.holdMillis.get());
         final float releaseCoefficient = computeCoefficient(millisPerFrame, this.releaseMillis.get());
         final int lookaheadFrameCount = buffer.format().millisToFrameCount(this.lookaheadMillis.get());
         final int channelCount = buffer.format().channelCount();
         final float[] samples = buffer.samples();
+        this.remainingHoldFrames = Math.min(this.remainingHoldFrames, holdFrameCount);
 
         final float[] framePeaks = new float[buffer.frameCount()];
         for (int frameIndex = 0; frameIndex < framePeaks.length; frameIndex++) {
@@ -60,8 +69,14 @@ public class LimiterProcessor extends Processor {
         for (int frameIndex = 0; frameIndex < framePeaks.length; frameIndex++) {
             final float peakAhead = window.getMax(frameIndex);
             final float targetGain = peakAhead > 1F ? 1F / peakAhead : 1F;
-            final float coefficient = targetGain < this.currentGain ? attackCoefficient : releaseCoefficient;
-            this.currentGain = MathUtil.multiplyAndAdd(targetGain - this.currentGain, coefficient, this.currentGain);
+            if (targetGain <= this.currentGain) {
+                this.currentGain = MathUtil.multiplyAndAdd(targetGain - this.currentGain, attackCoefficient, this.currentGain);
+                this.remainingHoldFrames = holdFrameCount;
+            } else if (this.remainingHoldFrames > 0) {
+                this.remainingHoldFrames--;
+            } else {
+                this.currentGain = MathUtil.multiplyAndAdd(targetGain - this.currentGain, releaseCoefficient, this.currentGain);
+            }
             for (int channelIndex = 0; channelIndex < channelCount; channelIndex++) {
                 samples[frameIndex * channelCount + channelIndex] *= this.currentGain;
             }
@@ -70,6 +85,10 @@ public class LimiterProcessor extends Processor {
 
     public FloatParameter attackMillis() {
         return this.attackMillis;
+    }
+
+    public FloatParameter holdMillis() {
+        return this.holdMillis;
     }
 
     public FloatParameter releaseMillis() {
