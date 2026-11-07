@@ -22,6 +22,8 @@ import net.raphimc.audiomixer.processor.dynamics.GainProcessor;
 import net.raphimc.audiomixer.processor.spatial.PanProcessor;
 import net.raphimc.audiomixer.source.audio.AudioSource;
 import net.raphimc.audiomixer.source.audio.impl.BufferedAudioSource;
+import net.raphimc.audiomixer.util.JavaAudioFormatUtil;
+import net.raphimc.audiomixer.util.PcmSampleEncoding;
 import net.raphimc.audiomixer.util.buffer.AudioBuffer;
 
 import javax.sound.sampled.AudioFormat;
@@ -39,7 +41,7 @@ public final class RealtimeMixerExample {
     }
 
     public static void main(final String[] args) throws Throwable {
-        final AudioFormat format = new AudioFormat(48000, 16, 2, true, false);
+        final AudioFormat format = JavaAudioFormatUtil.getJavaAudioFormat(48000, 2, PcmSampleEncoding.S16_LE);
         final SourceDataLineAudioMixer audioMixer = new SourceDataLineAudioMixer(AudioSystem.getSourceDataLine(format));
         final AudioBuffer audioBuffer = AudioIo.read(RealtimeMixerExample.class.getResourceAsStream("/piano.wav"), audioMixer.getFormat().withChannelCount(1));
 

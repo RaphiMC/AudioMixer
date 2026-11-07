@@ -20,6 +20,8 @@ import net.raphimc.audiomixer.SourceDataLineAudioMixer;
 import net.raphimc.audiomixer.processor.spatial.PositionalAudioProcessor;
 import net.raphimc.audiomixer.source.oscillator.OscillatorSource;
 import net.raphimc.audiomixer.source.oscillator.impl.SineOscillatorSource;
+import net.raphimc.audiomixer.util.JavaAudioFormatUtil;
+import net.raphimc.audiomixer.util.PcmSampleEncoding;
 import net.raphimc.audiomixer.util.math.Vector3f;
 
 import javax.sound.sampled.AudioFormat;
@@ -39,7 +41,7 @@ public final class PositionalAudioExample {
     }
 
     public static void main(final String[] args) throws Throwable {
-        final AudioFormat format = new AudioFormat(48000, 16, 2, true, false);
+        final AudioFormat format = JavaAudioFormatUtil.getJavaAudioFormat(48000, 2, PcmSampleEncoding.S16_LE);
         final SourceDataLineAudioMixer audioMixer = new SourceDataLineAudioMixer(AudioSystem.getSourceDataLine(format));
 
         final OscillatorSource oscillator = new SineOscillatorSource(440);

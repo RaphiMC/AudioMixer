@@ -25,14 +25,17 @@ import javax.sound.sampled.SourceDataLine;
 
 public class SourceDataLineAudioMixer extends LimitingAudioMixer implements AutoCloseable {
 
+    private static final int DEFAULT_BUFFER_MILLIS = 50;
+    private static final int DEFAULT_MIX_SLICE_MILLIS = 10;
+
     private final SourceDataLineWriter sourceDataLineWriter;
 
     public SourceDataLineAudioMixer(final SourceDataLine sourceDataLine) throws LineUnavailableException {
-        this(sourceDataLine, 50);
+        this(sourceDataLine, DEFAULT_BUFFER_MILLIS);
     }
 
     public SourceDataLineAudioMixer(final SourceDataLine sourceDataLine, final int bufferMillis) throws LineUnavailableException {
-        this(sourceDataLine, bufferMillis, 10);
+        this(sourceDataLine, bufferMillis, DEFAULT_MIX_SLICE_MILLIS);
     }
 
     public SourceDataLineAudioMixer(final SourceDataLine sourceDataLine, final int bufferMillis, final int mixSliceMillis) throws LineUnavailableException {

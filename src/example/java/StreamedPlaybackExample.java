@@ -19,6 +19,8 @@
 import net.raphimc.audiomixer.SourceDataLineAudioMixer;
 import net.raphimc.audiomixer.io.AudioIo;
 import net.raphimc.audiomixer.source.audio.impl.PullAudioSource;
+import net.raphimc.audiomixer.util.JavaAudioFormatUtil;
+import net.raphimc.audiomixer.util.PcmSampleEncoding;
 
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioSystem;
@@ -30,7 +32,7 @@ public final class StreamedPlaybackExample {
     }
 
     public static void main(final String[] args) throws Throwable {
-        final AudioFormat format = new AudioFormat(48000, 16, 2, true, false);
+        final AudioFormat format = JavaAudioFormatUtil.getJavaAudioFormat(48000, 2, PcmSampleEncoding.S16_LE);
         final SourceDataLineAudioMixer audioMixer = new SourceDataLineAudioMixer(AudioSystem.getSourceDataLine(format));
         audioMixer.add(new PullAudioSource(AudioIo.open(new URL("https://ncs.io/track/download/f76817e2-fa17-4317-af1a-8bf4d5cc68a9").openStream())));
 

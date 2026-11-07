@@ -96,7 +96,7 @@ public class SourceDataLineWriter implements AutoCloseable {
             }
             this.writerThread = null;
         }
-        this.sourceDataLine.stop();
+        this.flush();
     }
 
     @Override

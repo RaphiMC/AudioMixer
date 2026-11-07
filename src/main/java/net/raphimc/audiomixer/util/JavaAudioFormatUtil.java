@@ -17,6 +17,8 @@
  */
 package net.raphimc.audiomixer.util;
 
+import java.nio.ByteOrder;
+
 public final class JavaAudioFormatUtil {
 
     private JavaAudioFormatUtil() {
@@ -55,6 +57,18 @@ public final class JavaAudioFormatUtil {
             };
         } else {
             throw new IllegalArgumentException("Unsupported encoding: " + format.getEncoding());
+        }
+    }
+
+    public static javax.sound.sampled.AudioFormat getJavaAudioFormat(final float sampleRate, final int channelCount, final PcmSampleEncoding encoding) {
+        return getJavaAudioFormat(new AudioFormat(sampleRate, channelCount), encoding);
+    }
+
+    public static javax.sound.sampled.AudioFormat getJavaAudioFormat(final AudioFormat format, final PcmSampleEncoding encoding) {
+        if (encoding.type() == PcmSampleEncoding.Type.FLOAT) {
+            return new javax.sound.sampled.AudioFormat(javax.sound.sampled.AudioFormat.Encoding.PCM_FLOAT, format.sampleRate(), encoding.bytesPerSample() * Byte.SIZE, format.channelCount(), encoding.bytesPerSample() * format.channelCount(), format.sampleRate(), encoding.byteOrder() == ByteOrder.BIG_ENDIAN);
+        } else {
+            return new javax.sound.sampled.AudioFormat(format.sampleRate(), encoding.bytesPerSample() * Byte.SIZE, format.channelCount(), encoding.type() == PcmSampleEncoding.Type.SIGNED, encoding.byteOrder() == ByteOrder.BIG_ENDIAN);
         }
     }
 
