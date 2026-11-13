@@ -53,7 +53,7 @@ public class OggVorbisAudioInputStream extends AudioInputStream {
         this.oggInputStream = codeBeforeSuper.oggInputStream;
         this.vorbisStreamId = codeBeforeSuper.vorbisStreamId;
         checkResult(this.dspState.synthesis_init(codeBeforeSuper.info), "Failed to initialize dsp state");
-        this.samplesBuffer = new FloatRingBuffer(MAX_FRAME_COUNT * this.getFormat().channelCount());
+        this.samplesBuffer = new FloatRingBuffer(this.getFormat().frameCountToSampleCount(MAX_FRAME_COUNT));
     }
 
     @Override

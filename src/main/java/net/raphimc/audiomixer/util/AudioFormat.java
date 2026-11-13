@@ -47,11 +47,15 @@ public record AudioFormat(float sampleRate, int channelCount) {
     }
 
     public int millisToSampleCount(final float millis) {
-        return Math.multiplyExact(this.millisToFrameCount(millis), this.channelCount);
+        return this.frameCountToSampleCount(this.millisToFrameCount(millis));
     }
 
     public float sampleCountToMillis(final int sampleCount) {
         return this.frameCountToMillis(this.sampleCountToFrameCount(sampleCount));
+    }
+
+    public int frameCountToSampleCount(final int frameCount) {
+        return Math.multiplyExact(frameCount, this.channelCount);
     }
 
     public int sampleCountToFrameCount(final int sampleCount) {

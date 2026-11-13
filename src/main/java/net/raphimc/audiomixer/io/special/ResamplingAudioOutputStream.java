@@ -75,8 +75,8 @@ public class ResamplingAudioOutputStream extends AudioOutputStream {
         final int outputFrameCount = this.delegate.getFormat().millisToFrameCount(bufferMillis);
         final int requiredInputFrameCount = Resampler.computeMaxRequiredInputFrameCount(this.getFormat(), this.delegate.getFormat(), Math.addExact(outputFrameCount, 1));
         final int inputFrameCount = Math.addExact(Math.addExact(this.resampler.getLookBehindFrameCount(), requiredInputFrameCount), this.resampler.getLookAheadFrameCount());
-        this.inputSamples = new float[Math.multiplyExact(inputFrameCount, this.getFormat().channelCount())];
-        this.outputSamples = new float[Math.multiplyExact(outputFrameCount, this.delegate.getFormat().channelCount())];
+        this.inputSamples = new float[this.getFormat().frameCountToSampleCount(inputFrameCount)];
+        this.outputSamples = new float[this.delegate.getFormat().frameCountToSampleCount(outputFrameCount)];
     }
 
     @Override
@@ -90,14 +90,14 @@ public class ResamplingAudioOutputStream extends AudioOutputStream {
     private void resampleNextBuffer() throws IOException {
         final float[] inputSamples = this.inputSampleCount == this.inputSamples.length ? this.inputSamples : Arrays.copyOf(this.inputSamples, this.inputSampleCount);
         final double inputFramePosition = this.resampler.resample(inputSamples, this.getFormat(), this.outputSamples, this.delegate.getFormat(), this.inputFramePosition);
-        this.delegate.write(this.outputSamples, 0, Math.multiplyExact(this.resampler.getLastOutputFrameCount(), this.delegate.getFormat().channelCount()));
+        this.delegate.write(this.outputSamples, 0, this.delegate.getFormat().frameCountToSampleCount(this.resampler.getLastOutputFrameCount()));
         this.inputFramePosition = inputFramePosition;
         this.discardConsumedInput();
     }
 
     private void discardConsumedInput() {
         final int discardFrameCount = Math.min(Math.max((int) this.inputFramePosition - this.resampler.getLookBehindFrameCount(), 0), this.getFormat().sampleCountToFrameCount(this.inputSampleCount));
-        final int discardSampleCount = Math.multiplyExact(discardFrameCount, this.getFormat().channelCount());
+        final int discardSampleCount = this.getFormat().frameCountToSampleCount(discardFrameCount);
         this.inputSampleCount -= discardSampleCount;
         System.arraycopy(this.inputSamples, discardSampleCount, this.inputSamples, 0, this.inputSampleCount);
         this.inputFramePosition -= discardFrameCount;

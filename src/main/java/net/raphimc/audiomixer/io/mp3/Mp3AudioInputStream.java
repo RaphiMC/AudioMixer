@@ -65,9 +65,9 @@ public class Mp3AudioInputStream extends AudioInputStream {
         }
         this.decodeOutputBuffer = new float[2][MAX_FRAME_COUNT];
         final VBRTagData vbrTagData = vbrTag.getVbrTag(codeBeforeSuper.firstFrame.data());
-        this.paddingSampleCount = vbrTagData != null && vbrTagData.encPadding >= 0 ? Math.max(Math.multiplyExact(Math.subtractExact(vbrTagData.encPadding, Encoder.DECDELAY + 1), this.getFormat().channelCount()), 0) : 0;
-        this.remainingDelaySampleCount = vbrTagData != null && vbrTagData.encDelay >= 0 ? Math.multiplyExact(Math.addExact(vbrTagData.encDelay, Encoder.DECDELAY + 1), this.getFormat().channelCount()) : 0;
-        this.samplesBuffer = new FloatRingBuffer(Math.addExact(MAX_FRAME_COUNT * this.getFormat().channelCount(), this.paddingSampleCount));
+        this.paddingSampleCount = vbrTagData != null && vbrTagData.encPadding >= 0 ? Math.max(this.getFormat().frameCountToSampleCount(Math.subtractExact(vbrTagData.encPadding, Encoder.DECDELAY + 1)), 0) : 0;
+        this.remainingDelaySampleCount = vbrTagData != null && vbrTagData.encDelay >= 0 ? this.getFormat().frameCountToSampleCount(Math.addExact(vbrTagData.encDelay, Encoder.DECDELAY + 1)) : 0;
+        this.samplesBuffer = new FloatRingBuffer(Math.addExact(this.getFormat().frameCountToSampleCount(MAX_FRAME_COUNT), this.paddingSampleCount));
 
         this.decodeFrame(codeBeforeSuper.firstFrame);
     }

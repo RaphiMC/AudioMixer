@@ -110,7 +110,7 @@ public class OggOpusAudioOutputStream extends AudioOutputStream {
         this.encoder.setSignalType(signalType);
         this.encoder.setEnableAnalysis(true);
         this.granuleScale = GRANULE_SAMPLE_RATE / this.encoder.getSampleRate();
-        this.samplesBuffer = new FloatRingBuffer(Math.multiplyExact(Math.multiplyExact(this.encoder.getSampleRate() / 1000, MAX_FRAME_MILLIS), this.getFormat().channelCount()));
+        this.samplesBuffer = new FloatRingBuffer(this.getFormat().frameCountToSampleCount(Math.multiplyExact(this.encoder.getSampleRate() / 1000, MAX_FRAME_MILLIS)));
         this.encodeInputBuffer = new short[this.samplesBuffer.capacity()];
 
         final OpusHeadPacket opusHead = new OpusHeadPacket(this.getFormat().channelCount(), Math.multiplyExact(this.encoder.getLookahead(), this.granuleScale), this.encoder.getSampleRate());
@@ -156,7 +156,7 @@ public class OggOpusAudioOutputStream extends AudioOutputStream {
     @Override
     public void close() throws IOException {
         try (this.oggOutputStream) {
-            this.write(new float[Math.multiplyExact(this.encoder.getLookahead(), this.getFormat().channelCount())]); // Flush the encoder
+            this.write(new float[this.getFormat().frameCountToSampleCount(this.encoder.getLookahead())]); // Flush the encoder
             this.flushSamplesBuffer(true);
         }
     }

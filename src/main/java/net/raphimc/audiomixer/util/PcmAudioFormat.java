@@ -38,6 +38,14 @@ public record PcmAudioFormat(AudioFormat format, PcmSampleEncoding encoding) {
         return byteCount / this.bytesPerFrame();
     }
 
+    public int sampleCountToByteCount(final int sampleCount) {
+        return this.frameCountToByteCount(this.format.sampleCountToFrameCount(sampleCount));
+    }
+
+    public int byteCountToSampleCount(final int byteCount) {
+        return this.format.frameCountToSampleCount(this.byteCountToFrameCount(byteCount));
+    }
+
     public int bytesPerFrame() {
         return this.encoding.bytesPerSample() * this.format.channelCount();
     }

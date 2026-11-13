@@ -47,7 +47,7 @@ public class FlacAudioInputStream extends AudioInputStream {
         super(new AudioFormat(codeBeforeSuper.streamInfo.getSampleRate(), codeBeforeSuper.streamInfo.getChannels()));
         this.inputStream = codeBeforeSuper.inputStream;
         this.decoder = codeBeforeSuper.decoder;
-        this.samplesBuffer = new FloatRingBuffer(Format.MAX_BLOCK_SIZE * this.getFormat().channelCount());
+        this.samplesBuffer = new FloatRingBuffer(this.getFormat().frameCountToSampleCount(Format.MAX_BLOCK_SIZE));
         codeBeforeSuper.writeCallback = this::writeFrame;
     }
 

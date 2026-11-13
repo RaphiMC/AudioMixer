@@ -141,7 +141,7 @@ public class Mp3AudioOutputStream extends AudioOutputStream {
         }
         checkResult(this.lame.lame_init_params(this.instance), "Failed to set parameters");
 
-        this.samplesBuffer = new FloatRingBuffer(this.instance.framesize * this.getFormat().channelCount());
+        this.samplesBuffer = new FloatRingBuffer(this.getFormat().frameCountToSampleCount(this.instance.framesize));
         this.encodeInputBuffer = new int[2][this.instance.framesize];
         this.encodeOutputBuffer = new byte[MathUtil.ceil(1.25F * this.instance.framesize + 7200)];
 

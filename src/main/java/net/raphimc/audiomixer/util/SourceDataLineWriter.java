@@ -49,7 +49,7 @@ public class SourceDataLineWriter implements AutoCloseable {
                         if (buffer.sampleCount() <= 0) {
                             break;
                         }
-                        final ByteArrayOutputStream baos = new ByteArrayOutputStream(this.format.frameCountToByteCount(buffer.frameCount()));
+                        final ByteArrayOutputStream baos = new ByteArrayOutputStream(this.format.sampleCountToByteCount(buffer.sampleCount()));
                         try (PcmAudioOutputStream aos = new PcmAudioOutputStream(baos, this.format)) {
                             aos.write(buffer);
                         }

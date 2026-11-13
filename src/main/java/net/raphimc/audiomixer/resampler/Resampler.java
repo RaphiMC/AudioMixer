@@ -75,7 +75,7 @@ public abstract class Resampler {
         } else {
             this.lastOutputFrameCount = computeOutputFrameCount(srcFrameCount, dstFrameCount, 1D, srcFramePosition);
             if (srcFormat.channelCount() == dstFormat.channelCount()) {
-                System.arraycopy(src, (int) srcFramePosition * srcFormat.channelCount(), dst, 0, this.lastOutputFrameCount * srcFormat.channelCount());
+                System.arraycopy(src, srcFormat.frameCountToSampleCount((int) srcFramePosition), dst, 0, srcFormat.frameCountToSampleCount(this.lastOutputFrameCount));
             } else if (srcFormat.channelCount() == 1 && dstFormat.channelCount() == 2) {
                 remapMonoToStereo(src, dst, this.lastOutputFrameCount, (int) srcFramePosition);
             } else if (srcFormat.channelCount() == 2 && dstFormat.channelCount() == 1) {

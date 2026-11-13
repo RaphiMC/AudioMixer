@@ -89,7 +89,7 @@ public class FlacAudioOutputStream extends AudioOutputStream {
         this.integerScale = Math.scalb(1F, this.encoder.getBitsPerSample() - 1);
         this.minIntegerValue = -1 << (this.encoder.getBitsPerSample() - 1);
         this.maxIntegerValue = (1 << (this.encoder.getBitsPerSample() - 1)) - 1;
-        this.samplesBuffer = new FloatRingBuffer(this.encoder.getBlocksize() * this.getFormat().channelCount());
+        this.samplesBuffer = new FloatRingBuffer(this.getFormat().frameCountToSampleCount(this.encoder.getBlocksize()));
         this.encodeInputBuffer = new int[this.samplesBuffer.capacity()];
     }
 
