@@ -41,7 +41,6 @@ public class SourceDataLineAudioMixer extends LimitingAudioMixer implements Auto
     public SourceDataLineAudioMixer(final SourceDataLine sourceDataLine, final int bufferMillis, final int mixSliceMillis) throws LineUnavailableException {
         super(JavaAudioFormatUtil.getAudioFormat(sourceDataLine.getFormat()));
         this.sourceDataLineWriter = new SourceDataLineWriter(sourceDataLine, bufferMillis, () -> this.renderMillis(mixSliceMillis));
-        this.sourceDataLineWriter.start();
     }
 
     @Override

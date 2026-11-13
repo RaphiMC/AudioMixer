@@ -28,10 +28,9 @@ public class SourceDataLineWriter implements AutoCloseable {
 
     private final SourceDataLine sourceDataLine;
     private final PcmAudioFormat format;
-    private final Callback callback;
-    private Thread writerThread;
-    private boolean interrupted; // Java clears the interrupt flag in SourceDataLine#write() and doesn't rethrow InterruptedException
-    private float processingLoad;
+    private final Thread writerThread;
+    private volatile boolean interrupted; // Java clears the interrupt flag in SourceDataLine#write() and doesn't rethrow InterruptedException
+    private volatile float processingLoad;
 
     public SourceDataLineWriter(final SourceDataLine sourceDataLine, final int bufferMillis, final Callback callback) throws LineUnavailableException {
         if (bufferMillis <= 0) {
@@ -39,31 +38,22 @@ public class SourceDataLineWriter implements AutoCloseable {
         }
         this.sourceDataLine = sourceDataLine;
         this.format = JavaAudioFormatUtil.getPcmAudioFormat(this.sourceDataLine.getFormat());
-        this.callback = callback;
         this.sourceDataLine.open(this.sourceDataLine.getFormat(), this.format.millisToByteCount(bufferMillis));
-    }
-
-    public void start() {
-        if (this.isRunning()) {
-            this.stop();
-        }
-
-        TimerHack.ensureRunning();
-        this.interrupted = false;
+        this.sourceDataLine.start();
         this.writerThread = new Thread(() -> {
             try {
                 while (!Thread.currentThread().isInterrupted() && !this.interrupted) {
                     while (this.sourceDataLine.available() > 0 && !Thread.currentThread().isInterrupted() && !this.interrupted) {
                         final long startTime = System.nanoTime();
-                        final AudioBuffer buffer = this.callback.renderAudio(this.format.byteCountToFrameCount(this.sourceDataLine.available()));
+                        final AudioBuffer buffer = callback.renderAudio(this.format.byteCountToFrameCount(this.sourceDataLine.available()));
+                        if (buffer.sampleCount() <= 0) {
+                            break;
+                        }
                         final ByteArrayOutputStream baos = new ByteArrayOutputStream(this.format.frameCountToByteCount(buffer.frameCount()));
                         try (PcmAudioOutputStream aos = new PcmAudioOutputStream(baos, this.format)) {
                             aos.write(buffer);
                         }
                         final byte[] pcmData = baos.toByteArray();
-                        if (!this.sourceDataLine.isActive()) {
-                            this.sourceDataLine.start();
-                        }
                         final float neededMillis = (System.nanoTime() - startTime) / 1_000_000F;
                         this.processingLoad = (neededMillis / buffer.millisecondLength()) * 100F;
                         this.sourceDataLine.write(pcmData, 0, pcmData.length);
@@ -81,33 +71,18 @@ public class SourceDataLineWriter implements AutoCloseable {
         this.writerThread.start();
     }
 
-    public void flush() {
-        this.sourceDataLine.stop(); // Will be started again in the writer thread
-        this.sourceDataLine.flush();
-    }
-
-    public void stop() {
-        if (this.isRunning()) {
-            this.writerThread.interrupt();
-            this.interrupted = true;
-            try {
-                this.writerThread.join(1000);
-            } catch (final InterruptedException ignored) {
-            }
-            this.writerThread = null;
-        }
-        this.flush();
-    }
-
     @Override
     public void close() {
-        try (this.sourceDataLine) {
-            this.stop();
+        this.interrupted = true;
+        this.writerThread.interrupt();
+        this.sourceDataLine.close();
+        if (Thread.currentThread() != this.writerThread) {
+            try {
+                this.writerThread.join();
+            } catch (final InterruptedException ignored) {
+                Thread.currentThread().interrupt();
+            }
         }
-    }
-
-    public boolean isRunning() {
-        return this.writerThread != null && this.writerThread.isAlive();
     }
 
     public SourceDataLine getSourceDataLine() {
