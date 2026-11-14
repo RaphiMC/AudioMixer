@@ -36,11 +36,11 @@ public class LoopingAudioSource extends BufferedAudioSource {
 
     public LoopingAudioSource(final AudioBuffer buffer, final Resampler resampler) {
         super(buffer, resampler);
-        if (this.getFrameCount() == 0) {
-            throw new IllegalArgumentException("Buffer must not be empty");
+        if (this.getFrameCount() <= 0) {
+            throw new IllegalArgumentException("Buffer frame count must be > 0");
         }
         if (this.resampler.getLookBehindFrameCount() > 0) {
-            throw new IllegalArgumentException("Resampler must not require look behind frames");
+            throw new IllegalArgumentException("Resampler look behind frame count must be 0");
         }
         this.loopEndPosition = this.getFrameCount() - 1;
     }

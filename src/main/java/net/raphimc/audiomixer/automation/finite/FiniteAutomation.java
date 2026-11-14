@@ -25,14 +25,14 @@ import net.raphimc.audiomixer.util.math.MathUtil;
 public abstract class FiniteAutomation extends Automation {
 
     private final ConsumerListenerList<Automation> finishListeners = new ConsumerListenerList<>();
-    private final float duration;
+    private final float durationMillis;
 
-    public FiniteAutomation(final FloatParameter parameter, final float duration) {
+    public FiniteAutomation(final FloatParameter parameter, final float durationMillis) {
         super(parameter);
-        if (!Float.isFinite(duration) || duration <= 0) {
-            throw new IllegalArgumentException("Duration must be finite and > 0: " + duration);
+        if (!Float.isFinite(durationMillis) || durationMillis <= 0) {
+            throw new IllegalArgumentException("Duration millis must be finite and > 0: " + durationMillis);
         }
-        this.duration = duration;
+        this.durationMillis = durationMillis;
     }
 
     @Override
@@ -44,7 +44,7 @@ public abstract class FiniteAutomation extends Automation {
     }
 
     public boolean isFinished() {
-        return this.getTime() >= this.duration;
+        return this.getTime() >= this.durationMillis;
     }
 
     public ConsumerListenerList<Automation> finishListeners() {
@@ -52,15 +52,15 @@ public abstract class FiniteAutomation extends Automation {
     }
 
     public float getProgress() {
-        return MathUtil.clamp(this.getTime() / this.duration, 0F, 1F);
+        return MathUtil.clamp(this.getTime() / this.durationMillis, 0F, 1F);
     }
 
     public void setProgress(final float progress) {
-        this.setTime(progress * this.duration);
+        this.setTime(progress * this.durationMillis);
     }
 
-    public float getDuration() {
-        return this.duration;
+    public float getDurationMillis() {
+        return this.durationMillis;
     }
 
 }

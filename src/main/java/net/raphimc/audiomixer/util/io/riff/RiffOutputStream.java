@@ -68,7 +68,7 @@ public class RiffOutputStream extends BinaryOutputStream {
     private void writeFourCharCode(final String code) throws IOException {
         final byte[] bytes = code.getBytes(StandardCharsets.US_ASCII);
         if (bytes.length != RiffChunk.FOURCC_LENGTH) {
-            throw new IllegalArgumentException("FourCC must be " + RiffChunk.FOURCC_LENGTH + " characters long");
+            throw new IllegalArgumentException("FourCC length must be " + RiffChunk.FOURCC_LENGTH);
         }
         this.write(bytes);
     }
