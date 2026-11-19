@@ -23,42 +23,45 @@ import net.raphimc.audiomixer.util.buffer.AudioBuffer;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
 import java.io.ByteArrayOutputStream;
+import java.util.function.Supplier;
 
 public class SourceDataLineWriter implements AutoCloseable {
 
     private final SourceDataLine sourceDataLine;
     private final PcmAudioFormat format;
     private final Thread writerThread;
-    private volatile boolean interrupted; // Java clears the interrupt flag in SourceDataLine#write() and doesn't rethrow InterruptedException
+    private volatile boolean started; // SourceDataLine#isRunning() can remain false until the first write after SourceDataLine#start()
+    private volatile boolean closed; // Java clears the interrupt flag in SourceDataLine#write() and doesn't rethrow InterruptedException
     private volatile float processingLoad;
 
-    public SourceDataLineWriter(final SourceDataLine sourceDataLine, final int bufferMillis, final Callback callback) throws LineUnavailableException {
+    public SourceDataLineWriter(final SourceDataLine sourceDataLine, final int bufferMillis, final Supplier<AudioBuffer> audioSupplier) throws LineUnavailableException {
         if (bufferMillis <= 0) {
             throw new IllegalArgumentException("Buffer millis must be > 0: " + bufferMillis);
         }
         this.sourceDataLine = sourceDataLine;
         this.format = JavaAudioFormatUtil.getPcmAudioFormat(this.sourceDataLine.getFormat());
         this.sourceDataLine.open(this.sourceDataLine.getFormat(), this.format.millisToByteCount(bufferMillis));
-        this.sourceDataLine.start();
         this.writerThread = new Thread(() -> {
-            try {
-                while (!Thread.currentThread().isInterrupted() && !this.interrupted) {
-                    while (this.sourceDataLine.available() > 0 && !Thread.currentThread().isInterrupted() && !this.interrupted) {
-                        final long startTime = System.nanoTime();
-                        final AudioBuffer buffer = callback.renderAudio(this.format.byteCountToFrameCount(this.sourceDataLine.available()));
-                        if (buffer.sampleCount() <= 0) {
-                            break;
-                        }
-                        final ByteArrayOutputStream baos = new ByteArrayOutputStream(this.format.sampleCountToByteCount(buffer.sampleCount()));
-                        try (PcmAudioOutputStream aos = new PcmAudioOutputStream(baos, this.format)) {
-                            aos.write(buffer);
-                        }
-                        final byte[] pcmData = baos.toByteArray();
-                        final float neededMillis = (System.nanoTime() - startTime) / 1_000_000F;
-                        this.processingLoad = (neededMillis / buffer.millisecondLength()) * 100F;
-                        this.sourceDataLine.write(pcmData, 0, pcmData.length);
+            try (
+                ByteArrayOutputStream encodedOutput = new ByteArrayOutputStream();
+                PcmAudioOutputStream encoder = new PcmAudioOutputStream(encodedOutput, this.format)
+            ) {
+                while (this.awaitRunningOrClosed()) {
+                    final long startTime = System.nanoTime();
+                    final AudioBuffer buffer = audioSupplier.get();
+                    if (buffer.sampleCount() <= 0) {
+                        continue;
                     }
-                    Thread.sleep(1);
+                    encodedOutput.reset();
+                    encoder.write(buffer);
+                    final byte[] encodedSamples = encodedOutput.toByteArray();
+                    final float neededMillis = (System.nanoTime() - startTime) / 1_000_000F;
+                    this.processingLoad = (neededMillis / buffer.millisecondLength()) * 100F;
+
+                    int offset = 0;
+                    while (offset < encodedSamples.length && this.awaitRunningOrClosed()) {
+                        offset += this.sourceDataLine.write(encodedSamples, offset, encodedSamples.length - offset);
+                    }
                 }
             } catch (final InterruptedException ignored) {
             } catch (final Throwable e) {
@@ -71,11 +74,31 @@ public class SourceDataLineWriter implements AutoCloseable {
         this.writerThread.start();
     }
 
+    public synchronized void start() {
+        if (this.closed) {
+            throw new IllegalStateException("SourceDataLineWriter is closed");
+        }
+        this.sourceDataLine.start();
+        this.started = true;
+        this.notifyAll();
+    }
+
+    public synchronized void stop() {
+        if (this.closed) {
+            throw new IllegalStateException("SourceDataLineWriter is closed");
+        }
+        this.started = false;
+        this.sourceDataLine.stop();
+    }
+
     @Override
     public void close() {
-        this.interrupted = true;
-        this.writerThread.interrupt();
-        this.sourceDataLine.close();
+        synchronized (this) {
+            this.started = false;
+            this.closed = true;
+            this.writerThread.interrupt();
+            this.sourceDataLine.close();
+        }
         if (Thread.currentThread() != this.writerThread) {
             try {
                 this.writerThread.join();
@@ -89,19 +112,19 @@ public class SourceDataLineWriter implements AutoCloseable {
         return this.sourceDataLine;
     }
 
+    public boolean isRunning() {
+        return this.started;
+    }
+
     public float getProcessingLoad() {
         return this.processingLoad;
     }
 
-    @FunctionalInterface
-    public interface Callback {
-
-        default AudioBuffer renderAudio(final int requestedFrameCount) {
-            return this.renderAudio();
+    private synchronized boolean awaitRunningOrClosed() throws InterruptedException {
+        while (!this.started && !this.closed) {
+            this.wait();
         }
-
-        AudioBuffer renderAudio();
-
+        return !Thread.currentThread().isInterrupted() && !this.closed;
     }
 
 }
